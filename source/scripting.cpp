@@ -1,4 +1,4 @@
-PTR("BGM_EVT_STG7_RPG1")PTR("BGM_MAP_STG7")#include "evt_cmd.h"
+#include "evt_cmd.h"
 #include "mod.h"
 #include "patch.h"
 
