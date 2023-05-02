@@ -5,6 +5,7 @@
 #include <spm/evtmgr.h>
 #include <spm/evt_msg.h>
 #include <spm/evt_fade.h>
+#include <spm/evt_map.h>
 #include <evt_snd.h>
 #include <spm/wpadmgr.h>
 #include <spm/fontmgr.h>
@@ -22,7 +23,8 @@
 using namespace std;
 namespace mod {
 //functions in eu0, I need to port them to all versions
-EVT_BEGIN(beginRPG)
+
+EVT_BEGIN(beginRPG) //80df2e90
 USER_FUNC(spm::evt_snd::evt_snd_bgmon, 0, PTR("BGM_EVT_STG7_RPG1"))
 USER_FUNC(0x800d34b8, 0)
 USER_FUNC(0x8010c600, PTR("OFF_house_02"))
@@ -114,4 +116,54 @@ END_IF()
 END_EVT()
 END_SCRIPT()
 
+EVT_BEGIN(parentOfBeginRPG)
+USER_FUNC(0x800e658c, 0, 500)
+END_INLINE()
+USER_FUNC(0x800e7050, 24, 500, 0, 0, 0, 255)
+USER_FUNC(0x800dff20, 1, 3420, 1040, 234, 3420, 1040, -16, 500, 11)
+USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
+USER_FUNC(0x80107540, 268435579, LW(0))
+USER_FUNC(spm::evt_npc::evt_npc_flag8_onoff, LW(0), 1, 1073741824)
+USER_FUNC(0x80107540, 268435580, LW(0))
+USER_FUNC(spm::evt_npc::evt_npc_flag8_onoff, LW(0), 1, 1073741824)
+USER_FUNC(0x80107540, 268435581, LW(0))
+USER_FUNC(spm::evt_npc::evt_npc_flag8_onoff, LW(0), 1, 1073741824)
+RUN_CHILD_EVT(beginRPG)
+IF_EQUAL(LW(0), 0) //only happens if you run away successfully
+SET(GSW(0), 324)
+WAIT_MSEC(500)
+USER_FUNC(0x800ee1c4, PTR("kuti_1"), LW(0), LW(1), LW(2))
+USER_FUNC(0x800f0074, LW(0), LW(2))
+USER_FUNC(0x800ee1c4, PTR("kuti_1"), LW(0), LW(1), LW(2))
+USER_FUNC(0x800fc02c, 2, LW(0), LW(1), LW(2))
+USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_133_2_128"), 0x80c72cf8, 0)
+ELSE()//only happens if you win the RPG battle
+SET(GSW(0), 325)
+USER_FUNC(0x8010cffc)
+WAIT_MSEC(500)
+USER_FUNC(0x800ee1c4, PTR("kuti_1"), LW(0), LW(1), LW(2))
+USER_FUNC(0x800fc02c, 2, LW(0), LW(1), LW(2))
+USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_134"), 0x80c72cf8, 0)
+USER_FUNC(0x800edc30, PTR("anm_kao_4"), 0, 0)
+USER_FUNC(0x800edcd8, PTR("anm_kao_4"), LW(0), LW(1))
+WAIT_MSEC(LW(1))
+USER_FUNC(spm::evt_map::evt_mapobj_flag_onoff, 1, 1, PTR("anm_kao_1"), 1)
+USER_FUNC(spm::evt_door::evt_door_enable_disable_map_door_desc, 1, PTR("doa2_l"))
+USER_FUNC(0x800e45c8, PTR("doa2_l"), 0, 0x80df32d0)
+USER_FUNC(0x800e0430, 500, 11)
+USER_FUNC(0x800ef62c)
+USER_FUNC(0x80c774c4, 0)
+USER_FUNC(0x800e0e24, 1, GW(5))
+USER_FUNC(0x800e0dfc)
+END_EVT()
+END_IF()
+USER_FUNC(0x800edc30, PTR("anm_kao_4"), 0, 0)
+USER_FUNC(0x800edcd8, PTR("anm_kao_4"), LW(0), LW(1))
+WAIT_MSEC(LW(1))
+USER_FUNC(spm::evt_map::evt_mapobj_flag_onoff, 1, 1, PTR("anm_kao_1"), 1)
+USER_FUNC(0x800e0430, 500, 11)
+USER_FUNC(0x80c774c4, 0)
+USER_FUNC(0x800ef62c)
+END_EVT()
+END_SCRIPT()
 }
