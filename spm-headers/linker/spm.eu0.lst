@@ -7,6 +7,8 @@
 
 /* Dol */
 
+800e658c:evt_env_blur_on
+
 // Runtime.PPCEABI.H.a
 // __mem.c
 80004000:memcpy
@@ -195,6 +197,7 @@
 800edfec:evt_mapobj_flag4_onoff
 800ed6c0:evt_mapobj_trans
 800edb54:evt_mapobj_color
+800ee1c4:evt_mapobj_get_position
 // more
 
 // evt_mario.c
@@ -225,6 +228,8 @@
 // more
 
 // evt_npc.c
+80102EB8:evt_npc_stats_set_up
+80107540:evt_npc_id_to_name
 800fe21c:evt_npc_set_position
 80102f5c:evt_npc_entry
 80103054:func_80103054

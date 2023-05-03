@@ -3,6 +3,10 @@
 800030c8:firstRel
 800030cc:lastRel
 
+800EE058:evt_mapobj_get_position
+800E6708:evt_env_blur_on
+801024D8:evt_npc_stats_set_up
+80106B60:evt_npc_id_to_name
 800E71CC:evt_fade_entry
 80056948:cam3dMain
 804C8580:camPtrTbl
