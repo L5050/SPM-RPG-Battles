@@ -3,6 +3,8 @@
 800030c8:firstRel
 800030cc:lastRel
 
+
+800E00F0:evt_cam3d_evt_zoom_in
 800EE058:evt_mapobj_get_position
 800E6708:evt_env_blur_on
 801024D8:evt_npc_stats_set_up

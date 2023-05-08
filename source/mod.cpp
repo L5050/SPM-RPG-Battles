@@ -39,6 +39,19 @@ static void titleScreenCustomTextPatch()
 /*
     General mod functions
 */
+
+s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+  spm::npcdrv::NPCWork * npcWork = spm::npcdrv::npcGetWorkPtr();
+  spm::evtmgr::EvtVar * evtVariables = evtEntry->pCurData;
+  id = spm::evtmgr_cmd::evtGetValue(evtEntry, *evtVariables);
+  for (int i = 0; i < 535; i++) {
+    if (NPCWork->entries[i].tribeId == id) {
+      spm::evtmgr_cmd::evtSetValue(evtEntry, evtEntry->lw[0], (s32)npcWork->entries[i].name);
+    }
+  }
+  return 2;
+}
+
 void main()
 {
     wii::os::OSReport("SPM Rel Loader: the mod has ran!\n");
