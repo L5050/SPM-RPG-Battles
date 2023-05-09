@@ -48,7 +48,9 @@ UNKNOWN_FUNCTION(func_800eff6c);
 // evt_mario_face_npc(const char * name)
 EVT_DECLARE_USER_FUNC(evt_mario_face_npc, 1)
 
-EVT_UNKNOWN_USER_FUNC(func_800f0074)
+// evt_mario_face_coords(float positionX, float PositionZ)
+EVT_DECLARE_USER_FUNC(evt_mario_face_coords, 2)
+
 UNKNOWN_FUNCTION(func_800f013c);
 UNKNOWN_FUNCTION(func_800f0160);
 UNKNOWN_FUNCTION(func_800f01ac);

@@ -9,8 +9,11 @@ void evt_msg_init();
 
 UNKNOWN_FUNCTION(_evt_msg_print);
 
-// evt_msg_print(u32 flags, const char * msg, s32, const char * speaker)
+// evt_msg_print(u32 flags, const char * msg, s32 mainFunc, const char * speaker)
 EVT_DECLARE_USER_FUNC(evt_msg_print, 4)
+
+//unsure
+EVT_DECLARE_USER_FUNC(evt_msg_toge, 4)
 
 UNKNOWN_FUNCTION(evt_msg_print_insert);
 UNKNOWN_FUNCTION(evt_msg_print_add);
@@ -22,7 +25,6 @@ EVT_DECLARE_USER_FUNC(evt_msg_continue, 0)
 UNKNOWN_FUNCTION(evt_msg_repeat);
 UNKNOWN_FUNCTION(evt_msg_close);
 UNKNOWN_FUNCTION(evt_msg_select);
-UNKNOWN_FUNCTION(evt_msg_toge);
 UNKNOWN_FUNCTION(evt_msg_togelr);
 UNKNOWN_FUNCTION(evt_msg_pri);
 UNKNOWN_FUNCTION(evtMsgFmtStr);

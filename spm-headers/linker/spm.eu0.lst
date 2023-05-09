@@ -133,6 +133,7 @@
 // more
 
 // evt_sub.c
+800d46d8:evt_sub_gameSpeedChange
 800d37d8:evt_sub_intpl_msec_init
 800d3878:evt_sub_intpl_msec_get_value
 800d40a4:evt_sub_random
@@ -140,6 +141,10 @@
 800d4774:evt_sub_get_entername
 800d74a0:func_800d74a0
 // more
+
+
+// evt_pouch.c
+8010cffc:evt_pouch_increment_enemies_defeated
 
 // evtmgr.c
 800d87e4:evtGetWork
@@ -209,6 +214,7 @@
 800ef62c:evt_mario_key_on
 800efa4c:evt_mario_get_pos
 800f25b0:evt_set_gravity
+800f0074:evt_mario_face_coords
 // more
 
 // evt_mobj.c
@@ -228,6 +234,7 @@
 // evt_msg.c
 800fba54:evt_msg_print
 800fbe74:evt_msg_continue
+800fc02c:evt_msg_toge
 // more
 
 // evt_npc.c
