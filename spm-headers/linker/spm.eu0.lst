@@ -235,6 +235,7 @@
 800fba54:evt_msg_print
 800fbe74:evt_msg_continue
 800fc02c:evt_msg_toge
+800fbc64:evt_msg_print_add
 // more
 
 // evt_npc.c

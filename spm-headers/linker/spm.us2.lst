@@ -3,7 +3,7 @@
 800030c8:firstRel
 800030cc:lastRel
 
-
+800FBCA8:evt_msg_print_add
 800F018C:evt_mario_face_coords
 800fc070:evt_msg_toge
 8010C9E8:evt_pouch_increment_enemies_defeated

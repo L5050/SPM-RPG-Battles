@@ -15,6 +15,9 @@ EVT_DECLARE_USER_FUNC(evt_msg_print, 4)
 //unsure
 EVT_DECLARE_USER_FUNC(evt_msg_toge, 4)
 
+//evt_msg_print_add(u32 flags, const char * message)
+EVT_DECLARE_USER_FUNC(evt_msg_print_add, 2)
+
 UNKNOWN_FUNCTION(evt_msg_print_insert);
 UNKNOWN_FUNCTION(evt_msg_print_add);
 UNKNOWN_FUNCTION(evt_msg_print_add_insert);
