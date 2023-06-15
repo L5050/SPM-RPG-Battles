@@ -3,6 +3,16 @@
 800030c8:firstRel
 800030cc:lastRel
 
+
+80DC2A18:finalRpgChild
+800E0FCC:evt_exit_case_evt
+800E0FF4:evt_del_case_evt
+80C48158:evt_unknown_pointer_change
+800EDB6C:evt_map_checkanim
+800EDAC4:evt_map_playanim
+800E0600:evt_cam_zoom_to_coords
+800E4790:evt_door_set_event
+80C4398C:evt_msg_print_kao
 800FB878:evt_msg_print_add
 800EFECC:evt_mario_face_coords
 800FBC40:evt_msg_toge

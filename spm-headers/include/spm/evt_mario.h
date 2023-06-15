@@ -14,6 +14,9 @@ EVT_DECLARE_USER_FUNC(evt_mario_flag8_onoff, 2)
 UNKNOWN_FUNCTION(func_800ef53c);
 UNKNOWN_FUNCTION(evt_mario_cont_onoff);
 
+//didnt know where to put this so here ig
+EVT_DECLARE_USER_FUNC(evt_unknown_pointer_change, 1)
+
 // evt_mario_key_on()
 EVT_DECLARE_USER_FUNC(evt_mario_key_on, 0)
 

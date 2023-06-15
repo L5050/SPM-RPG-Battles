@@ -8,6 +8,7 @@
 /* Dol */
 
 800e658c:evt_env_blur_on
+80df32d0:finalRpgChild
 
 // Runtime.PPCEABI.H.a
 // __mem.c
@@ -126,6 +127,7 @@
 
 // evt_cam.c
 800dff20:evt_cam3d_evt_zoom_in
+800e0430:evt_cam_zoom_to_coords
 
 // evt_snd.c
 800d2148:evt_snd_bgmon
@@ -175,6 +177,7 @@
 800e3588:evt_door_set_dokan_descs
 800e4118:evt_door_set_map_door_descs
 800e4308:evt_door_enable_disable_map_door_desc
+800e45c8:evt_door_set_event
 // more
 // data
 8041a2b0:door_init_evt
@@ -186,6 +189,10 @@
 800e7100:evt_fade_end_wait
 800e7050:evt_fade_entry
 // more
+
+// evt_case.c
+800e0e24:evt_del_case_evt
+800e0dfc:evt_exit_case_evt
 
 // evt_fairy.c
 800e8214:evt_fairy_flag_onoff
@@ -206,6 +213,8 @@
 800ed6c0:evt_mapobj_trans
 800edb54:evt_mapobj_color
 800ee1c4:evt_mapobj_get_position
+800edc30:evt_map_playanim
+800edcd8:evt_map_checkanim
 // more
 
 // evt_mario.c
@@ -215,6 +224,7 @@
 800efa4c:evt_mario_get_pos
 800f25b0:evt_set_gravity
 800f0074:evt_mario_face_coords
+80c774c4:evt_unknown_pointer_change
 // more
 
 // evt_mobj.c
@@ -236,6 +246,7 @@
 800fbe74:evt_msg_continue
 800fc02c:evt_msg_toge
 800fbc64:evt_msg_print_add
+80c72cf8:evt_msg_print_kao
 // more
 
 // evt_npc.c

@@ -19,9 +19,11 @@ UNKNOWN_FUNCTION(func_800edab4);
 // evt_mapobj_color(s32 group, const char * name, u8 r, u8 g, u8 b, u8 a)
 EVT_DECLARE_USER_FUNC(evt_mapobj_color, 6)
 
-UNKNOWN_FUNCTION(evt_map_playanim);
+EVT_DECLARE_USER_FUNC(evt_map_playanim, 3);
+
+EVT_DECLARE_USER_FUNC(evt_map_checkanim, 3);
+
 UNKNOWN_FUNCTION(func_800edca8);
-UNKNOWN_FUNCTION(evt_map_checkanim);
 UNKNOWN_FUNCTION(func_800edd50);
 UNKNOWN_FUNCTION(func_800eddb4);
 UNKNOWN_FUNCTION(evt_map_set_playrate);

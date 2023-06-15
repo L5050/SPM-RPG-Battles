@@ -2,10 +2,17 @@
 #include "mod.h"
 #include "patch.h"
 
+#include <spm/iValues.h>
 #include <spm/evtmgr.h>
 #include <spm/evt_msg.h>
 #include <spm/evt_fade.h>
 #include <spm/evt_map.h>
+#include <spm/evt_snd.h>
+#include <spm/evt_cam.h>
+#include <spm/evt_sub.h>
+#include <spm/evt_npc.h>
+#include <spm/evt_door.h>
+#include <spm/evt_case.h>
 #include <evt_snd.h>
 #include <spm/wpadmgr.h>
 #include <spm/fontmgr.h>
@@ -96,7 +103,7 @@ USER_FUNC(spm::evt_npc::evt_npc_stats_set_up, 325, 1)
 USER_FUNC(spm::evt_npc::evt_npc_stats_set_up, 326, 1)
 USER_FUNC(0x800e71dc, 1)
 USER_FUNC(0x80c6d87c)
-USER_FUNC(0x800e0430, 0, 11)
+USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
 USER_FUNC(0x800f1954, PTR("S_1"), 0)
 USER_FUNC(0x800ee55c, 1)
 USER_FUNC(spm::evt_sub::evt_sub_gameSpeedChange, 1.0)
@@ -136,34 +143,34 @@ USER_FUNC(spm::evt_map::evt_mapobj_get_position, PTR("kuti_1"), LW(0), LW(1), LW
 USER_FUNC(spm::evt_mario::evt_mario_face_coords, LW(0), LW(2))
 USER_FUNC(spm::evt_map::evt_mapobj_get_position, PTR("kuti_1"), LW(0), LW(1), LW(2))
 USER_FUNC(spm::evt_msg::evt_msg_toge, 2, LW(0), LW(1), LW(2))
-USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_133_2_128"), 0x80c72cf8, 0)
+USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_133_2_128"), spm::evt_msg::evt_msg_print_kao, 0)
 ELSE()//only happens if you win the RPG battle
 SET(GSW(0), 325)
 USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
 WAIT_MSEC(500)
 USER_FUNC(spm::evt_map::evt_mapobj_get_position, PTR("kuti_1"), LW(0), LW(1), LW(2))
 USER_FUNC(spm::evt_msg::evt_msg_toge, 2, LW(0), LW(1), LW(2))
-USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_134"), 0x80c72cf8, 0)
-USER_FUNC(0x800edc30, PTR("anm_kao_4"), 0, 0)
-USER_FUNC(0x800edcd8, PTR("anm_kao_4"), LW(0), LW(1))
+USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_134"), spm::evt_msg::evt_msg_print_kao, 0)
+USER_FUNC(spm::evt_map::evt_map_playanim, PTR("anm_kao_4"), 0, 0)
+USER_FUNC(spm::evt_map::evt_map_checkanim, PTR("anm_kao_4"), LW(0), LW(1))
 WAIT_MSEC(LW(1))
 USER_FUNC(spm::evt_map::evt_mapobj_flag_onoff, 1, 1, PTR("anm_kao_1"), 1)
 USER_FUNC(spm::evt_door::evt_door_enable_disable_map_door_desc, 1, PTR("doa2_l"))
-USER_FUNC(0x800e45c8, PTR("doa2_l"), 0, 0x80df32d0)
-USER_FUNC(0x800e0430, 500, 11)
-USER_FUNC(0x800ef62c)
-USER_FUNC(0x80c774c4, 0)
-USER_FUNC(0x800e0e24, 1, GW(5))
-USER_FUNC(0x800e0dfc)
+USER_FUNC(spm::evt_door::evt_door_set_event, PTR("doa2_l"), 0, spm::iValues::finalRpgChild) //final param is a short event
+USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 500, 11)
+USER_FUNC(spm::evt_mario::evt_mario_key_on)
+USER_FUNC(spm::evt_mario::evt_unknown_pointer_change, 0)
+USER_FUNC(spm::evt_case::evt_del_case_evt, 1, GW(5))
+USER_FUNC(spm::evt_case::evt_exit_case_evt)
 END_EVT()
 END_IF()
-USER_FUNC(0x800edc30, PTR("anm_kao_4"), 0, 0)
-USER_FUNC(0x800edcd8, PTR("anm_kao_4"), LW(0), LW(1))
+USER_FUNC(spm::evt_map::evt_map_playanim, PTR("anm_kao_4"), 0, 0)
+USER_FUNC(spm::evt_map::evt_map_checkanim, PTR("anm_kao_4"), LW(0), LW(1))
 WAIT_MSEC(LW(1))
 USER_FUNC(spm::evt_map::evt_mapobj_flag_onoff, 1, 1, PTR("anm_kao_1"), 1)
-USER_FUNC(0x800e0430, 500, 11)
-USER_FUNC(0x80c774c4, 0)
-USER_FUNC(0x800ef62c)
+USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 500, 11)
+USER_FUNC(spm::evt_mario::evt_unknown_pointer_change, 0)
+USER_FUNC(spm::evt_mario::evt_mario_key_on)
 END_EVT()
 END_SCRIPT()
 }
