@@ -3,7 +3,7 @@
 800030c8:firstRel
 800030cc:lastRel
 
-
+800EE3F0:evt_mapdisp_onoff
 80DDD938:finalRpgChild
 800E0FCC:evt_exit_case_evt
 800E0FF4:evt_del_case_evt

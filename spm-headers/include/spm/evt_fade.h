@@ -5,8 +5,6 @@
 
 CPP_WRAPPER(spm::evt_fade)
 
-UNKNOWN_FUNCTION(evt_fade_entry);
-
 // evt_fade_end_wait(s32)
 EVT_DECLARE_USER_FUNC(evt_fade_end_wait, 1)
 //evt_fade_entry(int transitionType, everything else is unknown ints)

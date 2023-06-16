@@ -1,6 +1,9 @@
 #include "mod.h"
 #include "patch.h"
 
+#include <spm/evtmgr.h>
+#include <spm/evtmgr_cmd.h>
+#include <spm/npcdrv.h>
 #include <spm/camdrv.h>
 #include <spm/fontmgr.h>
 #include <spm/seqdrv.h>
@@ -43,9 +46,9 @@ static void titleScreenCustomTextPatch()
 s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
   spm::npcdrv::NPCWork * npcWork = spm::npcdrv::npcGetWorkPtr();
   spm::evtmgr::EvtVar * evtVariables = evtEntry->pCurData;
-  id = spm::evtmgr_cmd::evtGetValue(evtEntry, *evtVariables);
+  s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, *evtVariables);
   for (int i = 0; i < 535; i++) {
-    if (NPCWork->entries[i].tribeId == id) {
+    if (npcWork->entries[i].tribeId == id) {
       spm::evtmgr_cmd::evtSetValue(evtEntry, evtEntry->lw[0], (s32)npcWork->entries[i].name);
     }
   }
@@ -55,7 +58,7 @@ s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
 void main()
 {
     wii::os::OSReport("SPM Rel Loader: the mod has ran!\n");
-//other functions
+    titleScreenCustomTextPatch();
 }
 
 }

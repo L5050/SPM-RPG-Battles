@@ -13,7 +13,6 @@
 #include <spm/evt_npc.h>
 #include <spm/evt_door.h>
 #include <spm/evt_case.h>
-#include <evt_snd.h>
 #include <spm/wpadmgr.h>
 #include <spm/fontmgr.h>
 #include <spm/seqdrv.h>
@@ -51,7 +50,7 @@ USER_FUNC(spm::evt_fade::evt_fade_entry, 65554, 0, 0, 0, 0, 255)
 USER_FUNC(0x800ec7e0, PTR("img"), 0)
 USER_FUNC(0x800ec8c4, PTR("img"))
 USER_FUNC(0x8010c660, PTR("OFF_house_02"))
-USER_FUNC(0x800ee55c, 0)
+USER_FUNC(spm::evt_map::evt_mapdisp_onoff, 0)
 USER_FUNC(spm::evt_fade::evt_fade_entry, 1, 300, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
 USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_001"))
@@ -105,7 +104,7 @@ USER_FUNC(0x800e71dc, 1)
 USER_FUNC(0x80c6d87c)
 USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
 USER_FUNC(0x800f1954, PTR("S_1"), 0)
-USER_FUNC(0x800ee55c, 1)
+USER_FUNC(spm::evt_map::evt_mapdisp_onoff, 1)
 USER_FUNC(spm::evt_sub::evt_sub_gameSpeedChange, 1.0)
 USER_FUNC(spm::evt_fade::evt_fade_entry, 1, 500, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)

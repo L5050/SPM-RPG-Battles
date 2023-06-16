@@ -42,9 +42,10 @@ UNKNOWN_FUNCTION(func_800ee13c);
 // evt_mapobj_get_position(const char * name, f32& x, f32& y, f32& z)
 EVT_DECLARE_USER_FUNC(evt_mapobj_get_position, 4)
 
+EVT_DECLARE_USER_FUNC(evt_mapdisp_onoff, 1);
+
 UNKNOWN_FUNCTION(func_800ee290);
 UNKNOWN_FUNCTION(func_800ee51c);
-UNKNOWN_FUNCTION(evt_mapdisp_onoff);
 UNKNOWN_FUNCTION(func_800ee59c);
 UNKNOWN_FUNCTION(evt_mapobj_blendmode);
 UNKNOWN_FUNCTION(func_800ee9f4);

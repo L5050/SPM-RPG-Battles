@@ -215,6 +215,7 @@
 800ee1c4:evt_mapobj_get_position
 800edc30:evt_map_playanim
 800edcd8:evt_map_checkanim
+800ee55c:evt_mapdisp_onoff
 // more
 
 // evt_mario.c
