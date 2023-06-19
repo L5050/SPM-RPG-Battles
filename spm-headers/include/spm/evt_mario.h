@@ -10,6 +10,9 @@ UNKNOWN_FUNCTION(evt_mario_flag4_onoff);
 
 // evt_mario_flag8_onoff(bool onOff, u32 mask)
 EVT_DECLARE_USER_FUNC(evt_mario_flag8_onoff, 2)
+EVT_DECLARE_USER_FUNC(evt_flower_check, 1)
+EVT_DECLARE_USER_FUNC(evt_rpg_choice_handler, 5)
+EVT_DECLARE_USER_FUNC(changeRandomDAT1, 0)
 
 UNKNOWN_FUNCTION(func_800ef53c);
 UNKNOWN_FUNCTION(evt_mario_cont_onoff);

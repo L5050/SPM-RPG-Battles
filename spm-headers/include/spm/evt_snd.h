@@ -13,7 +13,8 @@ EVT_UNKNOWN_USER_FUNC(evt_snd_bgmon_f_d)
 // evt_snd_bgmoff(s32 bgmPlayerId)
 EVT_DECLARE_USER_FUNC(evt_snd_bgmoff, 1)
 
-EVT_UNKNOWN_USER_FUNC(evt_snd_bgmoff_f_d)
+EVT_DECLARE_USER_FUNC(evt_snd_bgmoff_f_d, 3)
+
 EVT_UNKNOWN_USER_FUNC(func_800d2268)
 EVT_UNKNOWN_USER_FUNC(func_800d2294)
 EVT_UNKNOWN_USER_FUNC(func_800d22d8)
@@ -25,6 +26,7 @@ UNKNOWN_FUNCTION(func_800d247c);
 
 // evt_snd_get_bgm_wait_time(s32 bgmPlayerId, s32& ret)
 EVT_DECLARE_USER_FUNC(evt_snd_get_bgm_wait_time, 2)
+EVT_DECLARE_USER_FUNC(evt_snd_envon_f, 3)
 
 UNKNOWN_FUNCTION(evt_snd_get_bgm_name);
 
@@ -79,7 +81,6 @@ UNKNOWN_FUNCTION(evt_snd_sfx_flag_on);
 UNKNOWN_FUNCTION(evt_snd_sfx_flag_off);
 UNKNOWN_FUNCTION(func_800d33dc);
 UNKNOWN_FUNCTION(evt_snd_envon);
-UNKNOWN_FUNCTION(evt_snd_envon_f);
 UNKNOWN_FUNCTION(func_800d34e4);
 UNKNOWN_FUNCTION(func_800d3528);
 UNKNOWN_FUNCTION(func_800d3594);

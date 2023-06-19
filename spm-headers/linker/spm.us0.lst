@@ -3,8 +3,14 @@
 800030c8:firstRel
 800030cc:lastRel
 
-
-
+800D368C:evt_snd_envon_f
+800D2388:evt_snd_bgmoff_f_d
+800D23F4:evt_snd_bgmoff
+800F17AC:evt_mario_set_pose
+80C3E510:changeRandomDAT1
+800E7358:evt_fade_callfade
+80C3E528:evt_rpg_choice_handler
+80C43314:evt_flower_check
 80C3E218:evt_rpg_npctribe_handle
 800D36E0:evt_snd_string_call
 800EC758:evt_img_battle_setup
