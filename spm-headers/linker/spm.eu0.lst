@@ -132,6 +132,7 @@
 // evt_snd.c
 800d2148:evt_snd_bgmon
 800d36f4:func_800d36f4
+800d34b8:evt_snd_string_call
 // more
 
 // evt_sub.c
@@ -144,6 +145,9 @@
 800d74a0:func_800d74a0
 // more
 
+//evt_paper.c
+8010c600:evt_paper_entry
+8010c660:evt_paper_delete
 
 // evt_pouch.c
 8010cffc:evt_pouch_increment_enemies_defeated
@@ -207,6 +211,15 @@
 800eb72c:evt_hitobj_attr_onoff
 // more
 
+// evt_img.c
+800ec2c8:evt_img_battle_start
+800ec3ac:evt_img_pose_handle
+800ec458:evt_img_pose_handle2
+800ec4ec:evt_img_properties_set
+800ec7e0:evt_img_battle_state_set
+800ec920:evt_img_property_check
+800ec8c4:evt_img_battle_setup
+
 // evt_map.c
 800edf24:evt_mapobj_flag_onoff
 800edfec:evt_mapobj_flag4_onoff
@@ -268,6 +281,7 @@
 80107d20:func_80107d20
 80108194:func_80108194
 8010a910:evt_npc_teleport_effect
+80c6d584:evt_rpg_npctribe_handle
 // more
 
 // evt_seq.c

@@ -11,7 +11,7 @@ UNKNOWN_FUNCTION(_evt_msg_print);
 
 // evt_msg_print(u32 flags, const char * msg, s32 mainFunc, const char * speaker)
 EVT_DECLARE_USER_FUNC(evt_msg_print, 4)
-EVT_DECLARE_USER_FUNC(evt_msg_print_kao, 0)
+EVT_DECLARE_USER_FUNC(evt_msg_print_kao, 2)
 //unsure
 EVT_DECLARE_USER_FUNC(evt_msg_toge, 4)
 

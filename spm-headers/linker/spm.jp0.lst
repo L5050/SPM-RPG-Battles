@@ -3,6 +3,19 @@
 800030c8:firstRel
 800030cc:lastRel
 
+
+
+80C59138:evt_rpg_npctribe_handle
+800D36E0:evt_snd_string_call
+800EC758:evt_img_battle_setup
+800EC7B4:evt_img_property_check
+800EC674:evt_img_battle_state_set
+800EC380:evt_img_properties_set
+800EC2EC:evt_img_pose_handle2
+800EC240:evt_img_pose_handle
+800EC15C:evt_img_battle_start
+8010BC1C:evt_paper_delete
+8010BBBC:evt_paper_entry
 800EE3F0:evt_mapdisp_onoff
 80DDD938:finalRpgChild
 800E0FCC:evt_exit_case_evt

@@ -7,6 +7,8 @@
 #include <spm/evt_msg.h>
 #include <spm/evt_fade.h>
 #include <spm/evt_map.h>
+#include <spm/evt_paper.h>
+#include <spm/evt_img.h>
 #include <spm/evt_snd.h>
 #include <spm/evt_cam.h>
 #include <spm/evt_sub.h>
@@ -32,24 +34,24 @@ namespace mod {
 
 EVT_BEGIN(beginRPG) //80df2e90
 USER_FUNC(spm::evt_snd::evt_snd_bgmon, 0, PTR("BGM_EVT_STG7_RPG1"))
-USER_FUNC(0x800d34b8, 0)
-USER_FUNC(0x8010c600, PTR("OFF_house_02"))
-USER_FUNC(0x800ec2c8, PTR("img"))
-USER_FUNC(0x800ec3ac, PTR("img"), PTR("OFF_house_02"))
-USER_FUNC(0x800ec458, PTR("img"), PTR("A_2"))
-USER_FUNC(0x800ec4ec, PTR("img"), 0, 0, 1, 0, 0, 608, 480)
-USER_FUNC(0x800ec7e0, PTR("img"), 1)
-USER_FUNC(0x800ec920, PTR("img"))
+USER_FUNC(spm::evt_snd::evt_snd_string_call, 0)
+USER_FUNC(spm::evt_paper::evt_paper_entry, PTR("OFF_house_02"))
+USER_FUNC(spm::evt_img::evt_img_battle_start, PTR("img"))
+USER_FUNC(spm::evt_img::evt_img_pose_handle, PTR("img"), PTR("OFF_house_02"))
+USER_FUNC(spm::evt_img::evt_img_pose_handle2, PTR("img"), PTR("A_2"))
+USER_FUNC(spm::evt_img::evt_img_properties_set, PTR("img"), 0, 0, 1, 0, 0, 608, 480)
+USER_FUNC(spm::evt_img::evt_img_battle_state_set, PTR("img"), 1)
+USER_FUNC(spm::evt_img::evt_img_property_check, PTR("img"))
 USER_FUNC(spm::evt_fade::evt_fade_entry, 2, 0, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
 INLINE_EVT()
-    USER_FUNC(0x80c6d584)
+    USER_FUNC(spm::evt_npc::evt_rpg_npctribe_handle)
 END_INLINE()
 USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
 USER_FUNC(spm::evt_fade::evt_fade_entry, 65554, 0, 0, 0, 0, 255)
-USER_FUNC(0x800ec7e0, PTR("img"), 0)
-USER_FUNC(0x800ec8c4, PTR("img"))
-USER_FUNC(0x8010c660, PTR("OFF_house_02"))
+USER_FUNC(spm::evt_img::evt_img_battle_state_set, PTR("img"), 0)
+USER_FUNC(spm::evt_img::evt_img_battle_setup, PTR("img"))
+USER_FUNC(spm::evt_paper::evt_paper_delete, PTR("OFF_house_02"))
 USER_FUNC(spm::evt_map::evt_mapdisp_onoff, 0)
 USER_FUNC(spm::evt_fade::evt_fade_entry, 1, 300, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
