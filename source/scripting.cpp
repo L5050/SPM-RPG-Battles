@@ -89,9 +89,8 @@ SWITCH(LW(10))
         END_IF()
 END_SWITCH()
 EVT_END()
-END_SCRIPT()
 
-EVT_BEGIN(switch)
+EVT_BEGIN(switchChars)
 USER_FUNC(spm::evt_mario::evt_rpg_char_get, LW(10))
 USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_CHANGE_LINE_DRAW1"))
 USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_P_CHANGE_LINE_DRAW1"))
@@ -115,7 +114,6 @@ SWITCH(LW(2))
 END_SWITCH()
 USER_FUNC(spm::evt_mario::evt_mario_set_character, LW(2))
 EVT_END()
-END_SCRIPT()
 
 
 EVT_BEGIN(beginRPG) //80df2e90
@@ -161,7 +159,7 @@ DO()
             CASE_EQUAL(3)
                 RUN_CHILD_EVT(spm::iValues::useItems) //handles items
             CASE_EQUAL(4)
-                RUN_CHILD_EVT(switch) //handles switching characters
+                RUN_CHILD_EVT(switchChars) //handles switching characters
             CASE_EQUAL(5)
                 SET(LF(0), 0)
                 RUN_CHILD_EVT(spm::iValues::runningAway) //handles run away
@@ -208,7 +206,6 @@ SET(LW(0), 1)
 EVT_END()
 END_IF()
 EVT_END()
-END_SCRIPT()
 
 EVT_BEGIN(parentOfBeginRPG)
 USER_FUNC(spm::evt_npc::evt_env_blur_on, 0, 500)
@@ -259,6 +256,5 @@ USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 500, 11)
 USER_FUNC(spm::evt_mario::evt_unknown_pointer_change, 0)
 USER_FUNC(spm::evt_mario::evt_mario_key_on)
 EVT_END()
-END_SCRIPT()
 
 }
