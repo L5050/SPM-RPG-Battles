@@ -5,6 +5,7 @@
 #include <spm/iValues.h>
 #include <spm/evtmgr.h>
 #include <spm/evt_msg.h>
+#include <spm/evt_mario.h>
 #include <spm/evt_fade.h>
 #include <spm/evt_map.h>
 #include <spm/evt_paper.h>
@@ -52,14 +53,14 @@ SWITCH(LW(10))
         WAIT_MSEC(600)
         USER_FUNC(spm::evt_snd::func_800d2fa4, LW(0), 1000)
         SET(LW(10), LW(4))
-        RUN_CHILD_EVT(techChild1)
+        RUN_CHILD_EVT(spm::iValues::techChild1)
         USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_015"), LW(3))
     CASE_EQUAL(3)
         USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_017"), LW(3))
         USER_FUNC(spm::evt_sub::evt_sub_random, 1000, LW(10))
         IF_SMALL(LW(10), 150)
             SET(LW(10), LW(4))
-            RUN_CHILD_EVT(techChild1)
+            RUN_CHILD_EVT(spm::iValues::techChild1)
             USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_019"))
         ELSE()
             USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_LUIGI_SUPERJUMP_SET1"))
@@ -73,7 +74,7 @@ SWITCH(LW(10))
             USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_P_V_LUIGI_SJUMP1"))
             USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_SMASH1"))
             SET(LW(10), LW(4))
-            RUN_CHILD_EVT(techChild2)
+            RUN_CHILD_EVT(spm::iValues::techChild2)
             USER_FUNC(spm::evt_mario::evt_mario_calc_damage_to_enemy, LW(4), 4, LW(10))
             USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_018"), LW(3), LW(10))
             USER_FUNC(spm::evt_mario::evt_rpg_char_death_check, LW(4), LW(10), 0, LW(0))
@@ -89,7 +90,6 @@ SWITCH(LW(10))
         END_IF()
 END_SWITCH()
 END_EVT()
-END_SCRIPT()
 
 EVT_BEGIN(switch)
 USER_FUNC(spm::evt_mario::evt_rpg_char_get, LW(10))
@@ -208,7 +208,6 @@ SET(LW(0), 1)
 END_EVT()
 END_IF()
 END_EVT()
-END_SCRIPT()
 
 EVT_BEGIN(parentOfBeginRPG)
 USER_FUNC(spm::evt_npc::evt_env_blur_on, 0, 500)
@@ -259,5 +258,5 @@ USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 500, 11)
 USER_FUNC(spm::evt_mario::evt_unknown_pointer_change, 0)
 USER_FUNC(spm::evt_mario::evt_mario_key_on)
 END_EVT()
-END_SCRIPT()
+
 }
