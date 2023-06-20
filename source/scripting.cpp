@@ -31,7 +31,6 @@
 #include <string>
 using namespace std;
 namespace mod {
-//pointers in eu0, I need to port them to all versions
 
 EVT_BEGIN(technique)
 USER_FUNC(spm::evt_mario::evt_mario_get_character, LW(10))
@@ -89,7 +88,8 @@ SWITCH(LW(10))
             END_IF()
         END_IF()
 END_SWITCH()
-END_EVT()
+EVT_END()
+END_SCRIPT()
 
 EVT_BEGIN(switch)
 USER_FUNC(spm::evt_mario::evt_rpg_char_get, LW(10))
@@ -114,7 +114,7 @@ SWITCH(LW(2))
         USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_089"), LW(10))
 END_SWITCH()
 USER_FUNC(spm::evt_mario::evt_mario_set_character, LW(2))
-END_EVT()
+EVT_END()
 END_SCRIPT()
 
 
@@ -201,13 +201,14 @@ USER_FUNC(spm::evt_snd::evt_snd_bgmoff, 0)
 USER_FUNC(spm::evt_snd::evt_snd_bgmoff_f_d, 0, PTR("BGM_MAP_STG7"), 1000)
 USER_FUNC(spm::evt_snd::evt_snd_envon_f, 0, PTR("ENV_AN2_08"), 1000)
 SET(LW(0), 0)
-END_EVT()
+EVT_END()
 END_IF()
 IF_EQUAL(LW(0), 1)
 SET(LW(0), 1)
-END_EVT()
+EVT_END()
 END_IF()
-END_EVT()
+EVT_END()
+END_SCRIPT()
 
 EVT_BEGIN(parentOfBeginRPG)
 USER_FUNC(spm::evt_npc::evt_env_blur_on, 0, 500)
@@ -248,7 +249,7 @@ USER_FUNC(spm::evt_mario::evt_mario_key_on)
 USER_FUNC(spm::evt_mario::evt_unknown_pointer_change, 0)
 USER_FUNC(spm::evt_case::evt_del_case_evt, 1, GW(5))
 USER_FUNC(spm::evt_case::evt_exit_case_evt)
-END_EVT()
+EVT_END()
 END_IF()
 USER_FUNC(spm::evt_map::evt_map_playanim, PTR("anm_kao_4"), 0, 0)
 USER_FUNC(spm::evt_map::evt_map_checkanim, PTR("anm_kao_4"), LW(0), LW(1))
@@ -257,6 +258,7 @@ USER_FUNC(spm::evt_map::evt_mapobj_flag_onoff, 1, 1, PTR("anm_kao_1"), 1)
 USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 500, 11)
 USER_FUNC(spm::evt_mario::evt_unknown_pointer_change, 0)
 USER_FUNC(spm::evt_mario::evt_mario_key_on)
-END_EVT()
+EVT_END()
+END_SCRIPT()
 
 }
