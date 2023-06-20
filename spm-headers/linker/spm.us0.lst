@@ -3,6 +3,10 @@
 800030c8:firstRel
 800030cc:lastRel
 
+80DC1C78:checkWinOrContinue
+80DC1938:underchompAttack3
+80DC15F8:underchompAttack2
+80DC12B8:underchompAttack1
 800D368C:evt_snd_envon_f
 800D2388:evt_snd_bgmoff_f_d
 800D23F4:evt_snd_bgmoff

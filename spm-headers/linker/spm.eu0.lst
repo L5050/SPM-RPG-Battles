@@ -8,7 +8,13 @@
 /* Dol */
 
 800e658c:evt_env_blur_on
+
+// iValues.h
 80df32d0:finalRpgChild
+80df1b70:underchompAttack1
+80df1eb0:underchompAttack2
+80df21f0:underchompAttack3
+80df2530:checkWinOrContinue
 
 // Runtime.PPCEABI.H.a
 // __mem.c
