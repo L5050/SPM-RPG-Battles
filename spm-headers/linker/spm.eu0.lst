@@ -15,6 +15,10 @@
 80df1eb0:underchompAttack2
 80df21f0:underchompAttack3
 80df2530:checkWinOrContinue
+80def500:attacking
+80def9d8:usePixls
+80df0500:useItems
+80df1958:runningAway
 
 // Runtime.PPCEABI.H.a
 // __mem.c

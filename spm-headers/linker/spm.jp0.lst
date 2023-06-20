@@ -3,6 +3,10 @@
 800030c8:firstRel
 800030cc:lastRel
 
+80DD9C28:attacking
+80DDA080:usePixls
+80DDABA8:useItems
+80DDBFC0:runningAway
 80DDCB98:checkWinOrContinue
 80DDC858:underchompAttack3
 80DDC518:underchompAttack2

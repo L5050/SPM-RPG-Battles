@@ -10,6 +10,10 @@ extern spm::evtmgr::EvtScriptCode * underchompAttack1;
 extern spm::evtmgr::EvtScriptCode * underchompAttack2;
 extern spm::evtmgr::EvtScriptCode * underchompAttack3;
 extern spm::evtmgr::EvtScriptCode * checkWinOrContinue;
+extern spm::evtmgr::EvtScriptCode * attacking;
+extern spm::evtmgr::EvtScriptCode * usePixls;
+extern spm::evtmgr::EvtScriptCode * useItems;
+extern spm::evtmgr::EvtScriptCode * runningAway;
 
 }
 }

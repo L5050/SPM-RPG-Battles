@@ -67,18 +67,18 @@ DO()
         USER_FUNC(spm::evt_mario::evt_rpg_choice_handler, LW(0), LW(1), LW(2), LW(3), LW(4))
         SWITCH(LW(0))
             CASE_EQUAL(0)
-                RUN_CHILD_EVT(0x80def500) //seems to handle the attack input
+                RUN_CHILD_EVT(spm::iValues::attacking) //seems to handle the attack input
             CASE_EQUAL(1)
                 RUN_CHILD_EVT(0x80def738) //handles the technique input, none avaliable for peach
             CASE_EQUAL(2)
-                RUN_CHILD_EVT(0x80def9d8) //handles pixls
+                RUN_CHILD_EVT(spm::iValues::usePixls) //handles pixls
             CASE_EQUAL(3)
-                RUN_CHILD_EVT(0x80df0500) //handles items
+                RUN_CHILD_EVT(spm::iValues::useItems) //handles items
             CASE_EQUAL(4)
                 RUN_CHILD_EVT(0x80df1860) //handles switching characters
             CASE_EQUAL(5)
                 SET(LF(0), 0)
-                RUN_CHILD_EVT(0x80df1958) //handles run away
+                RUN_CHILD_EVT(spm::iValues::runningAway) //handles run away
                 IF_EQUAL(LF(0), 1)
                     DO_BREAK()
                 END_IF()
