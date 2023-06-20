@@ -3,6 +3,19 @@
 800030c8:firstRel
 800030cc:lastRel
 
+800D3258:evt_snd_get_last_sfx_id
+800D31CC:func_800d2fa4
+80C3FF3C:evt_mario_calc_damage_to_enemy
+80C4302C:evt_rpg_char_death_check
+80C4334C:evt_rpg_status_remove
+80DBEC40:techChild1
+80DBEBF4:techChild2
+800EF760:evt_mario_get_character
+800D2A28:evt_snd_sfxon
+800FB914:evt_msg_print_add_insert
+800EF7B0:evt_mario_set_character
+800D350C:evt_snd_sfx_wait_name
+80C3FE70:evt_rpg_char_get
 80DBED08:attacking
 80DBF160:usePixls
 80DBFC88:useItems

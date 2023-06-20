@@ -19,7 +19,8 @@
 80def9d8:usePixls
 80df0500:useItems
 80df1958:runningAway
-
+80def438:techChild1
+80def3ec:techChild2
 // Runtime.PPCEABI.H.a
 // __mem.c
 80004000:memcpy
@@ -146,6 +147,10 @@
 800d21f8:evt_snd_bgmoff
 800d218c:evt_snd_bgmoff_f_d
 800d3464:evt_snd_envon_f
+800d2800:evt_snd_sfxon
+800d32e4:evt_snd_sfx_wait_name
+800d3030:evt_snd_get_last_sfx_id
+800d2fa4:func_800d2fa4
 // more
 
 // evt_sub.c
@@ -257,6 +262,12 @@
 80c6d894:evt_rpg_choice_handler
 80c6d87c:changeRandomDAT1
 800f1954:evt_mario_set_pose
+800ef958:evt_mario_set_character
+80c6f1dc:evt_rpg_char_get
+80c6f2a8:evt_mario_calc_damage_to_enemy
+80c72398:evt_rpg_char_death_check
+80c726b8:evt_rpg_status_remove
+800ef908:evt_mario_get_character
 // more
 
 // evt_mobj.c
@@ -279,6 +290,7 @@
 800fc02c:evt_msg_toge
 800fbc64:evt_msg_print_add
 80c72cf8:evt_msg_print_kao
+800fbd00:evt_msg_print_add_insert
 // more
 
 // evt_npc.c

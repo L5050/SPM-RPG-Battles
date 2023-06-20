@@ -49,6 +49,7 @@ UNKNOWN_FUNCTION(evt_snd_sfxon_npc_delay);
 
 // evt_snd_sfxon_3d_player(const char * name)
 EVT_DECLARE_USER_FUNC(evt_snd_sfxon_3d_player, 1)
+EVT_DECLARE_USER_FUNC(evt_snd_sfx_wait_name, 1)
 
 UNKNOWN_FUNCTION(func_800d2c58);
 
@@ -62,12 +63,12 @@ UNKNOWN_FUNCTION(func_800d2ed0);
 // evt_snd_sfxoff(s32 id)
 EVT_DECLARE_USER_FUNC(evt_snd_sfxoff, 1)
 
-UNKNOWN_FUNCTION(func_800d2fa4);
 UNKNOWN_FUNCTION(func_800d3000);
 
 // evt_snd_get_last_sfx_id(s32& ret)
 EVT_DECLARE_USER_FUNC(evt_snd_get_last_sfx_id, 1)
 EVT_DECLARE_USER_FUNC(evt_snd_string_call, 1)
+EVT_DECLARE_USER_FUNC(func_800d2fa4, 2)
 
 UNKNOWN_FUNCTION(func_800d3060);
 UNKNOWN_FUNCTION(func_800d30e8);
@@ -76,7 +77,6 @@ EVT_UNKNOWN_USER_FUNC(func_800d31a0)
 UNKNOWN_FUNCTION(func_800d31d0);
 UNKNOWN_FUNCTION(func_800d3248);
 UNKNOWN_FUNCTION(evt_snd_sfx_wait);
-UNKNOWN_FUNCTION(evt_snd_sfx_wait_name);
 UNKNOWN_FUNCTION(evt_snd_sfx_flag_on);
 UNKNOWN_FUNCTION(evt_snd_sfx_flag_off);
 UNKNOWN_FUNCTION(func_800d33dc);

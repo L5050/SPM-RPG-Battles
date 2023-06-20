@@ -15,5 +15,8 @@ extern spm::evtmgr::EvtScriptCode * usePixls;
 extern spm::evtmgr::EvtScriptCode * useItems;
 extern spm::evtmgr::EvtScriptCode * runningAway;
 
+extern spm::evtmgr::EvtScriptCode * techChild1;
+extern spm::evtmgr::EvtScriptCode * techChild2;
+
 }
 }
