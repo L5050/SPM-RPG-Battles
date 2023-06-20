@@ -3,6 +3,7 @@
 800030c8:firstRel
 800030cc:lastRel
 
+80DC302C:theParentOfBeginRPG
 800D3258:evt_snd_get_last_sfx_id
 800D31CC:func_800d2fa4
 80C3FF3C:evt_mario_calc_damage_to_enemy

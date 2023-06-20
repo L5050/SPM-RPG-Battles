@@ -5,6 +5,7 @@ namespace spm::iValues {
 
 extern "C" {
 
+extern const spm::evtmgr::EvtScriptCode * theParentOfBeginRPG;
 extern spm::evtmgr::EvtScriptCode * finalRpgChild;
 extern spm::evtmgr::EvtScriptCode * underchompAttack1;
 extern spm::evtmgr::EvtScriptCode * underchompAttack2;

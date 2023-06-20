@@ -21,6 +21,8 @@
 80df1958:runningAway
 80def438:techChild1
 80def3ec:techChild2
+80DF38E4:theParentOfBeginRPG
+
 // Runtime.PPCEABI.H.a
 // __mem.c
 80004000:memcpy

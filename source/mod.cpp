@@ -1,6 +1,8 @@
 #include "mod.h"
 #include "patch.h"
+#include "scripting.cpp"
 
+#include <spm/iValues.h>
 #include <spm/evtmgr.h>
 #include <spm/evtmgr_cmd.h>
 #include <spm/npcdrv.h>
@@ -55,10 +57,15 @@ s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
   return 2;
 }
 
+void patchScripts() {
+spm::iValues::theParentOfBeginRPG = parentOfBeginRPG;
+}
+
 void main()
 {
     wii::os::OSReport("SPM Rel Loader: the mod has ran!\n");
     titleScreenCustomTextPatch();
+    patchScripts();
 }
 
 }
