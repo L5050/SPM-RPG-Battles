@@ -6,6 +6,7 @@
 #include <spm/evtmgr.h>
 #include <spm/evt_msg.h>
 #include <spm/evt_mario.h>
+#include <spm/evt_pouch.h>
 #include <spm/evt_fade.h>
 #include <spm/evt_map.h>
 #include <spm/evt_paper.h>
@@ -199,11 +200,11 @@ USER_FUNC(spm::evt_snd::evt_snd_bgmoff, 0)
 USER_FUNC(spm::evt_snd::evt_snd_bgmoff_f_d, 0, PTR("BGM_MAP_STG7"), 1000)
 USER_FUNC(spm::evt_snd::evt_snd_envon_f, 0, PTR("ENV_AN2_08"), 1000)
 SET(LW(0), 0)
-EVT_END()
+RETURN()
 END_IF()
 IF_EQUAL(LW(0), 1)
 SET(LW(0), 1)
-EVT_END()
+RETURN()
 END_IF()
 EVT_END()
 
@@ -227,26 +228,26 @@ USER_FUNC(spm::evt_map::evt_mapobj_get_position, PTR("kuti_1"), LW(0), LW(1), LW
 USER_FUNC(spm::evt_mario::evt_mario_face_coords, LW(0), LW(2))
 USER_FUNC(spm::evt_map::evt_mapobj_get_position, PTR("kuti_1"), LW(0), LW(1), LW(2))
 USER_FUNC(spm::evt_msg::evt_msg_toge, 2, LW(0), LW(1), LW(2))
-USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_133_2_128"), spm::evt_msg::evt_msg_print_kao, 0)
+USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_133_2_128"), PTR(spm::evt_msg::evt_msg_print_kao), 0)
 ELSE()//only happens if you win the RPG battle
 SET(GSW(0), 325)
 USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
 WAIT_MSEC(500)
 USER_FUNC(spm::evt_map::evt_mapobj_get_position, PTR("kuti_1"), LW(0), LW(1), LW(2))
 USER_FUNC(spm::evt_msg::evt_msg_toge, 2, LW(0), LW(1), LW(2))
-USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_134"), spm::evt_msg::evt_msg_print_kao, 0)
+USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg7_2_134"), PTR(spm::evt_msg::evt_msg_print_kao), 0)
 USER_FUNC(spm::evt_map::evt_map_playanim, PTR("anm_kao_4"), 0, 0)
 USER_FUNC(spm::evt_map::evt_map_checkanim, PTR("anm_kao_4"), LW(0), LW(1))
 WAIT_MSEC(LW(1))
 USER_FUNC(spm::evt_map::evt_mapobj_flag_onoff, 1, 1, PTR("anm_kao_1"), 1)
 USER_FUNC(spm::evt_door::evt_door_enable_disable_map_door_desc, 1, PTR("doa2_l"))
-USER_FUNC(spm::evt_door::evt_door_set_event, PTR("doa2_l"), 0, spm::iValues::finalRpgChild) //final param is a short event
+USER_FUNC(spm::evt_door::evt_door_set_event, PTR("doa2_l"), 0, PTR(spm::iValues::finalRpgChild)) //final param is a short event
 USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 500, 11)
 USER_FUNC(spm::evt_mario::evt_mario_key_on)
 USER_FUNC(spm::evt_mario::evt_unknown_pointer_change, 0)
 USER_FUNC(spm::evt_case::evt_del_case_evt, 1, GW(5))
 USER_FUNC(spm::evt_case::evt_exit_case_evt)
-EVT_END()
+RETURN()
 END_IF()
 USER_FUNC(spm::evt_map::evt_map_playanim, PTR("anm_kao_4"), 0, 0)
 USER_FUNC(spm::evt_map::evt_map_checkanim, PTR("anm_kao_4"), LW(0), LW(1))
