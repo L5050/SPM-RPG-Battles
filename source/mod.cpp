@@ -12,6 +12,35 @@
 #include <spm/seqdef.h>
 #include <wii/os/OSError.h>
 #include <wii/gx.h>
+extern "C" {
+
+  char marioString[] = "Mario";
+  char peachString[] = "Peach";
+  char bowserString[] = "Bowser";
+  char luigiString[] = "Luigi";
+
+  char* characterStrings[] = {
+  marioString,
+  peachString,
+  bowserString,
+  luigiString
+  };
+
+
+void chooseNewCharacterString();
+asm
+(
+    ".global chooseNewCharacterString\n"
+    "chooseNewCharacterString:\n"
+        "lis 4, characterStrings@ha\n"
+        "ori 4, 4, characterStrings@l\n"
+        "mulli 5, 3, 4\n" //multiply by sizeof char*
+        "add 4, 4, 5\n"
+        "lwz 3, 0x0000 (4)\n" //load new string pointer
+        "blr\n"
+);
+
+}
 
 namespace mod {
 /*
@@ -45,6 +74,65 @@ static void titleScreenCustomTextPatch()
     General mod functions
 */
 
+spm::evtmgr::EvtEntry * (*evtEntry1)(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags);
+spm::evtmgr::EvtEntry * (*evtChildEntry)(spm::evtmgr::EvtEntry * entry, const spm::evtmgr::EvtScriptCode * script, u8 flags);
+spm::evtmgr::EvtEntry * (*evtBrotherEntry)(spm::evtmgr::EvtEntry * brother, const spm::evtmgr::EvtScriptCode * script, u8 flags);
+spm::evtmgr::EvtEntry * (*evtEntryType)(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags, u8 type);
+
+spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
+  spm::evtmgr::EvtEntry * entry;
+  //wii::os::OSReport("%x %x\n", &spm::iValues::theParentOfBeginRPG, &script);
+  if (script == &spm::iValues::theParentOfBeginRPG) {
+    wii::os::OSReport("evtEntry\n");
+    entry = evtEntry1(parentOfBeginRPG, priority, flags);
+  } else {
+    entry = evtEntry1(script, priority, flags);}
+    return entry;
+}
+
+spm::evtmgr::EvtEntry * newEvtChildEntry(spm::evtmgr::EvtEntry * entry, const spm::evtmgr::EvtScriptCode * script, u8 flags){
+  spm::evtmgr::EvtEntry * entry1;
+    if (script == &spm::iValues::theParentOfBeginRPG) {
+    wii::os::OSReport("evtChildEntry\n");
+      entry1 = evtChildEntry(entry, parentOfBeginRPG, flags);
+    } else {
+  entry1 = evtChildEntry(entry, script, flags);}
+  return entry1;
+}
+
+spm::evtmgr::EvtEntry * newEvtBrotherEntry(spm::evtmgr::EvtEntry * brother, const spm::evtmgr::EvtScriptCode * script, u8 flags){
+  spm::evtmgr::EvtEntry * entry;
+    if (script == &spm::iValues::theParentOfBeginRPG) {
+    wii::os::OSReport("evtBrotherEntry\n");
+      entry = evtBrotherEntry(brother, parentOfBeginRPG, flags);
+    } else {
+  entry = evtBrotherEntry(brother, script, flags);}
+  return entry;
+}
+
+spm::evtmgr::EvtEntry * newEvtEntryType(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags, u8 type) {
+  spm::evtmgr::EvtEntry * entry;
+  if (script == &spm::iValues::theParentOfBeginRPG) {
+    wii::os::OSReport("evtEntryType\n");
+    entry = evtEntryType(parentOfBeginRPG, priority, flags, type);
+  }
+  entry = evtEntryType(script, priority, flags, type);
+  return entry;
+}
+
+void hookEvent() {
+  evtEntry1 = patch::hookFunction(spm::evtmgr::evtEntry, newEvtEntry);
+
+  evtChildEntry = patch::hookFunction(spm::evtmgr::evtChildEntry, newEvtChildEntry);
+
+  evtBrotherEntry = patch::hookFunction(spm::evtmgr::evtBrotherEntry, newEvtBrotherEntry);
+
+  evtEntryType = patch::hookFunction(spm::evtmgr::evtEntryType, newEvtEntryType);
+
+  writeBranchLink(&spm::iValues::techtext1, 0, chooseNewCharacterString);
+  writeWord(&spm::iValues::techtext2, 0, 0x60000000);
+}
+
 s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
   spm::npcdrv::NPCWork * npcWork = spm::npcdrv::npcGetWorkPtr();
   spm::evtmgr::EvtVar * evtVariables = evtEntry->pCurData;
@@ -57,15 +145,12 @@ s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
   return 2;
 }
 
-void patchScripts() {
-spm::iValues::theParentOfBeginRPG = parentOfBeginRPG;
-}
 
 void main()
 {
     wii::os::OSReport("SPM Rel Loader: the mod has ran!\n");
     titleScreenCustomTextPatch();
-    patchScripts();
+    hookEvent();
 }
 
 }

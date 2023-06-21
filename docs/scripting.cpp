@@ -31,9 +31,7 @@
 #include <patch.h>
 #include <string>
 using namespace std;
-namespace mod {
-
-EVT_DECLARE_USER_FUNC(npcEntryFromTribeId, 1)
+namespace docs {
 
 EVT_BEGIN(technique)
 USER_FUNC(spm::evt_mario::evt_mario_get_character, LW(10))

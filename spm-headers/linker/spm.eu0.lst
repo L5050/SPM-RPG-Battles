@@ -22,6 +22,8 @@
 80def438:techChild1
 80def3ec:techChild2
 80DF38E4:theParentOfBeginRPG
+80c6cb04:techtext1
+80c6cb08:techtext2
 
 // Runtime.PPCEABI.H.a
 // __mem.c
