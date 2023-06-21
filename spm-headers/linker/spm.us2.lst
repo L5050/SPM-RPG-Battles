@@ -3,8 +3,7 @@
 800030c8:firstRel
 800030cc:lastRel
 
-80C2AE98:techtext1
-80C2AE9C:techtext2
+80C2AE9C:techtext1
 80DB07AC:theParentOfBeginRPG
 800D31CC:evt_snd_get_last_sfx_id
 800D3140:func_800d2fa4

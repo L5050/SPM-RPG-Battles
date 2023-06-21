@@ -14,17 +14,18 @@
 #include <wii/gx.h>
 extern "C" {
 
-  char marioString[] = "Mario";
-  char peachString[] = "Peach";
-  char bowserString[] = "Bowser";
-  char luigiString[] = "Luigi";
+  char marioString[] = "Flip";
+  char peachString[] = "Heal";
+  char bowserString[] = "Flame";
+  char luigiString[] = "Super jump";
 
   char* characterStrings[] = {
-  marioString,
-  peachString,
-  bowserString,
-  luigiString
+    marioString,
+    peachString,
+    bowserString,
+    luigiString
   };
+
 
 
 void chooseNewCharacterString();
@@ -34,9 +35,7 @@ asm
     "chooseNewCharacterString:\n"
         "lis 4, characterStrings@ha\n"
         "ori 4, 4, characterStrings@l\n"
-        "mulli 5, 3, 4\n" //multiply by sizeof char*
-        "add 4, 4, 5\n"
-        "lwz 3, 0x0000 (4)\n" //load new string pointer
+        "lwzx 3, 4, 0\n" //load new string pointer
         "blr\n"
 );
 
@@ -130,7 +129,6 @@ void hookEvent() {
   evtEntryType = patch::hookFunction(spm::evtmgr::evtEntryType, newEvtEntryType);
 
   writeBranchLink(&spm::iValues::techtext1, 0, chooseNewCharacterString);
-  writeWord(&spm::iValues::techtext2, 0, 0x60000000);
 }
 
 s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
