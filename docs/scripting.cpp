@@ -342,6 +342,7 @@ USER_FUNC(spm::evt_map::evt_mapobj_flag_onoff, 1, 1, PTR("anm_kao_1"), 1)
 USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 500, 11)
 USER_FUNC(spm::evt_mario::evt_unknown_pointer_change, 0)
 USER_FUNC(spm::evt_mario::evt_mario_key_on)
+RETURN()
 EVT_END()
 
 }

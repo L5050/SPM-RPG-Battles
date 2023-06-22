@@ -156,7 +156,7 @@ void hookEvent() {
     [](wii::mtx::Vec3 * position, u32 flags, s32 damage)
             {
             spm::evtmgr::EvtEntry * rpg = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 60);
-          spm::effdrv::EffEntry * effentry = effNiceEntry(1, 0, -2139062144, 1600222564, 1601071459);
+          //spm::effdrv::EffEntry * effentry = effNiceEntry(1, 0, -2139062144, 1600222564, 1601071459);
               marioTakeDamage(position, flags, damage);
             });
 
