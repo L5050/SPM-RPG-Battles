@@ -12,8 +12,7 @@ EVT_DECLARE_USER_FUNC(evt_snd_bgmon_f_d, 2)
 
 // evt_snd_bgmoff(s32 bgmPlayerId)
 EVT_DECLARE_USER_FUNC(evt_snd_bgmoff, 1)
-
-EVT_DECLARE_USER_FUNC(evt_snd_bgmon_f_d, 3)
+EVT_DECLARE_USER_FUNC(evt_snd_bgmoff_f_d, -1)
 
 EVT_UNKNOWN_USER_FUNC(func_800d2268)
 EVT_UNKNOWN_USER_FUNC(func_800d2294)
