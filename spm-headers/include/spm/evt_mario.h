@@ -19,6 +19,10 @@ UNKNOWN_FUNCTION(evt_mario_cont_onoff);
 
 //didnt know where to put this so here ig
 EVT_DECLARE_USER_FUNC(evt_unknown_pointer_change, 1)
+EVT_DECLARE_USER_FUNC(evt_mario_pos_change, 3)
+EVT_DECLARE_USER_FUNC(evt_mario_fairy_reset, 0)
+EVT_DECLARE_USER_FUNC(evt_mario_direction_face, 2)
+EVT_DECLARE_USER_FUNC(evt_mario_direction_reset, 0)
 
 EVT_DECLARE_USER_FUNC(evt_mario_calc_damage_to_enemy, 3)
 EVT_DECLARE_USER_FUNC(evt_rpg_char_death_check, 4)
@@ -69,7 +73,6 @@ UNKNOWN_FUNCTION(func_800f0210);
 UNKNOWN_FUNCTION(evt_mario_face);
 UNKNOWN_FUNCTION(evt_mario_face_free);
 UNKNOWN_FUNCTION(func_800f0304);
-UNKNOWN_FUNCTION(func_800f046c);
 UNKNOWN_FUNCTION(func_800f05b0);
 UNKNOWN_FUNCTION(func_800f074c);
 EVT_UNKNOWN_USER_FUNC(func_800f09c4)
@@ -106,7 +109,6 @@ UNKNOWN_FUNCTION(func_800f2144);
 UNKNOWN_FUNCTION(func_800f2310);
 EVT_UNKNOWN_USER_FUNC(func_800f23e4)
 EVT_UNKNOWN_USER_FUNC(func_800f240c)
-EVT_UNKNOWN_USER_FUNC(func_800f2450)
 UNKNOWN_FUNCTION(evt_mario_swim_onoff);
 UNKNOWN_FUNCTION(func_800f24d8);
 UNKNOWN_FUNCTION(func_800f2544);

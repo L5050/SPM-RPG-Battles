@@ -3,8 +3,23 @@
 800030c8:firstRel
 800030cc:lastRel
 
+800F2460:evt_mario_fairy_reset
+800D23C0:evt_snd_bgmoff_f_d
+800EFAA0:evt_mario_set_pos
+800F0584:evt_mario_pos_change
+800EFEA0:evt_mario_direction_face
+800D2B68:evt_snd_sfxon_3d
+800DFF5C:evt_cam_shake
+8010B8D0:evt_npc_tribe_agb_async
+800EFE40:evt_mario_direction_reset
+800D3110:evt_snd_sfxoff
+801038F8:evt_npc_set_unitwork
+800E0650:evt_cam_look_at_door
+80C35944:evt_cam_target_face
+800DD20C:evt_inline_evt
+8012A054:marioTakeDamage
 80C2AE9C:techtext1
-80DB07AC:theParentOfBeginRPG
+80DB0214:theParentOfBeginRPG
 800D31CC:evt_snd_get_last_sfx_id
 800D3140:func_800d2fa4
 80C2D63C:evt_mario_calc_damage_to_enemy
@@ -27,7 +42,7 @@
 80DAED78:underchompAttack2
 80DAEA38:underchompAttack1
 800D3600:evt_snd_envon_f
-800D2328:evt_snd_bgmoff_f_d
+800D2328:evt_snd_bgmon_f_d
 800D2394:evt_snd_bgmoff
 800F1A6C:evt_mario_set_pose
 80C2BC10:changeRandomDAT1

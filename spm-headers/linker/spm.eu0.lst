@@ -21,7 +21,7 @@
 80df1958:runningAway
 80def438:techChild1
 80def3ec:techChild2
-80DF38E4:theParentOfBeginRPG
+80DF334C:theParentOfBeginRPG
 80c6cb08:techtext1
 
 // Runtime.PPCEABI.H.a
@@ -142,18 +142,23 @@
 // evt_cam.c
 800dff20:evt_cam3d_evt_zoom_in
 800e0430:evt_cam_zoom_to_coords
-
+800dfe08:evt_cam_shake
+800e04fc:evt_cam_look_at_door
+80c775b0:evt_cam_target_face
 // evt_snd.c
 800d2148:evt_snd_bgmon
 800d36f4:func_800d36f4
 800d34b8:evt_snd_string_call
 800d21f8:evt_snd_bgmoff
-800d218c:evt_snd_bgmoff_f_d
+800d218c:evt_snd_bgmon_f_d
+800d2224:evt_snd_bgmoff_f_d
 800d3464:evt_snd_envon_f
 800d2800:evt_snd_sfxon
 800d32e4:evt_snd_sfx_wait_name
 800d3030:evt_snd_get_last_sfx_id
 800d2fa4:func_800d2fa4
+800d29cc:evt_snd_sfxon_3d
+800d2f74:evt_snd_sfxoff
 // more
 
 // evt_sub.c
@@ -190,6 +195,7 @@
 800de594:evtGetValue
 800de9b8:evtSetValue
 800df1fc:evtSetFloat
+800dd0b8:evt_inline_evt
 // bss
 8050ce30:evt_debug_put_reg_str
 // more
@@ -258,6 +264,7 @@
 800ef650:evt_mario_key_off
 800ef62c:evt_mario_key_on
 800efa4c:evt_mario_get_pos
+800ef988:evt_mario_set_pos
 800f25b0:evt_set_gravity
 800f0074:evt_mario_face_coords
 80c774c4:evt_unknown_pointer_change
@@ -271,6 +278,10 @@
 80c72398:evt_rpg_char_death_check
 80c726b8:evt_rpg_status_remove
 800ef908:evt_mario_get_character
+800f2450:evt_mario_fairy_reset
+800f046c:evt_mario_pos_change
+800efd88:evt_mario_direction_face
+800efd28:evt_mario_direction_reset
 // more
 
 // evt_mobj.c
@@ -315,6 +326,8 @@
 80108194:func_80108194
 8010a910:evt_npc_teleport_effect
 80c6d584:evt_rpg_npctribe_handle
+8010be80:evt_npc_tribe_agb_async
+80103ea8:evt_npc_set_unitwork
 // more
 
 // evt_seq.c
@@ -333,6 +346,7 @@
 80122bf4:marioKeyOff
 80122c2c:marioKeyOn
 8012b50c:marioSetGravity
+8012a680:marioTakeDamage
 // more
 
 // mario_motion.c
