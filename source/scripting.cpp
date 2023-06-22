@@ -34,7 +34,7 @@ using namespace std;
 namespace mod {
 
 EVT_DECLARE_USER_FUNC(npcEntryFromTribeId, 1)
-EVT_DECLARE_USER_FUNC(osReportLWZero, 0)
+//EVT_DECLARE_USER_FUNC(osReportLWZero, 0)
 
 EVT_BEGIN(technique)
 USER_FUNC(spm::evt_mario::evt_mario_get_character, LW(10))
@@ -162,7 +162,6 @@ DO(0)
     USER_FUNC(spm::evt_mario::evt_flower_check, LW(0))
     IF_NOT_FLAG(LW(0), 0x600)
         USER_FUNC(spm::evt_mario::evt_rpg_choice_handler, LW(0), LW(1), LW(2), LW(3), LW(4))
-        USER_FUNC(osReportLWZero)
         SWITCH(LW(0))
             CASE_EQUAL(0)
                 RUN_CHILD_EVT(spm::iValues::attacking) //seems to handle the attack input
@@ -272,7 +271,7 @@ EVT_BEGIN(parentOfBeginRPG)
     USER_FUNC(spm::evt_npc::evt_npc_tribe_agb_async, 213)
     USER_FUNC(spm::evt_npc::evt_npc_tribe_agb_async, 214)
     USER_FUNC(spm::evt_npc::evt_npc_tribe_agb_async, 215)
-    USER_FUNC(spm::evt_npc::evt_npc_entry_from_template, 123, 213, 3200, 1000, 0, 0, PTR("0xefe82080")) //still need to figure this pointer out
+    USER_FUNC(spm::evt_npc::evt_npc_entry_from_template, 123, 213, 3200, 1000, 0, 0, EVT_NULLPTR)
     USER_FUNC(spm::evt_mario::evt_mario_direction_reset)
     USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("T_7"), 0)
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_SCREEN_BREAK1"))

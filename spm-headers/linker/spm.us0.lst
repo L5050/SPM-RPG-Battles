@@ -3,6 +3,7 @@
 800030c8:firstRel
 800030cc:lastRel
 
+800CC218:effNiceEntry
 800F21A0:evt_mario_fairy_reset
 800D2420:evt_snd_bgmoff_f_d
 800EF7E0:evt_mario_set_pos

@@ -261,7 +261,7 @@ USER_FUNC(spm::evt_img::evt_img_battle_state_set, PTR(img), 1)
 USER_FUNC(spm::evt_npc::evt_npc_tribe_agb_async, 213)
 USER_FUNC(spm::evt_npc::evt_npc_tribe_agb_async, 214)
 USER_FUNC(spm::evt_npc::evt_npc_tribe_agb_async, 215)
-USER_FUNC(spm::evt_npc::evt_npc_entry_from_template, 123, 213, 3200, 1000, 0, 0, PTR("0xefe82080"))//still need to figure this pointer out
+USER_FUNC(spm::evt_npc::evt_npc_entry_from_template, 123, 213, 3200, 1000, 0, 0, EVT_NULLPTR)
 USER_FUNC(spm::evt_mario::evt_mario_direction_reset)
 USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("T_7"), 0)
 USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_SCREEN_BREAK1"))

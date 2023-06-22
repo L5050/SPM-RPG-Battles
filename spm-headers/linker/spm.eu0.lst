@@ -282,6 +282,7 @@
 800f046c:evt_mario_pos_change
 800efd88:evt_mario_direction_face
 800efd28:evt_mario_direction_reset
+800CC01C:effNiceEntry
 // more
 
 // evt_mobj.c

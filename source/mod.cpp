@@ -6,6 +6,7 @@
 #include <spm/evtmgr.h>
 #include <spm/mario.h>
 #include <spm/evtmgr_cmd.h>
+#include <spm/effdrv.h>
 #include <spm/npcdrv.h>
 #include <spm/camdrv.h>
 #include <spm/fontmgr.h>
@@ -77,6 +78,8 @@ spm::evtmgr::EvtEntry * (*evtChildEntry)(spm::evtmgr::EvtEntry * entry, const sp
 spm::evtmgr::EvtEntry * (*evtBrotherEntry)(spm::evtmgr::EvtEntry * brother, const spm::evtmgr::EvtScriptCode * script, u8 flags);
 spm::evtmgr::EvtEntry * (*evtEntryType)(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags, u8 type);
 void (*marioTakeDamage)(wii::mtx::Vec3 * position, u32 flags, s32 damage);
+//s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
+spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double param_3, double param_4, int param_5);
 s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
 
 spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
@@ -125,6 +128,17 @@ s32 new_evt_inline_evt(spm::evtmgr::EvtEntry * entry) {
   return evt_inline_evt(entry);
 }
 
+spm::effdrv::EffEntry * newEffNiceEntry(double param_1, double param_2, double param_3, double param_4, int param_5) {
+
+    wii::os::OSReport("%d %d %d %d %d\n", param_1, param_2, param_3, param_4, param_5);
+    return effNiceEntry(param_1, param_2, param_3, param_4, param_5);
+
+}
+
+/*s32 newMarioCalcDamageToEnemy(s32 damageType, s32 tribeId) {
+
+}*/
+
 void hookEvent() {
   evtEntry1 = patch::hookFunction(spm::evtmgr::evtEntry, newEvtEntry);
 
@@ -136,10 +150,13 @@ void hookEvent() {
 
   evt_inline_evt = patch::hookFunction(spm::evtmgr_cmd::evt_inline_evt, new_evt_inline_evt);
 
+  effNiceEntry = patch::hookFunction(spm::effdrv::effNiceEntry, newEffNiceEntry);
+
   marioTakeDamage = patch::hookFunction(spm::mario::marioTakeDamage,
     [](wii::mtx::Vec3 * position, u32 flags, s32 damage)
             {
-            //spm::evtmgr::EvtEntry * rpg = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 60);
+            spm::evtmgr::EvtEntry * rpg = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 60);
+          spm::effdrv::EffEntry * effentry = effNiceEntry(1, 0, -2139062144, 1600222564, 1601071459);
               marioTakeDamage(position, flags, damage);
             });
 
@@ -158,10 +175,10 @@ s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
   return 2;
 }
 
-s32 osReportLWZero(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+/*s32 osReportLWZero(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
   wii::os::OSReport("%d\n", evtEntry->lw[0]);
   return 2;
-}
+}*/
 
 
 void main()
