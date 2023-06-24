@@ -361,6 +361,22 @@ END_SWITCH()
 USER_FUNC(spm::evt_mario::evt_mario_set_character, LW(2))
 EVT_END()
 
+EVT_BEGIN(escape)
+    USER_FUNC(spm::evt_mario::evt_rpg_char_get, LW(10))
+    USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_090"), LW(10))
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon_character, PTR("SFX_EVT_MARIO_RUNAWAY1"), PTR("SFX_EVT_MARIO_RUNAWAY1"), PTR("SFX_EVT_KOOPA_RUNAWAY1"), PTR("SFX_EVT_MARIO_RUNAWAY1"))
+    WAIT_MSEC(200)
+    USER_FUNC(spm::evt_sub::evt_sub_random, 1000, LW(10))
+    IF_SMALL(LW(10), 300)
+        USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_091"))
+        SET(LF(0), 1)
+        SET(LW(0), 0)
+    ELSE()
+        USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_092"))
+    END_IF()
+    RETURN()
+EVT_END()
+
 
 EVT_BEGIN(checkWinOrContinue)
     USER_FUNC(spm::evt_mario::evt_rpg_wakeup_check, 0, LW(0))
@@ -604,7 +620,7 @@ DO(0)
                 RUN_CHILD_EVT(mod::switchChars) //handles switching characters
             CASE_EQUAL(5)
                 SET(LF(0), 0)
-                RUN_CHILD_EVT(spm::iValues::runningAway) //handles run away
+                RUN_CHILD_EVT(mod::escape) //handles run away
                 IF_EQUAL(LF(0), 1)
                     DO_BREAK()
                 END_IF()
