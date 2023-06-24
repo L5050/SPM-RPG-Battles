@@ -3,12 +3,13 @@
 800030c8:firstRel
 800030cc:lastRel
 
+80C43130:evt_rpg_calc_mario_damage
 80C43594:evt_rpg_wakeup_check
 80C3FF80:tribeidPatch
 80C3FED8:evt_rpg_underchomp_name_grab
 80C436E8:evt_rpg_effects_handle
 80C433F8:evt_rpg_menu_effects_handler
-80C431BC:evt_rpg_take_poison_damage
+80C431BC:evt_rpg_mario_take_damage
 8010BCD0:evt_pouch_add_hp
 80C432B4:evt_rpg_enemy_death_check
 80C43254:evt_rpg_point_calculation
@@ -74,7 +75,7 @@
 80C3E510:changeRandomDAT1
 800E7358:evt_fade_callfade
 80C3E528:evt_rpg_choice_handler
-80C43314:evt_flower_check
+80C43314:evt_rpg_effect_check
 80C3E218:evt_rpg_npctribe_handle
 800D36E0:evt_snd_string_call
 800EC758:evt_img_battle_setup
