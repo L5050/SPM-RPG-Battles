@@ -43,7 +43,7 @@ EVT_DECLARE_USER_FUNC(evt_sub_gameSpeedChange, 1)
 
 UNKNOWN_FUNCTION(evt_sub_set_entername);
 UNKNOWN_FUNCTION(func_800d47e4);
-UNKNOWN_FUNCTION(evt_sub_get_language);
+EVT_DECLARE_USER_FUNC(evt_sub_get_language, 1);
 
 // evt_sub_animgroup_async(const char * name)
 EVT_DECLARE_USER_FUNC(evt_sub_animgroup_async, 1)

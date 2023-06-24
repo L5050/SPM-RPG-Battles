@@ -13,6 +13,14 @@ EVT_DECLARE_USER_FUNC(evt_mario_flag8_onoff, 2)
 EVT_DECLARE_USER_FUNC(evt_flower_check, 1)
 EVT_DECLARE_USER_FUNC(evt_rpg_choice_handler, 5)
 EVT_DECLARE_USER_FUNC(changeRandomDAT1, 0)
+EVT_DECLARE_USER_FUNC(evt_rpg_wakeup_check, 2)
+EVT_DECLARE_USER_FUNC(evt_rpg_effects_handle, 2)
+EVT_DECLARE_USER_FUNC(evt_rpg_menu_effects_handler, 2)
+EVT_DECLARE_USER_FUNC(evt_rpg_take_poison_damage, 3)
+EVT_DECLARE_USER_FUNC(evt_rpg_enemy_death_check, 2)
+EVT_DECLARE_USER_FUNC(evt_rpg_point_calculation, 2)
+EVT_DECLARE_USER_FUNC(evt_rpg_point_handling, 1)
+EVT_DECLARE_USER_FUNC(evt_rpg_underchomp_name_grab, 2)
 
 UNKNOWN_FUNCTION(func_800ef53c);
 UNKNOWN_FUNCTION(evt_mario_cont_onoff);
@@ -24,7 +32,7 @@ EVT_DECLARE_USER_FUNC(evt_mario_fairy_reset, 0)
 EVT_DECLARE_USER_FUNC(evt_mario_direction_face, 2)
 EVT_DECLARE_USER_FUNC(evt_mario_direction_reset, 0)
 
-EVT_DECLARE_USER_FUNC(evt_mario_calc_damage_to_enemy, 3)
+EVT_DECLARE_USER_FUNC(evt_mario_calc_rpg_damage, 3)
 EVT_DECLARE_USER_FUNC(evt_rpg_char_death_check, 4)
 EVT_DECLARE_USER_FUNC(evt_rpg_status_remove, 3)
 

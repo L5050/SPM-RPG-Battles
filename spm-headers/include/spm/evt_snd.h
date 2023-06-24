@@ -8,7 +8,7 @@ CPP_WRAPPER(spm::evt_snd)
 // evt_snd_bgmon(s32 bgmPlayerId, const char * name)
 EVT_DECLARE_USER_FUNC(evt_snd_bgmon, 2)
 
-EVT_DECLARE_USER_FUNC(evt_snd_bgmon_f_d, 2)
+EVT_DECLARE_USER_FUNC(evt_snd_bgmon_f_d, -1)
 
 // evt_snd_bgmoff(s32 bgmPlayerId)
 EVT_DECLARE_USER_FUNC(evt_snd_bgmoff, 1)
@@ -32,9 +32,10 @@ UNKNOWN_FUNCTION(evt_snd_get_bgm_name);
 // evt_snd_sfxon(const char * name)
 EVT_DECLARE_USER_FUNC(evt_snd_sfxon, 1)
 
+EVT_DECLARE_USER_FUNC(evt_snd_sfxon_character, 4);
+
 UNKNOWN_FUNCTION(func_800d2834);
 UNKNOWN_FUNCTION(func_800d2894);
-UNKNOWN_FUNCTION(evt_snd_sfxon_character);
 
 // evt_snd_sfxon_3d(const char * name, f32 x, f32 y, f32 z)
 EVT_DECLARE_USER_FUNC(evt_snd_sfxon_3d, 4)

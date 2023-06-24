@@ -23,6 +23,7 @@
 80def3ec:techChild2
 80DF334C:theParentOfBeginRPG
 80c6cb08:techtext1
+80c6f2ec:tribeidPatch
 
 // Runtime.PPCEABI.H.a
 // __mem.c
@@ -159,6 +160,8 @@
 800d2fa4:func_800d2fa4
 800d29cc:evt_snd_sfxon_3d
 800d2f74:evt_snd_sfxoff
+800d28fc:evt_snd_sfxon_character
+800d4960:evt_sub_get_language
 // more
 
 // evt_sub.c
@@ -177,6 +180,19 @@
 
 // evt_pouch.c
 8010cffc:evt_pouch_increment_enemies_defeated
+8010c80c:evt_pouch_add_xp
+8010c714:evt_pouch_add_hp
+8010c7c0:evt_pouch_get_xp
+8010ce04:evt_pouch_get_next_level_xp
+8010cd88:evt_pouch_get_level
+8010cdd4:evt_pouch_set_level
+8010c744:evt_pouch_get_max_hp
+8010c790:evt_pouch_set_max_hp
+8010c86c:evt_pouch_get_attack
+8010c83c:evt_pouch_set_attack
+8010c698:evt_pouch_set_hp
+8010c9c4:evt_pouch_check_have_item
+8010ca18:evt_pouch_remove_item
 
 // evtmgr.c
 800d87e4:evtGetWork
@@ -274,7 +290,6 @@
 800f1954:evt_mario_set_pose
 800ef958:evt_mario_set_character
 80c6f1dc:evt_rpg_char_get
-80c6f2a8:evt_mario_calc_damage_to_enemy
 80c72398:evt_rpg_char_death_check
 80c726b8:evt_rpg_status_remove
 800ef908:evt_mario_get_character
@@ -283,6 +298,15 @@
 800efd88:evt_mario_direction_face
 800efd28:evt_mario_direction_reset
 800CC01C:effNiceEntry
+80C6F2A8:evt_mario_calc_rpg_damage
+80c72900:evt_rpg_wakeup_check
+80c6f244:evt_rpg_underchomp_name_grab
+80c72a54:evt_rpg_effects_handle
+80c72764:evt_rpg_menu_effects_handler
+80c72528:evt_rpg_take_poison_damage
+80c72620:evt_rpg_enemy_death_check
+80c725c0:evt_rpg_point_calculation
+80c72c40:evt_rpg_point_handling
 // more
 
 // evt_mobj.c
@@ -348,6 +372,7 @@
 80122c2c:marioKeyOn
 8012b50c:marioSetGravity
 8012a680:marioTakeDamage
+8012a3a8:marioCalcDamageToEnemy
 // more
 
 // mario_motion.c

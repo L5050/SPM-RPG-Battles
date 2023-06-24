@@ -42,6 +42,7 @@ asm
 }
 
 namespace mod {
+bool rpgInProgress = false;
 /*
     Title Screen Custom Text
     Prints "SPM RPG Battles" at the top of the title screen
@@ -78,7 +79,7 @@ spm::evtmgr::EvtEntry * (*evtChildEntry)(spm::evtmgr::EvtEntry * entry, const sp
 spm::evtmgr::EvtEntry * (*evtBrotherEntry)(spm::evtmgr::EvtEntry * brother, const spm::evtmgr::EvtScriptCode * script, u8 flags);
 spm::evtmgr::EvtEntry * (*evtEntryType)(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags, u8 type);
 void (*marioTakeDamage)(wii::mtx::Vec3 * position, u32 flags, s32 damage);
-//s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
+s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
 spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double param_3, double param_4, int param_5);
 s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
 
@@ -135,9 +136,16 @@ spm::effdrv::EffEntry * newEffNiceEntry(double param_1, double param_2, double p
 
 }
 
-/*s32 newMarioCalcDamageToEnemy(s32 damageType, s32 tribeId) {
-
-}*/
+s32 newMarioCalcDamageToEnemy(s32 damageType, s32 tribeId) {
+  //spm::effdrv::EffEntry * effentry = effNiceEntry(1, 0, -2139062144, 1600222564, 1601071459);
+  if (rpgInProgress == false){
+  spm::evtmgr::EvtEntry * rpg = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
+  rpgInProgress = true;
+  return 0;
+} else {
+  return marioCalcDamageToEnemy(damageType, tribeId);
+}
+}
 
 void hookEvent() {
   evtEntry1 = patch::hookFunction(spm::evtmgr::evtEntry, newEvtEntry);
@@ -152,10 +160,11 @@ void hookEvent() {
 
   effNiceEntry = patch::hookFunction(spm::effdrv::effNiceEntry, newEffNiceEntry);
 
+  marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
+
   marioTakeDamage = patch::hookFunction(spm::mario::marioTakeDamage,
     [](wii::mtx::Vec3 * position, u32 flags, s32 damage)
             {
-            spm::evtmgr::EvtEntry * rpg = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 60);
           //spm::effdrv::EffEntry * effentry = effNiceEntry(1, 0, -2139062144, 1600222564, 1601071459);
               marioTakeDamage(position, flags, damage);
             });
