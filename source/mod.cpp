@@ -15,7 +15,6 @@
 #include <wii/os/OSError.h>
 #include <wii/gx.h>
 extern "C" {
-
   char marioString[] = "Flip";
   char peachString[] = "Heal";
   char bowserString[] = "Flame";
@@ -27,6 +26,32 @@ extern "C" {
     bowserString,
     luigiString
   };
+
+s32 rpgTribeID[3] = {0, 0, 0};
+
+void getTribe();
+asm
+(
+  ".global getTribe\n"
+    "getTribe:\n"
+    "lis 6, rpgTribeID@ha\n"
+    "ori 6, 6, rpgTribeID@l\n"
+    "slwi 4, 4, 2\n"
+    "lwzx 4, 6, 4\n"
+    "blr\n"
+);
+
+void getTribe2();
+asm
+(
+  ".global getTribe2\n"
+    "getTribe2:\n"
+    "lis 7, rpgTribeID@ha\n"
+    "ori 7, 7, rpgTribeID@l\n"
+    "slwi 28, 28, 2\n"
+    "lwzx 3, 7, 28\n"
+    "blr\n"
+);
 
 void chooseNewCharacterString();
 asm
@@ -43,6 +68,7 @@ asm
 
 namespace mod {
 bool rpgInProgress = false;
+bool bossFight = false;
 /*
     Title Screen Custom Text
     Prints "SPM RPG Battles" at the top of the title screen
@@ -138,10 +164,12 @@ spm::effdrv::EffEntry * newEffNiceEntry(double param_1, double param_2, double p
 
 s32 newMarioCalcDamageToEnemy(s32 damageType, s32 tribeId) {
   //spm::effdrv::EffEntry * effentry = effNiceEntry(1, 0, -2139062144, 1600222564, 1601071459);
+
   if (rpgInProgress == false){
-  spm::evtmgr::EvtEntry * rpg = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
+  rpgTribeID[0] = tribeId;
+  spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
   rpgInProgress = true;
-  return 0;
+  return 100;
 } else {
   return marioCalcDamageToEnemy(damageType, tribeId);
 }
@@ -170,6 +198,9 @@ void hookEvent() {
             });
 
   writeBranchLink(&spm::iValues::techtext1, 0, chooseNewCharacterString);
+  writeBranchLink(&spm::iValues::rpgTribePatch1, 0, getTribe);
+  writeBranchLink(&spm::iValues::rpgTribePatch2, 0, getTribe2);
+  writeWord(&spm::iValues::underchompRepeatPatch, 0, 0x3B9C0004);
 }
 
 s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
@@ -180,15 +211,22 @@ s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     if (npcWork->entries[i].tribeId == id) {
       spm::evtmgr_cmd::evtSetValue(evtEntry, evtEntry->lw[0], (s32)npcWork->entries[i].name);
     }
-  }
+  } if (firstRun ==  false){}
   return 2;
 }
 
-/*s32 osReportLWZero(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-  wii::os::OSReport("%d\n", evtEntry->lw[0]);
-  return 2;
-}*/
-
+s32 getRpgNpc(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+spm::npcdrv::NPCWork * npcWork = spm::npcdrv::npcGetWorkPtr();
+ if (bossFight == false) {
+    for (int i = 0; i < 525; i++) {
+      if (npcWork->entries[i].tribeId == rpgTribeID[0]) {
+        spm::evtmgr_cmd::evtSetValue(evtEntry, evtEntry->lw[0], (s32)npcWork->entries[i].name);
+        break;
+      }
+    }
+ } if (firstRun ==  false){}
+ return 2;
+}
 
 void main()
 {

@@ -3,6 +3,10 @@
 800030c8:firstRel
 800030cc:lastRel
 
+801B6390:npcDelete
+80C2D680:rpgTribePatch1
+80C2B9AC:rpgTribePatch2
+80C2B9B8:underchompRepeatPatch
 80C30F94:evt_rpg_add_xp
 800FCE20:evt_msg_fmt_str
 800D3440:evt_snd_sfx_wait
@@ -18,7 +22,7 @@
 80C30AF8:evt_rpg_menu_effects_handler
 80C308BC:evt_rpg_mario_take_damage
 8010C100:evt_pouch_add_hp
-80C309B4:evt_rpg_enemy_death_check
+80C309B4:evt_rpg_enemy_take_damage
 80C30954:evt_rpg_point_calculation
 80C30FD4:evt_rpg_point_handling
 8010C1F8:evt_pouch_add_xp

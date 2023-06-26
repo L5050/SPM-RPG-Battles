@@ -20,6 +20,9 @@ extern spm::evtmgr::EvtScriptCode * techChild1;
 extern spm::evtmgr::EvtScriptCode * techChild2;
 void techtext1();
 void techtext2();
+void rpgTribePatch1();
+void rpgTribePatch2();
+void underchompRepeatPatch();
 
 }
 }

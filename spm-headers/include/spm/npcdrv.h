@@ -294,7 +294,7 @@ NPCEntry * npcEntry(const char * instanceName, const char * animPoseName, s32 in
 NPCEntry * npcIdToPtr(s32 id);
 NPCEntry * npcNameToPtr(const char * instanceName);
 NPCEntry * npcNameToPtr_NoAssert(const char * instanceName);
-UNKNOWN_FUNCTION(npcDelete);
+void npcDelete(char *name);
 UNKNOWN_FUNCTION(func_801b73cc);
 UNKNOWN_FUNCTION(func_801b7a20);
 UNKNOWN_FUNCTION(func_801b8064);

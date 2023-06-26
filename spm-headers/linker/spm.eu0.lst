@@ -23,7 +23,9 @@
 80def3ec:techChild2
 80DF334C:theParentOfBeginRPG
 80c6cb08:techtext1
-80c6f2ec:tribeidPatch
+80c6f2ec:rpgTribePatch1
+80c6d618:rpgTribePatch2
+80c6d624:underchompRepeatPatch
 
 // Runtime.PPCEABI.H.a
 // __mem.c
@@ -307,7 +309,7 @@
 80c72a54:evt_rpg_effects_handle
 80c72764:evt_rpg_menu_effects_handler
 80c72528:evt_rpg_mario_take_damage
-80c72620:evt_rpg_enemy_death_check
+80c72620:evt_rpg_enemy_take_damage
 80c725c0:evt_rpg_point_calculation
 80c72c40:evt_rpg_point_handling
 80c7249c:evt_rpg_calc_mario_damage
@@ -583,6 +585,7 @@
 801bfc48:npcSearchAnimDefs
 801c9adc:npcGetWorkPtr
 801e3a1c:npcDropItem
+801b7064:npcDelete
 // more
 // data
 8043bf30:npcTribes
