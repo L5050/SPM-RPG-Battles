@@ -161,7 +161,7 @@
 800d29cc:evt_snd_sfxon_3d
 800d2f74:evt_snd_sfxoff
 800d28fc:evt_snd_sfxon_character
-800d4960:evt_sub_get_language
+800d32a4:evt_snd_sfx_wait
 // more
 
 // evt_sub.c
@@ -171,6 +171,7 @@
 800d40a4:evt_sub_random
 800d4de4:func_800d4de4
 800d4774:evt_sub_get_entername
+800d4960:evt_sub_get_language
 800d74a0:func_800d74a0
 // more
 
@@ -181,15 +182,17 @@
 // evt_pouch.c
 8010cffc:evt_pouch_increment_enemies_defeated
 8010c80c:evt_pouch_add_xp
-8010c714:evt_pouch_add_hp
 8010c7c0:evt_pouch_get_xp
 8010ce04:evt_pouch_get_next_level_xp
 8010cd88:evt_pouch_get_level
 8010cdd4:evt_pouch_set_level
+8010c714:evt_pouch_add_hp
+8010c6c8:evt_pouch_get_hp
 8010c744:evt_pouch_get_max_hp
 8010c790:evt_pouch_set_max_hp
 8010c86c:evt_pouch_get_attack
 8010c83c:evt_pouch_set_attack
+8010c8b8:evt_pouch_add_attack
 8010c698:evt_pouch_set_hp
 8010c9c4:evt_pouch_check_have_item
 8010ca18:evt_pouch_remove_item
@@ -308,6 +311,9 @@
 80c725c0:evt_rpg_point_calculation
 80c72c40:evt_rpg_point_handling
 80c7249c:evt_rpg_calc_mario_damage
+80c72c78:evt_rpg_get_item_msg
+80c72b38:evt_rpg_calc_item_stats
+80c72c00:evt_rpg_add_xp
 // more
 
 // evt_mobj.c
@@ -331,6 +337,7 @@
 800fbc64:evt_msg_print_add
 80c72cf8:evt_msg_print_kao
 800fbd00:evt_msg_print_add_insert
+800fd0c4:evt_msg_fmt_str
 // more
 
 // evt_npc.c

@@ -22,6 +22,9 @@ EVT_DECLARE_USER_FUNC(evt_rpg_point_calculation, 2)
 EVT_DECLARE_USER_FUNC(evt_rpg_point_handling, 1)
 EVT_DECLARE_USER_FUNC(evt_rpg_underchomp_name_grab, 2)
 EVT_DECLARE_USER_FUNC(evt_rpg_calc_mario_damage, 2)
+EVT_DECLARE_USER_FUNC(evt_rpg_get_item_msg, 2)
+EVT_DECLARE_USER_FUNC(evt_rpg_calc_item_stats, 4)
+EVT_DECLARE_USER_FUNC(evt_rpg_add_xp, 1)
 
 UNKNOWN_FUNCTION(func_800ef53c);
 UNKNOWN_FUNCTION(evt_mario_cont_onoff);

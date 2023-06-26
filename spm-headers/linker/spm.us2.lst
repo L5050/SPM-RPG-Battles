@@ -3,6 +3,13 @@
 800030c8:firstRel
 800030cc:lastRel
 
+80C30F94:evt_rpg_add_xp
+800FCE20:evt_msg_fmt_str
+800D3440:evt_snd_sfx_wait
+80C3100C:evt_rpg_get_item_msg
+8010C2A4:evt_pouch_add_attack
+8010C0B4:evt_pouch_get_hp
+80C30ECC:evt_rpg_calc_item_stats
 80C30830:evt_rpg_calc_mario_damage
 80C30C94:evt_rpg_wakeup_check
 80C2D680:tribeidPatch

@@ -23,6 +23,7 @@ UNKNOWN_FUNCTION(evt_msg_print_insert);
 
 // evt_msg_continue()
 EVT_DECLARE_USER_FUNC(evt_msg_continue, 0)
+EVT_DECLARE_USER_FUNC(evt_msg_fmt_str, -1)
 
 UNKNOWN_FUNCTION(evt_msg_repeat);
 UNKNOWN_FUNCTION(evt_msg_close);
@@ -30,7 +31,6 @@ UNKNOWN_FUNCTION(evt_msg_select);
 UNKNOWN_FUNCTION(evt_msg_togelr);
 UNKNOWN_FUNCTION(evt_msg_pri);
 UNKNOWN_FUNCTION(evtMsgFmtStr);
-UNKNOWN_FUNCTION(evt_msg_fmt_str);
 UNKNOWN_FUNCTION(evtMsgFmtInt);
 UNKNOWN_FUNCTION(evt_msg_fmt_int);
 UNKNOWN_FUNCTION(func_800fdc6c);
