@@ -34,7 +34,7 @@ asm
 (
   ".global getTribe\n"
     "getTribe:\n"
-    "lis 6, rpgTribeID@ha\n"
+    "lis 6, rpgTribeID@h\n"
     "ori 6, 6, rpgTribeID@l\n"
     "slwi 4, 4, 2\n"
     "lwzx 4, 6, 4\n"
@@ -46,10 +46,11 @@ asm
 (
   ".global getTribe2\n"
     "getTribe2:\n"
-    "lis 7, rpgTribeID@ha\n"
+    "lis 7, rpgTribeID@h\n"
     "ori 7, 7, rpgTribeID@l\n"
-    "slwi 28, 28, 2\n"
-    "lwzx 3, 7, 28\n"
+    "mr 3, 28\n"
+    "slwi 3, 3, 2\n"
+    "lwzx 3, 7, 3\n"
     "blr\n"
 );
 
@@ -167,6 +168,7 @@ s32 newMarioCalcDamageToEnemy(s32 damageType, s32 tribeId) {
 
   if (rpgInProgress == false){
   rpgTribeID[0] = tribeId;
+  wii::os::OSReport("%d %d\n", tribeId, rpgTribeID[0]);
   spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
   rpgInProgress = true;
   return 100;
