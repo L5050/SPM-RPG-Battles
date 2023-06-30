@@ -7,6 +7,7 @@
 #include <spm/mario.h>
 #include <spm/evtmgr_cmd.h>
 #include <spm/effdrv.h>
+#include <spm/animdrv.h>
 #include <spm/npcdrv.h>
 #include <spm/camdrv.h>
 #include <spm/fontmgr.h>
@@ -108,7 +109,7 @@ spm::evtmgr::EvtEntry * (*evtEntryType)(const spm::evtmgr::EvtScriptCode * scrip
 void (*marioTakeDamage)(wii::mtx::Vec3 * position, u32 flags, s32 damage);
 s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
 spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double param_3, double param_4, int param_5);
-s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
+//s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
 
 spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
   spm::evtmgr::EvtEntry * entry;
@@ -151,10 +152,10 @@ spm::evtmgr::EvtEntry * newEvtEntryType(const spm::evtmgr::EvtScriptCode * scrip
   return entry;
 }
 
-s32 new_evt_inline_evt(spm::evtmgr::EvtEntry * entry) {
+/*s32 new_evt_inline_evt(spm::evtmgr::EvtEntry * entry) {
   wii::os::OSReport("%x\n", entry->scriptStart);
   return evt_inline_evt(entry);
-}
+}*/
 
 spm::effdrv::EffEntry * newEffNiceEntry(double param_1, double param_2, double param_3, double param_4, int param_5) {
 
@@ -186,7 +187,7 @@ void hookEvent() {
 
   evtEntryType = patch::hookFunction(spm::evtmgr::evtEntryType, newEvtEntryType);
 
-  evt_inline_evt = patch::hookFunction(spm::evtmgr_cmd::evt_inline_evt, new_evt_inline_evt);
+  //evt_inline_evt = patch::hookFunction(spm::evtmgr_cmd::evt_inline_evt, new_evt_inline_evt);
 
   effNiceEntry = patch::hookFunction(spm::effdrv::effNiceEntry, newEffNiceEntry);
 
