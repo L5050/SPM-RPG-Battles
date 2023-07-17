@@ -164,3 +164,4 @@ UNKNOWN_FUNCTION(evt_mario_check_3d);
 UNKNOWN_FUNCTION(func_800f33b0);
 
 CPP_WRAPPER_END()
+evt_rpg_calc_damage_to_enemy
