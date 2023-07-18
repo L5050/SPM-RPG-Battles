@@ -2,7 +2,6 @@
 #include "patch.h"
 #include "scripting.cpp"
 
-#include <spm/iValues.h>
 #include <spm/evtmgr.h>
 #include <spm/mario.h>
 #include <spm/evtmgr_cmd.h>
@@ -15,6 +14,9 @@
 #include <spm/seqdef.h>
 #include <wii/os/OSError.h>
 #include <wii/gx.h>
+#include <spm/rel/an2_08.h>
+#include <spm/evt_rpg.h>
+#include <spm/rpgdrv.h>
 extern "C" {
   char marioString[] = "Flip";
   char peachString[] = "Heal";
@@ -113,8 +115,8 @@ spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double p
 
 spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
   spm::evtmgr::EvtEntry * entry;
-  //wii::os::OSReport("%x %x\n", &spm::iValues::theParentOfBeginRPG, &script);
-  if (script == &spm::iValues::theParentOfBeginRPG) {
+  //wii::os::OSReport("%x %x\n", &spm::an2_08::theParentOfBeginRPG, &script);
+  if (script == &spm::an2_08::theParentOfBeginRPG) {
     wii::os::OSReport("evtEntry\n");
     entry = evtEntry1(parentOfBeginRPG, priority, flags);
   } else {
@@ -124,7 +126,7 @@ spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u
 
 spm::evtmgr::EvtEntry * newEvtChildEntry(spm::evtmgr::EvtEntry * entry, const spm::evtmgr::EvtScriptCode * script, u8 flags){
   spm::evtmgr::EvtEntry * entry1;
-    if (script == &spm::iValues::theParentOfBeginRPG) {
+    if (script == &spm::an2_08::theParentOfBeginRPG) {
     wii::os::OSReport("evtChildEntry\n");
       entry1 = evtChildEntry(entry, parentOfBeginRPG, flags);
     } else {
@@ -134,7 +136,7 @@ spm::evtmgr::EvtEntry * newEvtChildEntry(spm::evtmgr::EvtEntry * entry, const sp
 
 spm::evtmgr::EvtEntry * newEvtBrotherEntry(spm::evtmgr::EvtEntry * brother, const spm::evtmgr::EvtScriptCode * script, u8 flags){
   spm::evtmgr::EvtEntry * entry;
-    if (script == &spm::iValues::theParentOfBeginRPG) {
+    if (script == &spm::an2_08::theParentOfBeginRPG) {
     wii::os::OSReport("evtBrotherEntry\n");
       entry = evtBrotherEntry(brother, parentOfBeginRPG, flags);
     } else {
@@ -144,7 +146,7 @@ spm::evtmgr::EvtEntry * newEvtBrotherEntry(spm::evtmgr::EvtEntry * brother, cons
 
 spm::evtmgr::EvtEntry * newEvtEntryType(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags, u8 type) {
   spm::evtmgr::EvtEntry * entry;
-  if (script == &spm::iValues::theParentOfBeginRPG) {
+  if (script == &spm::an2_08::theParentOfBeginRPG) {
     wii::os::OSReport("evtEntryType\n");
     entry = evtEntryType(parentOfBeginRPG, priority, flags, type);
   } else {
@@ -200,10 +202,10 @@ void hookEvent() {
               marioTakeDamage(position, flags, damage);
             });
 
-  writeBranchLink(&spm::iValues::techtext1, 0, chooseNewCharacterString);
-  writeBranchLink(&spm::iValues::rpgTribePatch1, 0, getTribe);
-  writeBranchLink(&spm::iValues::rpgTribePatch2, 0, getTribe2);
-  writeWord(&spm::iValues::underchompRepeatPatch, 0, 0x3B9C0004);
+  writeBranchLink(&spm::rpgdrv::rpg_handle_menu, 0x1BC, chooseNewCharacterString);
+  writeBranchLink(&spm::evt_rpg::evt_rpg_calc_damage_to_enemy, 0x44, getTribe);
+  writeBranchLink(&spm::evt_rpg::evt_rpg_npctribe_handle, 0x94, getTribe2);
+  writeWord(&spm::evt_rpg::evt_rpg_npctribe_handle, 0xA0, 0x3B9C0004);
 }
 
 s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
