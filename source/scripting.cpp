@@ -10,6 +10,7 @@
 #include <spm/evt_map.h>
 #include <spm/evt_paper.h>
 #include <spm/evt_img.h>
+#include <spm/evt_env.h>
 #include <spm/evt_snd.h>
 #include <spm/evt_cam.h>
 #include <spm/evt_sub.h>
@@ -1270,7 +1271,7 @@ WAIT_MSEC(2000)
 DO(0)
     USER_FUNC(spm::evt_rpg::evt_rpg_effect_check, LW(0))
     IF_FLAG(LW(0), 0x1000)
-        USER_FUNC(spm::evt_sub::evt_sub_gameSpeedChange, FLOAT(0.5))
+        USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(0.5))
     END_IF()
     USER_FUNC(spm::evt_rpg::evt_rpg_effect_check, LW(0))
     IF_NOT_FLAG(LW(0), 0x600)
@@ -1294,7 +1295,7 @@ DO(0)
                 END_IF()
                 END_SWITCH()
 END_IF()
-USER_FUNC(spm::evt_sub::evt_sub_gameSpeedChange, FLOAT(1.0))
+USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
 RUN_CHILD_EVT(mod::underchompAttack1)
 SET(LF(0), 0)
 RUN_CHILD_EVT(mod::checkWinOrContinue)
@@ -1315,7 +1316,7 @@ USER_FUNC(spm::evt_rpg::changeRandomDAT1)
 USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
 USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
 USER_FUNC(spm::evt_map::evt_mapdisp_onoff, 1)
-USER_FUNC(spm::evt_sub::evt_sub_gameSpeedChange, FLOAT(1.0))
+USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
 USER_FUNC(spm::evt_fade::evt_fade_entry, 1, 500, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
 IF_EQUAL(LW(0), 0)
@@ -1334,7 +1335,7 @@ EVT_END()
 EVT_BEGIN(parentOfBeginRPG)
 USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
     INLINE_EVT()
-    USER_FUNC(spm::evt_npc::evt_env_blur_on, 0, 500)
+    USER_FUNC(spm::evt_env::evt_env_blur_on, 0, 500)
     END_INLINE()
     USER_FUNC(spm::evt_fade::evt_fade_entry, 24, 500, 0, 0, 0, 255)
     USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)

@@ -228,7 +228,7 @@ spm::npcdrv::NPCWork * npcWork = spm::npcdrv::npcGetWorkPtr();
         spm::evtmgr_cmd::evtSetValue(evtEntry, evtEntry->lw[0], (s32)npcWork->entries[i].name);
         break;
       }
-    } 
+    }
  } if (firstRun ==  false){}
  return 2;
 }
