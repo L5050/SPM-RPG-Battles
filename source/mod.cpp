@@ -116,7 +116,7 @@ spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double p
 spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
   spm::evtmgr::EvtEntry * entry;
   //wii::os::OSReport("%x %x\n", &spm::an2_08::theParentOfBeginRPG, &script);
-  if (script == &spm::an2_08::theParentOfBeginRPG) {
+  if (script == spm::an2_08::theParentOfBeginRPG) {
     wii::os::OSReport("evtEntry\n");
     entry = evtEntry1(parentOfBeginRPG, priority, flags);
   } else {
@@ -126,7 +126,7 @@ spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u
 
 spm::evtmgr::EvtEntry * newEvtChildEntry(spm::evtmgr::EvtEntry * entry, const spm::evtmgr::EvtScriptCode * script, u8 flags){
   spm::evtmgr::EvtEntry * entry1;
-    if (script == &spm::an2_08::theParentOfBeginRPG) {
+    if (script == spm::an2_08::theParentOfBeginRPG) {
     wii::os::OSReport("evtChildEntry\n");
       entry1 = evtChildEntry(entry, parentOfBeginRPG, flags);
     } else {
@@ -136,7 +136,7 @@ spm::evtmgr::EvtEntry * newEvtChildEntry(spm::evtmgr::EvtEntry * entry, const sp
 
 spm::evtmgr::EvtEntry * newEvtBrotherEntry(spm::evtmgr::EvtEntry * brother, const spm::evtmgr::EvtScriptCode * script, u8 flags){
   spm::evtmgr::EvtEntry * entry;
-    if (script == &spm::an2_08::theParentOfBeginRPG) {
+    if (script == spm::an2_08::theParentOfBeginRPG) {
     wii::os::OSReport("evtBrotherEntry\n");
       entry = evtBrotherEntry(brother, parentOfBeginRPG, flags);
     } else {
@@ -146,7 +146,7 @@ spm::evtmgr::EvtEntry * newEvtBrotherEntry(spm::evtmgr::EvtEntry * brother, cons
 
 spm::evtmgr::EvtEntry * newEvtEntryType(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags, u8 type) {
   spm::evtmgr::EvtEntry * entry;
-  if (script == &spm::an2_08::theParentOfBeginRPG) {
+  if (script == spm::an2_08::theParentOfBeginRPG) {
     wii::os::OSReport("evtEntryType\n");
     entry = evtEntryType(parentOfBeginRPG, priority, flags, type);
   } else {
@@ -228,7 +228,7 @@ spm::npcdrv::NPCWork * npcWork = spm::npcdrv::npcGetWorkPtr();
         spm::evtmgr_cmd::evtSetValue(evtEntry, evtEntry->lw[0], (s32)npcWork->entries[i].name);
         break;
       }
-    }
+    } 
  } if (firstRun ==  false){}
  return 2;
 }
