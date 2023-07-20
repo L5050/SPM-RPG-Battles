@@ -5,6 +5,8 @@
 #include <spm/evtmgr.h>
 #include <spm/mario.h>
 #include <spm/evtmgr_cmd.h>
+#include <spm/msgdrv.h>
+#include <spm/seq_mapchange.h>
 #include <spm/effdrv.h>
 #include <spm/animdrv.h>
 #include <spm/npcdrv.h>
@@ -111,6 +113,8 @@ spm::evtmgr::EvtEntry * (*evtEntryType)(const spm::evtmgr::EvtScriptCode * scrip
 void (*marioTakeDamage)(wii::mtx::Vec3 * position, u32 flags, s32 damage);
 s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
 spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double param_3, double param_4, int param_5);
+void (*msgUnLoad)(s32 slot);
+void (*seq_mapChangeMain)(spm::seq_mapchange::SeqWork * work);
 //s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
 
 spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
@@ -180,6 +184,18 @@ s32 newMarioCalcDamageToEnemy(s32 damageType, s32 tribeId) {
 }
 }
 
+void newMsgUnload(s32 slot) {
+  if (slot != 7) {
+    msgUnLoad(slot);
+  }
+}
+
+void newSeq_mapChangeMain(spm::seq_mapchange::SeqWork * work) {
+  seq_mapChangeMain(work);
+  const char stageChar7[] = "stg7";
+  spm::msgdrv::msgLoad(stageChar7, 7);
+}
+
 void hookEvent() {
   evtEntry1 = patch::hookFunction(spm::evtmgr::evtEntry, newEvtEntry);
 
@@ -201,6 +217,10 @@ void hookEvent() {
           //spm::effdrv::EffEntry * effentry = effNiceEntry(1, 0, -2139062144, 1600222564, 1601071459);
               marioTakeDamage(position, flags, damage);
             });
+
+  msgUnLoad = patch::hookFunction(spm::msgdrv::msgUnLoad, newMsgUnload);
+
+  //seq_mapChangeMain = patch::hookFunction(spm::seq_mapchange::seq_mapChangeMain, newSeq_mapChangeMain);
 
   writeBranchLink(&spm::rpgdrv::rpg_handle_menu, 0x1BC, chooseNewCharacterString);
   writeBranchLink(&spm::evt_rpg::evt_rpg_calc_damage_to_enemy, 0x44, getTribe);
