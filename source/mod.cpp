@@ -75,12 +75,15 @@ asm
 namespace mod {
 bool rpgInProgress = false;
 bool bossFight = false;
+bool loadedStage7 = false;
+
 /*
     Title Screen Custom Text
     Prints "SPM RPG Battles" at the top of the title screen
 */
 
 static spm::seqdef::SeqFunc *seq_titleMainReal;
+static spm::seqdef::SeqFunc *seq_gameMainReal;
 static void seq_titleMainOverride(spm::seqdrv::SeqWork *wp)
 {
     wii::gx::GXColor green = {0, 255, 0, 255};
@@ -96,10 +99,21 @@ static void seq_titleMainOverride(spm::seqdrv::SeqWork *wp)
     spm::fontmgr::FontDrawString(x, 200.0f, msg);
     seq_titleMainReal(wp);
 }
+
+static void seq_gameMainOverride(spm::seqdrv::SeqWork *wp)
+{
+  if (loadedStage7 == false) {
+  loadedStage7 = spm::msgdrv::msgLoad("stg7", 7);
+  }
+  seq_gameMainReal(wp);
+}
+
 static void titleScreenCustomTextPatch()
 {
     seq_titleMainReal = spm::seqdef::seq_data[spm::seqdrv::SEQ_TITLE].main;
     spm::seqdef::seq_data[spm::seqdrv::SEQ_TITLE].main = &seq_titleMainOverride;
+    seq_gameMainReal = spm::seqdef::seq_data[spm::seqdrv::SEQ_GAME].main;
+    spm::seqdef::seq_data[spm::seqdrv::SEQ_GAME].main = &seq_gameMainOverride;
 }
 
 /*
@@ -114,7 +128,6 @@ void (*marioTakeDamage)(wii::mtx::Vec3 * position, u32 flags, s32 damage);
 s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
 spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double param_3, double param_4, int param_5);
 void (*msgUnLoad)(s32 slot);
-void (*seq_mapChangeMain)(spm::seq_mapchange::SeqWork * work);
 //s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
 
 spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
@@ -190,12 +203,6 @@ void newMsgUnload(s32 slot) {
   }
 }
 
-void newSeq_mapChangeMain(spm::seq_mapchange::SeqWork * work) {
-  seq_mapChangeMain(work);
-  const char stageChar7[] = "stg7";
-  spm::msgdrv::msgLoad(stageChar7, 7);
-}
-
 void hookEvent() {
   evtEntry1 = patch::hookFunction(spm::evtmgr::evtEntry, newEvtEntry);
 
@@ -219,8 +226,6 @@ void hookEvent() {
             });
 
   msgUnLoad = patch::hookFunction(spm::msgdrv::msgUnLoad, newMsgUnload);
-
-  //seq_mapChangeMain = patch::hookFunction(spm::seq_mapchange::seq_mapChangeMain, newSeq_mapChangeMain);
 
   writeBranchLink(&spm::rpgdrv::rpg_handle_menu, 0x1BC, chooseNewCharacterString);
   writeBranchLink(&spm::evt_rpg::evt_rpg_calc_damage_to_enemy, 0x44, getTribe);
