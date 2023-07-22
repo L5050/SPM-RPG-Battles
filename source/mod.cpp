@@ -17,8 +17,6 @@
 #include <wii/os/OSError.h>
 #include <wii/gx.h>
 #include <spm/rel/an2_08.h>
-#include <spm/evt_rpg.h>
-#include <spm/rpgdrv.h>
 extern "C" {
   char marioString[] = "Flip";
   char peachString[] = "Heal";
@@ -76,6 +74,7 @@ namespace mod {
 bool rpgInProgress = false;
 bool bossFight = false;
 bool loadedStage7 = false;
+const char rpgStart[] = {"Flint Cragley Attacks!<o>"};
 
 /*
     Title Screen Custom Text
@@ -102,9 +101,6 @@ static void seq_titleMainOverride(spm::seqdrv::SeqWork *wp)
 
 static void seq_gameMainOverride(spm::seqdrv::SeqWork *wp)
 {
-  if (loadedStage7 == false) {
-  loadedStage7 = spm::msgdrv::msgLoad("stg7", 7);
-  }
   seq_gameMainReal(wp);
 }
 
@@ -128,7 +124,20 @@ void (*marioTakeDamage)(wii::mtx::Vec3 * position, u32 flags, s32 damage);
 s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
 spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double param_3, double param_4, int param_5);
 void (*msgUnLoad)(s32 slot);
+const char * (*msgSearch)(const char * msgName);
 //s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
+
+const char * newMsgSearch(const char * msgName) {
+
+  const char ogRpgStart[] = {"stg7_2_133_2_001"};
+
+  if (*msgName == *ogRpgStart) {
+    return rpgStart;
+  } else {
+    return msgSearch(msgName);
+  }
+
+}
 
 spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
   spm::evtmgr::EvtEntry * entry;
@@ -227,10 +236,13 @@ void hookEvent() {
 
   msgUnLoad = patch::hookFunction(spm::msgdrv::msgUnLoad, newMsgUnload);
 
-  writeBranchLink(&spm::rpgdrv::rpg_handle_menu, 0x1BC, chooseNewCharacterString);
-  writeBranchLink(&spm::evt_rpg::evt_rpg_calc_damage_to_enemy, 0x44, getTribe);
-  writeBranchLink(&spm::evt_rpg::evt_rpg_npctribe_handle, 0x94, getTribe2);
-  writeWord(&spm::evt_rpg::evt_rpg_npctribe_handle, 0xA0, 0x3B9C0004);
+//  msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
+
+  writeBranchLink(&spm::an2_08::rpg_handle_menu, 0x1BC, chooseNewCharacterString);
+  writeBranchLink(&spm::an2_08::evt_rpg_calc_damage_to_enemy, 0x44, getTribe);
+  writeBranchLink(&spm::an2_08::evt_rpg_npctribe_handle, 0x94, getTribe2);
+  writeWord(&spm::an2_08::evt_rpg_npctribe_handle, 0xA0, 0x3B9C0004);
+  writeWord(&spm::an2_08::evt_rpg_npctribe_handle, 0x8C, 0x3BA00018);
 }
 
 s32 npcEntryFromTribeId(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
