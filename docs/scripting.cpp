@@ -3,6 +3,7 @@
 #include "patch.h"
 
 #include <spm/rel/an2_08.h>
+#include <spm/rel/an.h>
 #include <spm/evtmgr.h>
 #include <spm/evt_msg.h>
 #include <spm/evt_mario.h>
@@ -1325,9 +1326,9 @@ EVT_BEGIN(parentOfBeginRPG)
 USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
 USER_FUNC(spm::evt_mario::evt_mario_fairy_reset)
 USER_FUNC(spm::evt_cam::evt_cam_look_at_door, 1, 0)
-USER_FUNC(spm::an2_08::evt_an2_08_target_face, 0)
+USER_FUNC(spm::an::evt_an_remove_npcs, 0)
 USER_FUNC(spm::evt_snd::evt_snd_bgmoff_f_d, 0, 2000)
-USER_FUNC(spm::an2_08::evt_unknown_pointer_change, 1)
+USER_FUNC(spm::an::evt_an_darkness_onoff, 1)
 USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 1, 3475, 1080, 484, 3475, 1080, -16, 500, 11)
 WAIT_MSEC(500)
 USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(0), LW(1), LW(2))
@@ -1443,7 +1444,7 @@ USER_FUNC(spm::evt_door::evt_door_enable_disable_map_door_desc, 1, PTR("doa2_l")
 USER_FUNC(spm::evt_door::evt_door_set_event, PTR("doa2_l"), 0, PTR(spm::iValues::finalRpgChild)) //final param is a short event
 USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 500, 11)
 USER_FUNC(spm::evt_mario::evt_mario_key_on)
-USER_FUNC(spm::an2_08::evt_unknown_pointer_change, 0)
+USER_FUNC(spm::an::evt_an_darkness_onoff, 0)
 USER_FUNC(spm::evt_case::evt_del_case_evt, 1, GW(5))
 USER_FUNC(spm::evt_case::evt_exit_case_evt)
 RETURN()
@@ -1453,7 +1454,7 @@ USER_FUNC(spm::evt_map::evt_map_checkanim, PTR("anm_kao_4"), LW(0), LW(1))
 WAIT_MSEC(LW(1))
 USER_FUNC(spm::evt_map::evt_mapobj_flag_onoff, 1, 1, PTR("anm_kao_1"), 1)
 USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 500, 11)
-USER_FUNC(spm::an2_08::evt_unknown_pointer_change, 0)
+USER_FUNC(spm::an::evt_an_darkness_onoff, 0)
 USER_FUNC(spm::evt_mario::evt_mario_key_on)
 RETURN()
 EVT_END()
