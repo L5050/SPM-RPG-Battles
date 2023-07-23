@@ -21,7 +21,7 @@
 #include <spm/evt_door.h>
 #include <spm/evt_case.h>
 #include <spm/evt_pouch.h>
-#include <spm/rel/an2_08.h>
+#include <spm/rel/an.h>
 #include <spm/evt_seq.h>
 #include <spm/wpadmgr.h>
 #include <spm/fontmgr.h>

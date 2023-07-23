@@ -20,6 +20,7 @@
 #include <spm/evt_pouch.h>
 #include <spm/evt_seq.h>
 #include <spm/rel/an2_08.h>
+#include <spm/rel/an.h>
 #include <spm/wpadmgr.h>
 #include <spm/fontmgr.h>
 #include <spm/seqdrv.h>

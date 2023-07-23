@@ -17,6 +17,7 @@
 #include <wii/os/OSError.h>
 #include <wii/gx.h>
 #include <spm/rel/an2_08.h>
+#include <spm/rel/an.h>
 extern "C" {
   char marioString[] = "Flip";
   char peachString[] = "Heal";
@@ -212,6 +213,13 @@ void newMsgUnload(s32 slot) {
   }
 }
 
+void nopTPL() {
+  writeWord(&spm::an2_08::rpg_screen_draw, 0x204, 0x60000000);
+  writeWord(&spm::an2_08::rpg_screen_draw, 0x208, 0x60000000);
+  writeWord(&spm::an2_08::rpg_screen_draw, 0x210, 0x60000000);
+  writeWord(&spm::an2_08::rpg_screen_draw, 0x310, 0x60000000);
+}
+
 void hookEvent() {
   evtEntry1 = patch::hookFunction(spm::evtmgr::evtEntry, newEvtEntry);
 
@@ -237,7 +245,7 @@ void hookEvent() {
   msgUnLoad = patch::hookFunction(spm::msgdrv::msgUnLoad, newMsgUnload);
 
 //  msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
-
+  //nopTPL();
   writeBranchLink(&spm::an2_08::rpg_handle_menu, 0x1BC, chooseNewCharacterString);
   writeBranchLink(&spm::an2_08::evt_rpg_calc_damage_to_enemy, 0x44, getTribe);
   writeBranchLink(&spm::an2_08::evt_rpg_npctribe_handle, 0x94, getTribe2);
