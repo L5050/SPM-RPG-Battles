@@ -8,6 +8,7 @@
 #include <spm/msgdrv.h>
 #include <spm/seq_mapchange.h>
 #include <spm/effdrv.h>
+#include <spm/eff_nice.h>
 #include <spm/animdrv.h>
 #include <spm/npcdrv.h>
 #include <spm/camdrv.h>
@@ -142,8 +143,8 @@ const char * newMsgSearch(const char * msgName) {
 
 spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
   spm::evtmgr::EvtEntry * entry;
-  //wii::os::OSReport("%x %x\n", &spm::an2_08::theParentOfBeginRPG, &script);
-  if (script == spm::an2_08::theParentOfBeginRPG) {
+  //wii::os::OSReport("%x %x\n", &spm::an2_08::begin_rpg_parent_evt, &script);
+  if (script == spm::an2_08::begin_rpg_parent_evt) {
     wii::os::OSReport("evtEntry\n");
     entry = evtEntry1(parentOfBeginRPG, priority, flags);
   } else {
@@ -153,7 +154,7 @@ spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u
 
 spm::evtmgr::EvtEntry * newEvtChildEntry(spm::evtmgr::EvtEntry * entry, const spm::evtmgr::EvtScriptCode * script, u8 flags){
   spm::evtmgr::EvtEntry * entry1;
-    if (script == spm::an2_08::theParentOfBeginRPG) {
+    if (script == spm::an2_08::begin_rpg_parent_evt) {
     wii::os::OSReport("evtChildEntry\n");
       entry1 = evtChildEntry(entry, parentOfBeginRPG, flags);
     } else {
@@ -163,7 +164,7 @@ spm::evtmgr::EvtEntry * newEvtChildEntry(spm::evtmgr::EvtEntry * entry, const sp
 
 spm::evtmgr::EvtEntry * newEvtBrotherEntry(spm::evtmgr::EvtEntry * brother, const spm::evtmgr::EvtScriptCode * script, u8 flags){
   spm::evtmgr::EvtEntry * entry;
-    if (script == spm::an2_08::theParentOfBeginRPG) {
+    if (script == spm::an2_08::begin_rpg_parent_evt) {
     wii::os::OSReport("evtBrotherEntry\n");
       entry = evtBrotherEntry(brother, parentOfBeginRPG, flags);
     } else {
@@ -173,7 +174,7 @@ spm::evtmgr::EvtEntry * newEvtBrotherEntry(spm::evtmgr::EvtEntry * brother, cons
 
 spm::evtmgr::EvtEntry * newEvtEntryType(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags, u8 type) {
   spm::evtmgr::EvtEntry * entry;
-  if (script == spm::an2_08::theParentOfBeginRPG) {
+  if (script == spm::an2_08::begin_rpg_parent_evt) {
     wii::os::OSReport("evtEntryType\n");
     entry = evtEntryType(parentOfBeginRPG, priority, flags, type);
   } else {
@@ -231,7 +232,7 @@ void hookEvent() {
 
   //evt_inline_evt = patch::hookFunction(spm::evtmgr_cmd::evt_inline_evt, new_evt_inline_evt);
 
-  effNiceEntry = patch::hookFunction(spm::effdrv::effNiceEntry, newEffNiceEntry);
+  effNiceEntry = patch::hookFunction(spm::eff_nice::effNiceEntry, newEffNiceEntry);
 
   marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
 
@@ -246,7 +247,7 @@ void hookEvent() {
 
 //  msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
   //nopTPL();
-  writeBranchLink(&spm::an2_08::rpg_handle_menu, 0x1BC, chooseNewCharacterString);
+  writeBranchLink(&spm::an2_08::rpgHandleMenu, 0x1BC, chooseNewCharacterString);
   writeBranchLink(&spm::an2_08::evt_rpg_calc_damage_to_enemy, 0x44, getTribe);
   writeBranchLink(&spm::an2_08::evt_rpg_npctribe_handle, 0x94, getTribe2);
   writeWord(&spm::an2_08::evt_rpg_npctribe_handle, 0xA0, 0x3B9C0004);
