@@ -2,6 +2,7 @@
 #include "mod.h"
 #include "patch.h"
 
+#include <spm/rel/an.h>
 #include <spm/evtmgr.h>
 #include <spm/evt_msg.h>
 #include <spm/evt_mario.h>
@@ -1245,7 +1246,8 @@ EVT_END()
 
 
 EVT_BEGIN(beginRPG) //80df2e90
-USER_FUNC(spm::evt_snd::evt_snd_bgmon, 0, PTR("BGM_EVT_STG7_RPG1"))
+//USER_FUNC(spm::an::evt_an_init_tpl)
+USER_FUNC(spm::evt_snd::evt_snd_bgmon, 0, PTR("BGM_BTL_BOSS_STG4")) //original is BGM_EVT_STG7_RPG1
 USER_FUNC(spm::evt_snd::evt_snd_string_call, 0)
 USER_FUNC(spm::evt_paper::evt_paper_entry, PTR("OFF_house_02"))
 USER_FUNC(spm::evt_img::evt_img_entry, PTR("img"))

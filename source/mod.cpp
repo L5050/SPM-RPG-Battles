@@ -2,6 +2,7 @@
 #include "patch.h"
 #include "scripting.cpp"
 
+#include <spm/spmario_snd.h>
 #include <spm/evtmgr.h>
 #include <spm/mario.h>
 #include <spm/evtmgr_cmd.h>
@@ -19,6 +20,7 @@
 #include <wii/gx.h>
 #include <spm/rel/an2_08.h>
 #include <spm/rel/an.h>
+#include <spm/rel/sp4_13.h>
 extern "C" {
   char marioString[] = "Flip";
   char peachString[] = "Heal";
@@ -122,12 +124,12 @@ spm::evtmgr::EvtEntry * (*evtEntry1)(const spm::evtmgr::EvtScriptCode * script, 
 spm::evtmgr::EvtEntry * (*evtChildEntry)(spm::evtmgr::EvtEntry * entry, const spm::evtmgr::EvtScriptCode * script, u8 flags);
 spm::evtmgr::EvtEntry * (*evtBrotherEntry)(spm::evtmgr::EvtEntry * brother, const spm::evtmgr::EvtScriptCode * script, u8 flags);
 spm::evtmgr::EvtEntry * (*evtEntryType)(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags, u8 type);
-void (*marioTakeDamage)(wii::mtx::Vec3 * position, u32 flags, s32 damage);
+bool (*spsndBGMOn)(u32 flags, const char * name);
 s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
 spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double param_3, double param_4, int param_5);
 void (*msgUnLoad)(s32 slot);
 const char * (*msgSearch)(const char * msgName);
-//s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
+s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
 
 const char * newMsgSearch(const char * msgName) {
 
@@ -143,7 +145,7 @@ const char * newMsgSearch(const char * msgName) {
 
 spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags) {
   spm::evtmgr::EvtEntry * entry;
-  //wii::os::OSReport("%x %x\n", &spm::an2_08::begin_rpg_parent_evt, &script);
+  wii::os::OSReport("%x\n", script);
   if (script == spm::an2_08::begin_rpg_parent_evt) {
     wii::os::OSReport("evtEntry\n");
     entry = evtEntry1(parentOfBeginRPG, priority, flags);
@@ -154,9 +156,10 @@ spm::evtmgr::EvtEntry * newEvtEntry(const spm::evtmgr::EvtScriptCode * script, u
 
 spm::evtmgr::EvtEntry * newEvtChildEntry(spm::evtmgr::EvtEntry * entry, const spm::evtmgr::EvtScriptCode * script, u8 flags){
   spm::evtmgr::EvtEntry * entry1;
-    if (script == spm::an2_08::begin_rpg_parent_evt) {
+    if (script == spm::sp4_13::brobot_appear) {
     wii::os::OSReport("evtChildEntry\n");
-      entry1 = evtChildEntry(entry, parentOfBeginRPG, flags);
+    wii::os::OSReport("%x\n", entry->scriptStart);
+      entry1 = evtChildEntry(entry, spm::sp4_13::brobot_appear, flags);
     } else {
   entry1 = evtChildEntry(entry, script, flags);}
   return entry1;
@@ -182,10 +185,10 @@ spm::evtmgr::EvtEntry * newEvtEntryType(const spm::evtmgr::EvtScriptCode * scrip
   return entry;
 }
 
-/*s32 new_evt_inline_evt(spm::evtmgr::EvtEntry * entry) {
+s32 new_evt_inline_evt(spm::evtmgr::EvtEntry * entry) {
   wii::os::OSReport("%x\n", entry->scriptStart);
   return evt_inline_evt(entry);
-}*/
+}
 
 spm::effdrv::EffEntry * newEffNiceEntry(double param_1, double param_2, double param_3, double param_4, int param_5) {
 
@@ -198,7 +201,7 @@ s32 newMarioCalcDamageToEnemy(s32 damageType, s32 tribeId) {
   //spm::effdrv::EffEntry * effentry = effNiceEntry(1, 0, -2139062144, 1600222564, 1601071459);
 
   if (rpgInProgress == false){
-  rpgTribeID[0] = tribeId;
+  rpgTribeID[1] = tribeId;
   wii::os::OSReport("%d %d\n", tribeId, rpgTribeID[0]);
   spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
   rpgInProgress = true;
@@ -212,6 +215,13 @@ void newMsgUnload(s32 slot) {
   if (slot != 7) {
     msgUnLoad(slot);
   }
+}
+
+bool new_spsndBGMOn(u32 flags, const char * name) {
+
+  wii::os::OSReport("%s\n", name);
+  return spsndBGMOn(flags, name);
+
 }
 
 void nopTPL() {
@@ -234,14 +244,9 @@ void hookEvent() {
 
   effNiceEntry = patch::hookFunction(spm::eff_nice::effNiceEntry, newEffNiceEntry);
 
-  marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
+  //marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
 
-  marioTakeDamage = patch::hookFunction(spm::mario::marioTakeDamage,
-    [](wii::mtx::Vec3 * position, u32 flags, s32 damage)
-            {
-          //spm::effdrv::EffEntry * effentry = effNiceEntry(1, 0, -2139062144, 1600222564, 1601071459);
-              marioTakeDamage(position, flags, damage);
-            });
+  //spsndBGMOn = patch::hookFunction(spm::spmario_snd::spsndBGMOn, new_spsndBGMOn);
 
   msgUnLoad = patch::hookFunction(spm::msgdrv::msgUnLoad, newMsgUnload);
 
@@ -270,7 +275,7 @@ s32 getRpgNpc(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
 spm::npcdrv::NPCWork * npcWork = spm::npcdrv::npcGetWorkPtr();
  if (bossFight == false) {
     for (int i = 0; i < 525; i++) {
-      if (npcWork->entries[i].tribeId == rpgTribeID[0]) {
+      if (npcWork->entries[i].tribeId == rpgTribeID[1]) {
         spm::evtmgr_cmd::evtSetValue(evtEntry, evtEntry->lw[0], (s32)npcWork->entries[i].name);
         break;
       }
