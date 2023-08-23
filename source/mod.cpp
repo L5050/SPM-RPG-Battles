@@ -124,12 +124,13 @@ spm::evtmgr::EvtEntry * (*evtEntry1)(const spm::evtmgr::EvtScriptCode * script, 
 spm::evtmgr::EvtEntry * (*evtChildEntry)(spm::evtmgr::EvtEntry * entry, const spm::evtmgr::EvtScriptCode * script, u8 flags);
 spm::evtmgr::EvtEntry * (*evtBrotherEntry)(spm::evtmgr::EvtEntry * brother, const spm::evtmgr::EvtScriptCode * script, u8 flags);
 spm::evtmgr::EvtEntry * (*evtEntryType)(const spm::evtmgr::EvtScriptCode * script, u32 priority, u8 flags, u8 type);
-bool (*spsndBGMOn)(u32 flags, const char * name);
-s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
 spm::effdrv::EffEntry * (*effNiceEntry)(double param_1, double param_2, double param_3, double param_4, int param_5);
+bool (*spsndBGMOn)(u32 flags, const char * name);
+bool (*spsndSFXOn)(const char * name);
+s32 (*marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
+s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
 void (*msgUnLoad)(s32 slot);
 const char * (*msgSearch)(const char * msgName);
-s32 (*evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
 
 const char * newMsgSearch(const char * msgName) {
 
@@ -224,6 +225,13 @@ bool new_spsndBGMOn(u32 flags, const char * name) {
 
 }
 
+bool new_spsndSFXOn(const char * name) {
+
+  wii::os::OSReport("%s\n", name);
+  return spsndBGMOn(name);
+
+}
+
 void nopTPL() {
   writeWord(&spm::an2_08::rpg_screen_draw, 0x204, 0x60000000);
   writeWord(&spm::an2_08::rpg_screen_draw, 0x208, 0x60000000);
@@ -247,6 +255,8 @@ void hookEvent() {
   //marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
 
   //spsndBGMOn = patch::hookFunction(spm::spmario_snd::spsndBGMOn, new_spsndBGMOn);
+  
+  spsndSFXOn = patch::hookFunction(spm::spmario_snd::spsndSFXOn, new_spsndSFXOn);
 
   msgUnLoad = patch::hookFunction(spm::msgdrv::msgUnLoad, newMsgUnload);
 
