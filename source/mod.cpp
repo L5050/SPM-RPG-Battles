@@ -228,7 +228,7 @@ bool new_spsndBGMOn(u32 flags, const char * name) {
 bool new_spsndSFXOn(const char * name) {
 
   wii::os::OSReport("%s\n", name);
-  return spsndBGMOn(name);
+  return spsndSFXOn(name);
 
 }
 
@@ -255,7 +255,7 @@ void hookEvent() {
   //marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
 
   //spsndBGMOn = patch::hookFunction(spm::spmario_snd::spsndBGMOn, new_spsndBGMOn);
-  
+
   spsndSFXOn = patch::hookFunction(spm::spmario_snd::spsndSFXOn, new_spsndSFXOn);
 
   msgUnLoad = patch::hookFunction(spm::msgdrv::msgUnLoad, newMsgUnload);
