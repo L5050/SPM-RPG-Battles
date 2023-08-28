@@ -252,7 +252,7 @@ void hookEvent() {
 
   effNiceEntry = patch::hookFunction(spm::eff_nice::effNiceEntry, newEffNiceEntry);
 
-  //marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
+  marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
 
   //spsndBGMOn = patch::hookFunction(spm::spmario_snd::spsndBGMOn, new_spsndBGMOn);
 
