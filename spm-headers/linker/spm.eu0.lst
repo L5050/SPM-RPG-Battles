@@ -200,6 +200,7 @@
 800e4118:evt_door_set_map_door_descs
 800e4308:evt_door_enable_disable_map_door_desc
 800e45c8:evt_door_set_event
+800e468c:evt_door_openable_onoff
 // more
 // data
 8041a2b0:door_init_evt
@@ -345,6 +346,7 @@
 8010c83c:evt_pouch_set_attack
 8010c8b8:evt_pouch_add_attack
 8010c9c4:evt_pouch_check_have_item
+8010CA18:evt_pouch_remove_item
 8010cdd4:evt_pouch_set_level
 8010cd88:evt_pouch_get_level
 8010ce04:evt_pouch_get_next_level_xp
@@ -376,6 +378,8 @@
 // more
 
 // mario_pouch.c
+8014ef98:pouchGetCharInfo
+8014f080:pouchGetPixlInfo
 // text
 8014c088:pouchGetPtr
 8014d458:pouchGetHp
@@ -453,6 +457,7 @@
 8019d150:rand
 8019d254:irand
 8019c54c:__assert2
+8019cf84:qqsort
 // more
 
 // debug.c
@@ -818,6 +823,8 @@
 //   80f64340 6 .bss
 
 // an2_08.c
+1,6,1320:an2_08_wp
+1,5,fa148:lbl_80def2c8
 1,5,fa26c:rpg_snd_hit_evt
 1,5,fa2b8:rpg_snd_miss_evt
 1,5,fa380:rpg_attacking_evt
@@ -830,6 +837,7 @@
 1,5,fd3b0:rpg_check_win_or_continue_evt
 1,5,fe150:final_rpg_child_evt
 1,5,fe1cc:begin_rpg_parent_evt
+1,1,2700c:func_80c6c908
 1,1,27050:rpgHandleMenu
 1,1,27590:rpg_screen_draw
 1,1,27c88:evt_rpg_npctribe_handle
@@ -861,15 +869,15 @@
 // more
 
 //sp4_13.c
-1,1,16854:returnCharAnimPos
+1,1,16854:spReturnAngryAnimPos
 1,1,16a08:func_80c5c304
 1,1,16a70:func_80c5c36c
-1,5,a95f8:mrLStartTribeAnimDefs
-1,5,a9600:mrLTribeAnimDefs
-1,5,a96e8:mrLTauntTribeAnimDefs
-1,5,a9788:theGreenThunderTribeAnimDefs
-1,5,a9b24:mr_l_appear
-1,5,aa4a0:brobot_appear
+1,5,a95f8:spMrLStartTribeAnimDefs
+1,5,a9600:spMrLTribeAnimDefs
+1,5,a96e8:spMrLTauntTribeAnimDefs
+1,5,a9788:spTheGreenThunderTribeAnimDefs
+1,5,a9b24:mr_l_appear_evt
+1,5,aa4a0:brobot_appear_evt
 // more
 
 // machi.c
