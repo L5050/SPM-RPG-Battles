@@ -67,7 +67,7 @@ typedef struct
 SIZE_ASSERT(FileWork, 0x14)
 
 DECOMP_STATIC(FileWork filemgr_work)
-DECOMP_STATIC(FileWork * filemgr_wp)
+DECOMP_STATIC(FileWork * filemgr_afp)
 
 /*
     Initialise entries
@@ -122,6 +122,7 @@ DECOMP_STATIC(void filemgr_dvdReadDoneCallback(s32 result, DVDFileInfo * fileInf
     Loads a file asynchronously
     Returns a null pointer if the file isn't loaded yet
 */
+ATTRIBUTE_FORMAT(printf, 3, 4)
 FileEntry * fileAsyncf(s32 fileType, s32 p2, const char * format, ...);
 FileEntry * fileAsync(const char * path, s32 fileType, s32 p3);
 
