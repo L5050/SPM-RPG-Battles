@@ -1586,7 +1586,7 @@ bool IsNpcActive(s32 index) {
     
     s32 attackStrength = spm::an2_08::an2_08_wp.rpgNpcInfo[evtEntry->uw[0]].attackStrength;
     if (attackStrength == 0) attackStrength = 1;
-    if ((spm::an2_08::an2_08_wp.unk_54 & 0x40U) != 0) {
+    if ((spm::an2_08::an2_08_wp.statusEffects & 0x40U) != 0) {
       if (0 < attackStrength) {
         attackStrength = attackStrength / 2;
       }
@@ -1753,8 +1753,8 @@ bool IsNpcActive(s32 index) {
         spm::an2_08::an2_08_wp.rpgNpcInfo[i].maxHp = spm::npcdrv::npcTribes[rpgTribeID[i]].maxHp;
         spm::an2_08::an2_08_wp.rpgNpcInfo[i].killXp = spm::npcdrv::npcTribes[rpgTribeID[i]].killXp;
         spm::an2_08::an2_08_wp.rpgNpcInfo[i].flags = 0;
-        spm::an2_08::an2_08_wp.rpgNpcInfo[i].unk_4 = 0;
-        spm::an2_08::an2_08_wp.rpgNpcInfo[i].unk_10 = 0xff;
+        spm::an2_08::an2_08_wp.rpgNpcInfo[i].stunTime = 0;
+        spm::an2_08::an2_08_wp.rpgNpcInfo[i].killDisappearTimer = 0xff;
       }
     }
     rpgInProgress = true;
