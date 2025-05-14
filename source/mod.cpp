@@ -1832,6 +1832,13 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
 
+  s32 getCurMap(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::npcdrv::NPCWork * npcWork = spm::npcdrv::npcGetWorkPtr();
+    spm::evtmgr::EvtVar * args = evtEntry -> pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)spm::spmario::gp->mapName);
+    return 2;
+  }
+
   s32 increaseAttack(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 newStrength = args[0];
