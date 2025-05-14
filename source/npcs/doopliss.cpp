@@ -164,7 +164,7 @@ NPCTribeAnimDef animsDoopliss[] = {
   "<k>\n"
   "<o>\n";
 
-  const char * superguard = "<p>\n"
+  static const char * superguard = "<p>\n"
   "%s superguarded!"
   "<k>\n";
 
@@ -218,7 +218,6 @@ EVT_DECLARE_USER_FUNC(fix_doopliss_being_annoying, 1)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(doopliss_yup), 0, PTR("doopliss"))
   END_IF()
   USER_FUNC(spm::evt_snd::evt_snd_bgmon, 0, PTR("BGM_EVT_RELAXATION1"))
-  USER_FUNC(spm::evt_pouch::evt_pouch_set_attack, 1)
   USER_FUNC(start_boss_fight, 529)
   WAIT_MSEC(800)
   USER_FUNC(spm::evt_npc::evt_npc_set_position, PTR("doopliss"), 0, -100, 0)

@@ -11,6 +11,7 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(rpg_npc_setup, 0)
   EVT_DECLARE_USER_FUNC(rpg_off, 0)
   EVT_DECLARE_USER_FUNC(enable_disable_rpg_menu, 1)
+  EVT_DECLARE_USER_FUNC(enable_disable_stylish, 1)
   EVT_DECLARE_USER_FUNC(start_boss_fight, 1)
   EVT_DECLARE_USER_FUNC(getFP, 1)
   EVT_DECLARE_USER_FUNC(setFP, 1)
@@ -32,5 +33,8 @@ namespace mod {
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)
   EVT_DECLARE(marioRPGtakeDamage)
+  EVT_DECLARE(damageAnims)
+  EVT_DECLARE(rpg_jump)
+  EVT_DECLARE(insertNop)
 
 }

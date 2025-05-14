@@ -15,12 +15,16 @@
 #include <spm/msgdrv.h>
 #include <spm/seq_mapchange.h>
 #include <spm/effdrv.h>
+#include <spm/hitdrv.h>
 #include <spm/eff_nice.h>
 #include <spm/eff_spm_hit.h>
 #include <spm/dispdrv.h>
 #include <spm/animdrv.h>
+#include <spm/item_data.h>
 #include <spm/npcdrv.h>
+#include <spm/map_data.h>
 #include <spm/fontmgr.h>
+#include <spm/fairy.h>
 #include <spm/seqdrv.h>
 #include <spm/seqdef.h>
 #include <spm/system.h>
@@ -32,6 +36,7 @@
 #include <wii/tpl.h>
 #include <wii/mtx.h>
 #include <msl/string.h>
+#include <msl/stdio.h>
 #include <spm/rel/an2_08.h>
 #include <spm/rel/an.h>
 #include <spm/rel/sp4_13.h>
@@ -40,7 +45,7 @@ USING(wii::mtx::Vec3)
 
 //credit to rainchus for helping me out with these ASM hooks :)
 extern "C" {
-  char marioString[] = "Flip";
+  char marioString[] = "Tattle";
   char peachString[] = "Heal";
   char bowserString[] = "Flame";
   char luigiString[] = "Super Jump";
@@ -90,6 +95,13 @@ extern "C" {
     return;
   }
 
+  void drawStylishButton() {
+    // Flower disp
+    const Vec3 fpVec = {0.0, 0.0, 0.0};
+    spm::icondrv::iconDispGx(1.0, &fpVec, 4, 5);
+    return;
+  }
+
   s32 returnTribe(s32 index) {
     asm("mr 3, 28");
     return rpgTribeID[index];
@@ -119,15 +131,17 @@ namespace mod {
   bool rpgInProgress = false;
   bool bossFight = false;
   bool screenOn = true;
+  bool drawStylish = false;
   bool succeededActionCommand = false;
   bool superGuard = false;
   spm::npcdrv::NPCEntryUnkDef turnBasedCombatOverride[2];
   s32 fp = 0;
   wii::tpl::TPLHeader *myTplHeader = nullptr;
+  char * mainText = nullptr;
 
   /*
       Title Screen Custom Text
-      Prints "Brobot After Some Windex" at the top of the title screen
+      Prints "Super Duper Paper Mario" at the top of the title screen
   */
 
   static spm::seqdef::SeqFunc * seq_titleMainReal;
@@ -140,7 +154,7 @@ namespace mod {
       255
     };
     f32 scale = 0.8;
-    const char * msg = "Brobot After Some Windex";
+    const char * msg = "Super Duper Paper Mario";
     spm::fontmgr::FontDrawStart();
     spm::fontmgr::FontDrawEdge();
     spm::fontmgr::FontDrawColor( & green);
@@ -153,45 +167,17 @@ namespace mod {
   }
 
     static void seq_gameMainOverride(spm::seqdrv::SeqWork * wp) {
-    if (rpgInProgress == true) {
-      wii::gx::GXColor green = {
-        0,
-        255,
-        0,
-        255
-      };
-      f32 scale = 0.8;
-      char buffer [50];
-      sprintf(buffer, "%d", fp);
-      const char * msg = buffer;
-      spm::fontmgr::FontDrawStart();
-      spm::fontmgr::FontDrawEdge();
-      spm::fontmgr::FontDrawColor( & green);
-      spm::fontmgr::FontDrawScale(scale);
-      spm::fontmgr::FontDrawNoiseOff();
-      spm::fontmgr::FontDrawRainbowColor();
-      f32 x = -((spm::fontmgr::FontGetMessageWidth(msg) * scale) / 2);
-      spm::fontmgr::FontDrawString(x+-50, -161.0, msg);
+      spm::mario::MarioWork *mwpp = spm::mario::marioGetPtr();
+
+
+
+      if (mwpp->hitObjRideArray[0] != nullptr) {
+        if (mwpp->hitObjRideArray[0]->joint != nullptr) {
+          wii::os::OSReport("%s\n", mwpp->hitObjRideArray[0]->joint->name);
+          //spm::hitdrv::hitDelete("A2D_J_iwa_01");
+        }
       }
-      /*
-      if (rpgInProgress == true) {
-        wii::gx::GXColor green = {
-          0,
-          255,
-          0,
-          255
-        };
-        f32 scale = 0.8;
-        const char * msg = "FP:";
-        spm::fontmgr::FontDrawStart();
-        spm::fontmgr::FontDrawEdge();
-        spm::fontmgr::FontDrawColor( & green);
-        spm::fontmgr::FontDrawScale(scale);
-        spm::fontmgr::FontDrawNoiseOff();
-        spm::fontmgr::FontDrawRainbowColorOff();
-        f32 x = -((spm::fontmgr::FontGetMessageWidth(msg) * scale) / 2);
-        spm::fontmgr::FontDrawString(x+-90, -161.0, msg);
-      }*/
+      
       seq_gameMainReal(wp);
     }
 
@@ -239,6 +225,30 @@ static const char * getNpcName(s32 tribeId) {
     break;
     case 125:
       return "Squiglet";
+    break;
+    case 126:
+      return "Squig";
+    break;
+    case 11:
+      return "Green Koopa Troopa";
+    break;
+    case 14:
+      return "Red Koopa Troopa";
+    break;
+    case 99:
+      return "Bald Cleft";
+    break;
+    case 20:
+      return "Paratroopa";
+    break;
+    case 134:
+      return "Sproing-Oing";
+    break;
+    case 142:
+      return "Boomboxer";
+    break;
+    case 270:
+      return "O'Chunks";
     break;
     case 529:
       return "Doopliss";
@@ -1097,7 +1107,7 @@ bool IsNpcActive(s32 index) {
     "Escape"
   };
   const char wang_special_1[] = {
-    "Flip"
+    "Tattle"
   };
   const char wang_special_2[] = {
     "Flame"
@@ -1126,7 +1136,12 @@ bool IsNpcActive(s32 index) {
       return rpgStart;
     else if (msl::string::strcmp(msgName, "stg7_2_133_2_002") == 0)
       //Replace message
-      return stg7_2_133_2_002;
+      if (mainText == nullptr)
+      {
+        return stg7_2_133_2_002;
+      } else {
+        return mainText;
+      }
     else if (msl::string::strcmp(msgName, "peach_heal") == 0)
         //Replace message
       return peach_heal;
@@ -1606,7 +1621,7 @@ bool IsNpcActive(s32 index) {
   static inline void setUpPreset(s32 tribeId) {
     switch(tribeId)
     {
-      case 0:
+      case 0: // Goomba
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
         rpgIsActive[2] = true;
@@ -1614,12 +1629,76 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 0;
       break;
-      case 125:
+      case 11: // Green Koopa Troopa
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 0;
+        rpgTribeID[1] = 0;
+        rpgTribeID[2] = 11;
+      break;
+      case 14: // Red Koopa Troopa
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 11;
+        rpgTribeID[1] = 14;
+        rpgTribeID[2] = 11;
+      break;
+      case 20: // Paratroopa
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 11;
+        rpgTribeID[1] = 20;
+        rpgTribeID[2] = 11;
+      break;
+      case 125: // Squiglet
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
         rpgIsActive[2] = true;
         rpgTribeID[0] = 0;
         rpgTribeID[1] = 125;
+        rpgTribeID[2] = 0;
+      break;
+      case 126: // Squig
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 125;
+        rpgTribeID[1] = 126;
+        rpgTribeID[2] = 125;
+      break;
+      case 134: // Sproing-Oing
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 11;
+        rpgTribeID[1] = 134;
+        rpgTribeID[2] = 11;
+      break;
+      case 142: // Boomboxer
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = false;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 142;
+        rpgTribeID[1] = 0;
+        rpgTribeID[2] = 142;
+      break;
+      case 99: // Bald Cleft
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = false;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 99;
+        rpgTribeID[1] = 0;
+        rpgTribeID[2] = 99;
+      break;
+      case 270: // O'Chunks
+        rpgIsActive[0] = false;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = false;
+        rpgTribeID[0] = 0;
+        rpgTribeID[1] = 270;
         rpgTribeID[2] = 0;
       break;
       case 529: // Doopliss
@@ -1635,14 +1714,22 @@ bool IsNpcActive(s32 index) {
 
   s32 turnBasedCombatOverrideFunc(spm::mario::MarioWork *marioWork, spm::npcdrv::NPCPart *npcPart, s32 lastAttackedDefenseType, s32 defenseType, s32 power, u8 param_6){
     s32 tribeId = npcPart->owner->tribeId;
-    if (rpgInProgress != true) {
+    //if (isFlyingEnemy(tribeId)) 
+    //{
+      //spm::npcdrv::npcTakeDamage(npcPart->owner, npcPart, 1, 5, 0, 4);
+      //return 4;
+    //}
+    if (npcPart->owner->moveMode != 1) return 4;
+    spm::mario::MarioWork * mpp = spm::mario::marioGetPtr();
+    if ((mpp->flags & 0x40000000) == 0){
+    if (rpgInProgress != true && mpp->flags)  {
     setUpPreset(tribeId);
     spm::evtmgr::EvtEntry* battle = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
     battle->lw[0] = 1;
     spm::evtmgr::EvtEntry* entry = spm::evtmgr::evtEntry(deleteAttackedEnemy, 1, 0);
     entry->lw[0] = npcPart->owner->name;
     return 1;
-    }
+    }}
   return 4;
   }
 
@@ -1653,6 +1740,13 @@ bool IsNpcActive(s32 index) {
     turnBasedCombatOverride[1].value = nullptr;
     spm::npcdrv::npcEnemyTemplates[2].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[250].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[8].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[14].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[144].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[148].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[153].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[77].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[9].unkDefinitionTable = turnBasedCombatOverride;
   }
 
   void deleteUnderchompTextures() {
@@ -1672,6 +1766,10 @@ bool IsNpcActive(s32 index) {
     {
       rpg_screen_draw();
       drawStuff();
+    }
+    if (drawStylish)
+    {
+    drawStylishButton();
     }
   }
 
@@ -1780,12 +1878,42 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
 
+  s32 enable_disable_stylish(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    bool stylish = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    drawStylish = stylish;
+    return 2;
+  }
+
   s32 getFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], fp);
     if (firstRun == false) {}
     return 2;
   }
+
+  s32 he3_02_deletions(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+      spm::hitdrv::hitDelete("A2D_J_iwa_01");
+      spm::hitdrv::hitDelete("A2D_J_iwa_02");
+      spm::hitdrv::hitDelete("A2D_J_iwa_03");
+      spm::hitdrv::hitDelete("A2D_J_iwa_04");
+      spm::hitdrv::hitDelete("A2D_J_iwa_05");
+    
+    return 2;
+  }
+
+  EVT_DECLARE_USER_FUNC(he3_02_deletions, 0)
+
+  EVT_BEGIN(fuck_rocks2)
+  WAIT_MSEC(1000)
+  USER_FUNC(he3_02_deletions)
+  RETURN()
+  EVT_END()
+
+  EVT_BEGIN(fuck_rocks)
+      RUN_EVT(fuck_rocks2)
+  RETURN_FROM_CALL()
 
   s32 setFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
@@ -1816,6 +1944,17 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
 
+  s32 evt_npc_entry_autoname(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  char name[32];
+  s32 id = spm::npcdrv::npcdrv_wp->nextTemplateNpcId;
+  msl::stdio::sprintf(name,"npc_%08x", id);
+  const char * animpose = (const char*)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+  spm::npcdrv::NPCEntry* entry = spm::npcdrv::npcEntry(name, animpose, args[1], 0);
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], (s32)entry->name);
+  return 2;
+}
 
   s32 rpg_off(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::camdrv::camPtrTbl[5]->isOrthoToggle = 1;
@@ -1915,6 +2054,48 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     return 2;
   }
 
+  s32 setRpgTribeID(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 value = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+    rpgTribeID[index] = value;
+    return 2;
+  }
+
+  s32 msgSearchTribeToTattle(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 tribeId = getRpgTribeID(index);
+    char tattleBuffer[512];
+    msl::stdio::sprintf(tattleBuffer, "anna_%s", spm::item_data::itemDataTable[npcTribes[tribeId].catchCardItemId].descMsg);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)tattleBuffer);
+    return 2;
+  }
+
+  s32 get_attack_strength(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 tribeId = getRpgTribeID(index);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)npcTribes[tribeId].attackStrength);
+    return 2;
+  }
+
+  s32 get_rpg_name_by_id(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 tribeId = getRpgTribeID(index);
+    const char * name = getNpcName(tribeId);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)name);
+    return 2;
+  }
+
+  s32 rpg_set_dialogue(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    char * dialogue = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    mainText = dialogue;
+    return 2;
+  }
+
   s32 displayDamage(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     f32 x = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[0]);
@@ -1952,6 +2133,15 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     return;
   }
 
+  EVT_BEGIN(insertNop)
+    SET(LW(0), LW(0))
+  RETURN_FROM_CALL()
+
+  EVT_BEGIN(gswPatch)
+    USER_FUNC(spm::evt_map::evt_map_playanim, PTR("anm_doa_deru"), 0, 0)
+    USER_FUNC(spm::evt_door::evt_door_enable_disable_map_door_desc, 0, PTR("doa2_l"))
+  RETURN_FROM_CALL()
+
   void main() {
     wii::os::OSReport("SPM Rel Loader: the mod has ran!\n");
     titleScreenCustomTextPatch();
@@ -1959,6 +2149,14 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     hookEvent();
     patchBrobot();
     npc_rpgdrv_main();
+    spm::map_data::MapData * he3_md = spm::map_data::mapDataPtr("he3_01");
+    evtpatch::hookEvt(he3_md->initScript, 78, gswPatch);
+    evtpatch::hookEvt(he3_md->initScript, 77, fuck_rocks);
+    evtpatch::hookEvtReplace(he3_md->initScript, 38, insertNop);
+    evtpatch::hookEvtReplace(he3_md->initScript, 37, insertNop);
+
+    //he3_md = spm::map_data::mapDataPtr("he3_02");
+    //evtpatch::hookEvt(he3_md->initScript, 1, fuck_rocks);
   }
 
 }
