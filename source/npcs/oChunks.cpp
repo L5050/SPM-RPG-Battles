@@ -109,14 +109,27 @@ const char * chunks_dialogue_3 = "<p>\n"
 
 const char * chunks_dialogue_4 = "<dq>\n"
 "<p>\n"
-"O'Chunks challenges Mario to\n"
-"a thumb war!\n"
+"O'Chunks challenges Mario\n"
+"to a thumb war!\n"
 "Mario politely declines.\n"
 "<o>\n";
 
 const char * chunks_dialogue_5 = "<dq>\n"
 "<p>\n"
 "O'Chunks is getting weary...\n"
+"<o>\n";
+
+const char * chunks_dialogue_6 = "<dq>\n"
+"<p>\n"
+"O'Chunks texts Mimi to stop\n"
+"stealing his nunchucks.\n"
+"Tippi shakes her head.\n"
+"<o>\n";
+
+
+const char * chunks_dialogue_7 = "<dq>\n"
+"<p>\n"
+"O'Chunks locks in!\n"
 "<o>\n";
 
   EVT_BEGIN(chunks_start_fight)
@@ -180,6 +193,10 @@ EVT_BEGIN(chunks_dialogue)
       USER_FUNC(rpg_set_dialogue, PTR(chunks_dialogue_4))
     CASE_EQUAL(3)
       USER_FUNC(rpg_set_dialogue, PTR(chunks_dialogue_5))
+    CASE_EQUAL(4)
+      USER_FUNC(rpg_set_dialogue, PTR(chunks_dialogue_6))
+    CASE_EQUAL(5)
+      USER_FUNC(rpg_set_dialogue, PTR(chunks_dialogue_7))
   END_SWITCH()
   ADD(LW(0), 1)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, LW(15), 14, LW(0))

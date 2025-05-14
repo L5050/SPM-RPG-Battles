@@ -173,7 +173,7 @@ namespace mod {
           USER_FUNC(evt_npc_wait_anim_end, LW(14), 1)
           USER_FUNC(evt_npc_set_anim, LW(14), 0, 1)
           USER_FUNC(evt_npc_get_position, LW(14), LW(5), LW(6), LW(7))
-          ADD(LW(5), 5)
+          SUB(LW(5), 10)
           USER_FUNC(evt_npc_set_position, LW(15), LW(5), LW(6), LW(7))
           INLINE_EVT()
             SET(LW(10), 0)
