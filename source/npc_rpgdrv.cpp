@@ -155,7 +155,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::an2_08::an2_08_wp.rpgNpcInfo[index].maxHp);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::an2_08::an2_08_wp->rpgNpcInfo[index].maxHp);
     return 2;
   }
 
@@ -194,7 +194,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     s32 newHealth = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
-    spm::an2_08::an2_08_wp.rpgNpcInfo[index].maxHp = newHealth;
+    spm::an2_08::an2_08_wp->rpgNpcInfo[index].maxHp = newHealth;
     return 2;
   }
 
@@ -206,8 +206,8 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     if (!IsNpcActive(args[0])) {
       s32 index = args[0];
       //debug only wii::os::OSReport("NPC is inactive, killing NPC\n");
-      spm::an2_08::an2_08_wp.rpgNpcInfo[index].maxHp = -1;
-      spm::an2_08::an2_08_wp.rpgNpcInfo[index].killXp = 0;
+      spm::an2_08::an2_08_wp->rpgNpcInfo[index].maxHp = -1;
+      spm::an2_08::an2_08_wp->rpgNpcInfo[index].killXp = 0;
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], 1);
       spm::an2_08::evt_rpg_enemy_take_damage(evtEntry, firstRun);
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], -1);
@@ -363,7 +363,7 @@ EVT_END()
     npcDataTable[8] = {22, getParaKoopaAnims(), para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
     npcDataTable[9] = {99, animsSinno, sinno_attack, nullptr, nullptr}; // Bald Cleft
     chunks_main();
-    npcDataTable[10] = {270, getChunksAnims(), chunks_attack, chunks_onhit, nullptr, chunks_on_spawn}; // o'Chunks
+    npcDataTable[10] = {270, getChunksAnims(), chunks_attack, chunks_onhit, getChunksDeath(), chunks_on_spawn}; // o'Chunks
   }
 
 }

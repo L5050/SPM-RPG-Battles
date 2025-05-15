@@ -2,6 +2,7 @@
 #include "patch.h"
 #include "evtpatch.h"
 #include "npc_rpgdrv.h"
+#include "hpwindow.h"
 #include "main_scripting.h"
 
 #include <spm/system.h>
@@ -1599,9 +1600,9 @@ bool IsNpcActive(s32 index) {
   s32 new_evt_rpg_calc_mario_damage(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     
-    s32 attackStrength = spm::an2_08::an2_08_wp.rpgNpcInfo[evtEntry->uw[0]].attackStrength;
+    s32 attackStrength = spm::an2_08::an2_08_wp->rpgNpcInfo[evtEntry->uw[0]].attackStrength;
     if (attackStrength == 0) attackStrength = 1;
-    if ((spm::an2_08::an2_08_wp.statusEffects & 0x40U) != 0) {
+    if ((spm::an2_08::an2_08_wp->statusEffects & 0x40U) != 0) {
       if (0 < attackStrength) {
         attackStrength = attackStrength / 2;
       }
@@ -1766,6 +1767,7 @@ bool IsNpcActive(s32 index) {
     {
       rpg_screen_draw();
       drawStuff();
+      enemyDisp();
     }
     if (drawStylish)
     {
@@ -1843,8 +1845,8 @@ bool IsNpcActive(s32 index) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 newStrength = args[0];
     s8 npcIndex = evtEntry->uw[0];
-    s32 strength = spm::an2_08::an2_08_wp.rpgNpcInfo[npcIndex].attackStrength;
-    spm::an2_08::an2_08_wp.rpgNpcInfo[npcIndex].attackStrength = strength + newStrength;
+    s32 strength = spm::an2_08::an2_08_wp->rpgNpcInfo[npcIndex].attackStrength;
+    spm::an2_08::an2_08_wp->rpgNpcInfo[npcIndex].attackStrength = strength + newStrength;
     //spm::evtmgr_cmd::evtSetValue(evtEntry, (spm::evtmgr::EvtVar*)evtEntry->pCurData, 1);
     if (firstRun == false) {}
     return 2;
@@ -1854,12 +1856,12 @@ bool IsNpcActive(s32 index) {
     spm::camdrv::camPtrTbl[5] -> isOrthoToggle = 1;
     for (int i = 0; i < 3; i++) {
       if (rpgIsActive[i]) {
-        spm::an2_08::an2_08_wp.rpgNpcInfo[i].attackStrength = spm::npcdrv::npcTribes[rpgTribeID[i]].attackStrength;
-        spm::an2_08::an2_08_wp.rpgNpcInfo[i].maxHp = spm::npcdrv::npcTribes[rpgTribeID[i]].maxHp;
-        spm::an2_08::an2_08_wp.rpgNpcInfo[i].killXp = spm::npcdrv::npcTribes[rpgTribeID[i]].killXp;
-        spm::an2_08::an2_08_wp.rpgNpcInfo[i].flags = 0;
-        spm::an2_08::an2_08_wp.rpgNpcInfo[i].stunTime = 0;
-        spm::an2_08::an2_08_wp.rpgNpcInfo[i].killDisappearTimer = 0xff;
+        spm::an2_08::an2_08_wp->rpgNpcInfo[i].attackStrength = spm::npcdrv::npcTribes[rpgTribeID[i]].attackStrength;
+        spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp = spm::npcdrv::npcTribes[rpgTribeID[i]].maxHp;
+        spm::an2_08::an2_08_wp->rpgNpcInfo[i].killXp = spm::npcdrv::npcTribes[rpgTribeID[i]].killXp;
+        spm::an2_08::an2_08_wp->rpgNpcInfo[i].flags = 0;
+        spm::an2_08::an2_08_wp->rpgNpcInfo[i].stunTime = 0;
+        spm::an2_08::an2_08_wp->rpgNpcInfo[i].killDisappearTimer = 0xff;
       }
     }
     rpgInProgress = true;

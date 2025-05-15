@@ -32,6 +32,7 @@ EVT_DECLARE(chunks_on_spawn)
 EVT_DECLARE(chunks_attack)
 
 NPCTribeAnimDef * getChunksAnims();
+spm::evtmgr::EvtScriptCode * getChunksDeath();
 void chunks_main();
 
 }

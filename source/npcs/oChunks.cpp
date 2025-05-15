@@ -49,6 +49,7 @@ spm::evtmgr::EvtScriptCode* onSpawn = spm::npcdrv::npcEnemyTemplates[183].onSpaw
 spm::evtmgr::EvtScriptCode* chonkyAttackScript = getInstructionEvtArg(onSpawn, 41, 3);
 spm::evtmgr::EvtScriptCode* throwScript = getInstructionEvtArg(chonkyAttackScript, 182, 0);
 spm::evtmgr::EvtScriptCode* throwScriptOffset = evtpatch::getLineOffset(throwScript, 135);
+spm::evtmgr::EvtScriptCode* chunks_fight_death_evt = nullptr;
 NPCTribeAnimDef animsChunks[] = {
     {0, "S_1"},
     {1, "W_1"},
@@ -62,6 +63,7 @@ NPCTribeAnimDef animsChunks[] = {
     {12, "O_1c"},
     {13, "O_5"},
     {14, "S_5"},
+    {24, "D_2a"},
     {25, "A_4a"},
     {26, "J_1"},
     {27, "J_2"},
@@ -85,14 +87,19 @@ NPCTribeAnimDef animsChunks[] = {
     return animsChunks;
   }
 
+  spm::evtmgr::EvtScriptCode * getChunksDeath()
+  {
+    return chunks_fight_death_evt;
+  }
+
 const char * chunks_dialogue_1 = "<dq>\n"
 "<p>\n"
-"O'Chunks taunts Mario!\n"
+"*O'Chunks taunts Mario!\n"
 "<o>\n";
 
 const char * chunks_dialogue_2 = "<dq>\n"
 "<p>\n"
-"O'Chunks flexes for the\n"
+"*O'Chunks flexes for the\n"
 "audience!\n"
 "<o>\n";
 
@@ -109,31 +116,30 @@ const char * chunks_dialogue_3 = "<p>\n"
 
 const char * chunks_dialogue_4 = "<dq>\n"
 "<p>\n"
-"O'Chunks challenges Mario\n"
+"*O'Chunks challenges Mario\n"
 "to a thumb war!\n"
-"Mario politely declines.\n"
+"*Mario politely declines.\n"
 "<o>\n";
 
 const char * chunks_dialogue_5 = "<dq>\n"
 "<p>\n"
-"O'Chunks is getting weary...\n"
+"*O'Chunks is getting weary...\n"
 "<o>\n";
 
 const char * chunks_dialogue_6 = "<dq>\n"
 "<p>\n"
-"O'Chunks texts Mimi to stop\n"
+"*O'Chunks texts Mimi to stop\n"
 "stealing his nunchucks.\n"
-"Tippi shakes her head.\n"
+"*Tippi looks disappointed.\n"
 "<o>\n";
 
 
 const char * chunks_dialogue_7 = "<dq>\n"
 "<p>\n"
-"O'Chunks locks in!\n"
+"*O'Chunks locks in!\n"
 "<o>\n";
 
   EVT_BEGIN(chunks_start_fight)
-    //USER_FUNC(spm::evt_mobj::evt_mobj_blk, 4, PTR("mobj3"), 0, 0, 0, 0, 0, 0)
     USER_FUNC(start_boss_fight, 270)
     WAIT_MSEC(1000)
     USER_FUNC(evt_npc_set_position, PTR("dodon"), 0, -1000, 0)
@@ -827,17 +833,44 @@ EVT_BEGIN(chunks_attack)
   RETURN()
   EVT_END()
 
+  EVT_BEGIN(chunks_death)
+    USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj2"))
+    USER_FUNC(spm::evt_snd::evt_snd_bgmoff_f_d, 0, 1000)
+    USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg1_3_014"), 0, 0)
+    USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
+    USER_FUNC(evt_npc_set_anim, LW(15), 24, 1)
+    USER_FUNC(evt_npc_wait_anim_end, LW(15), 1)
+    USER_FUNC(evt_npc_get_position, LW(15), LW(0), LW(1), LW(2))
+  RETURN_FROM_CALL()
+
+  EVT_BEGIN(chunks_death_2)
+    USER_FUNC(evt_npc_set_position, LW(15), 0, -100, 0)
+    USER_FUNC(evt_npc_flag8_onoff, LW(15), 1, 1073741824)
+  RETURN_FROM_CALL()
+
+  EVT_BEGIN(insertNopChunks)
+    SET(LW(0), LW(0))
+  RETURN()
+  EVT_END()
+
   void chunks_main()
   {
     npcTribes[270].attackStrength = 2;
     npcTribes[270].maxHp = 20;
     spm::map_data::MapData * he3_04_md = spm::map_data::mapDataPtr("he3_04");
     spm::evtmgr::EvtScriptCode* chunks_fight_setup_evt = getInstructionEvtArg(he3_04_md->initScript, 28, 0);
-    spm::evtmgr::EvtScriptCode* chunks_fight_death_evt = getInstructionEvtArg(chunks_fight_setup_evt, 167, 3);
+    chunks_fight_death_evt = getInstructionEvtArg(chunks_fight_setup_evt, 167, 3);
     evtpatch::hookEvtReplace(chunks_fight_setup_evt, 173, (spm::evtmgr::EvtScriptCode*)chunks_start_fight_fwd);
     evtpatch::hookEvtReplace(chunks_fight_setup_evt, 168, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_setup_evt, 167, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_setup_evt, 166, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 149, (spm::evtmgr::EvtScriptCode*)insertNopChunks);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 143, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 91, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 66, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 62, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 58, (spm::evtmgr::EvtScriptCode*)chunks_death_2, 60);
+    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 0, (spm::evtmgr::EvtScriptCode*)chunks_death, 54);
     
   }
 
