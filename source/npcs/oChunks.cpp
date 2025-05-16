@@ -105,7 +105,7 @@ const char * chunks_dialogue_2 = "<dq>\n"
 
 const char * tippi_dialogue_1 = "<p><fairy>\n"
 "We're going to beat you\n"
-"anyways... Just give up!\n"
+"anyway... Just give up!\n"
 "<k>\n";
 
 const char * chunks_dialogue_3 = "<p>\n"
