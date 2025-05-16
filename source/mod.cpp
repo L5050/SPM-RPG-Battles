@@ -1722,7 +1722,7 @@ bool IsNpcActive(s32 index) {
       //spm::npcdrv::npcTakeDamage(npcPart->owner, npcPart, 1, 5, 0, 4);
       //return 4;
     //}
-    if (npcPart->owner->moveMode != 1 && tribeId != 440) return 4;
+    if (npcPart->owner->moveMode == 5 && tribeId != 440) return 4;
     spm::mario::MarioWork * mpp = spm::mario::marioGetPtr();
     if ((mpp->flags & 0x40000000) == 0){
     if (rpgInProgress != true && mpp->flags)  {
