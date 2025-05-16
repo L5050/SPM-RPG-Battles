@@ -83,7 +83,7 @@ extern "C" {
     };
     f32 scale = 1.0;
     char buffer [50];
-    sprintf(buffer, "%d", mod::fp);
+    sprintf(buffer, "%d", *mod::fp);
     const char * msg = buffer;
     spm::fontmgr::FontDrawStart();
     spm::fontmgr::FontDrawEdge();
@@ -136,7 +136,9 @@ namespace mod {
   bool succeededActionCommand = false;
   bool superGuard = false;
   spm::npcdrv::NPCEntryUnkDef turnBasedCombatOverride[2];
-  s32 fp = 0;
+  s32 *fp = nullptr;
+  s32 *maxFp = nullptr;
+  s32 *bp = nullptr;
   wii::tpl::TPLHeader *myTplHeader = nullptr;
   char * mainText = nullptr;
 
@@ -1081,12 +1083,6 @@ bool IsNpcActive(s32 index) {
   "<k>\n"
   "<o>\n";
 
-  const char * grab_fp = "<p>\n"
-  "Success!\n"
-  "You stole 2 FP!\n"
-  "<k>\n"
-  "<o>\n";
-
   const char * peach_special = "Heal";
 
   const char wang_cmd_1[] = {
@@ -1524,8 +1520,6 @@ bool IsNpcActive(s32 index) {
       return stg7_2_133_2_091;
     else if (msl::string::strcmp(msgName, "brobot_toxic_serum") == 0)
       return brobot_toxic_serum;
-    else if (msl::string::strcmp(msgName, "grab_fp") == 0)
-      return grab_fp;
     else if (msl::string::strcmp(msgName, "no_fp") == 0)
       return no_fp;
     else
@@ -1694,6 +1688,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 99;
       break;
+      case 440: // Cherbil
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 99;
+        rpgTribeID[1] = 440;
+        rpgTribeID[2] = 99;
+      break;
       case 270: // O'Chunks
         rpgIsActive[0] = false;
         rpgIsActive[1] = true;
@@ -1720,7 +1722,7 @@ bool IsNpcActive(s32 index) {
       //spm::npcdrv::npcTakeDamage(npcPart->owner, npcPart, 1, 5, 0, 4);
       //return 4;
     //}
-    if (npcPart->owner->moveMode != 1) return 4;
+    if (npcPart->owner->moveMode != 1 && tribeId != 440) return 4;
     spm::mario::MarioWork * mpp = spm::mario::marioGetPtr();
     if ((mpp->flags & 0x40000000) == 0){
     if (rpgInProgress != true && mpp->flags)  {
@@ -1748,6 +1750,7 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[153].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[77].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[9].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[410].unkDefinitionTable = turnBasedCombatOverride;
   }
 
   void deleteUnderchompTextures() {
@@ -1796,7 +1799,7 @@ bool IsNpcActive(s32 index) {
     //spsndBGMOn = patch::hookFunction(spm::spmario_snd::spsndBGMOn, new_spsndBGMOn);
 
     //spsndSFXOn = patch::hookFunction(spm::spmario_snd::spsndSFXOn, new_spsndSFXOn);
-
+      
     msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
 
     writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
@@ -1806,6 +1809,7 @@ bool IsNpcActive(s32 index) {
     writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C0C0003);
+    writeWord(  spm::acdrv::acdrv_acDefs[3].mainFunc, 0x54, 0x38030002);
     //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C000001);
     //writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0xA0, 0x3B9C0004);
     //writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0x8C, 0x3BA00018);
@@ -1865,7 +1869,10 @@ bool IsNpcActive(s32 index) {
       }
     }
     rpgInProgress = true;
-    fp = 5;
+    if (*maxFp == 0) {
+      *fp = 5;
+      *maxFp = 5;
+    }
     patchTpl(116, 0, (wii::tpl::TPLHeader *)spm::icondrv::icondrv_wp->wiconTpl->sp->data, myTplHeader, "./a/n_mg_flower-", false);
     if (firstRun == false) {}
     if (evtEntry -> flags == 0) {}
@@ -1897,7 +1904,7 @@ bool IsNpcActive(s32 index) {
 
   s32 getFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], fp);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], *fp);
     if (firstRun == false) {}
     return 2;
   }
@@ -1926,21 +1933,21 @@ bool IsNpcActive(s32 index) {
 
   s32 setFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    fp = args[0];
+    *fp = args[0];
     if (firstRun == false) {}
     return 2;
   }
 
   s32 addFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    fp = fp + args[0];
+    *fp = *fp + args[0];
     if (firstRun == false) {}
     return 2;
   }
 
   s32 subtractFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    fp = fp - args[0];
+    *fp = *fp - args[0];
     if (firstRun == false) {}
     return 2;
   }
@@ -2163,7 +2170,10 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     evtpatch::hookEvt(he3_md->initScript, 77, fuck_rocks);
     evtpatch::hookEvtReplace(he3_md->initScript, 38, insertNop);
     evtpatch::hookEvtReplace(he3_md->initScript, 37, insertNop);
-
+    fp = (s32 *)&spm::spmario::gp->gsw[1800];
+    maxFp = (s32 *)&spm::spmario::gp->gsw[1804];
+    bp = (s32 *)&spm::spmario::gp->gsw[1808];
+    savemgr_main();
     //he3_md = spm::map_data::mapDataPtr("he3_02");
     //evtpatch::hookEvt(he3_md->initScript, 1, fuck_rocks);
   }

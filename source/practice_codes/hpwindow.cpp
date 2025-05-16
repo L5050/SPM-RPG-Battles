@@ -280,15 +280,30 @@ void enemyDisp()
             // Draw the red background
             Window::drawBoxGX(&colours::red, pos.x, pos.y, INNER_WIDTH, INNER_HEIGHT);
             s32 tribe = getRpgTribeID(i);
-            // Draw yellow hp bar
+            
+            spm::mario_pouch::MarioPouchWork *pouchPtr = spm::mario_pouch::pouchGetPtr();
+            if (pouchPtr->attack >= spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp) {
+              // Draw yellow hp bar
+              float overlayWidth = INNER_WIDTH * ((float)spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp / (float)spm::npcdrv::npcTribes[tribe].maxHp);
+              if (overlayWidth > 0.0f)
+                  Window::drawBoxGX(&colours::yellow, pos.x, pos.y, overlayWidth, INNER_HEIGHT);
+
+              // Draw hp
+              char str[16];
+              msl::stdio::sprintf(str, "%d", spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp);
+              Window::drawString(str, pos.x + 50.0f, pos.y, &colours::yellow, 1.0f, true);
+            } else {
+            // Draw white hp bar
             float overlayWidth = INNER_WIDTH * ((float)spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp / (float)spm::npcdrv::npcTribes[tribe].maxHp);
             if (overlayWidth > 0.0f)
-                Window::drawBoxGX(&colours::yellow, pos.x, pos.y, overlayWidth, INNER_HEIGHT);
+                Window::drawBoxGX(&colours::white, pos.x, pos.y, overlayWidth, INNER_HEIGHT);
 
             // Draw hp
             char str[16];
             msl::stdio::sprintf(str, "%d", spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp);
-            Window::drawString(str, pos.x + 50.0f, pos.y, &colours::yellow, 1.0f, true);
+            Window::drawString(str, pos.x + 50.0f, pos.y, &colours::white, 1.0f, true);
+            }
+
           }
         }
     }

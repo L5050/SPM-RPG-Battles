@@ -10,6 +10,7 @@
 #include "koopa.h"
 #include "sinno.h"
 #include "oChunks.h"
+#include "cherbil.h"
 
 #include <spm/rel/an.h>
 #include <spm/animdrv.h>
@@ -363,7 +364,8 @@ EVT_END()
     npcDataTable[8] = {22, getParaKoopaAnims(), para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
     npcDataTable[9] = {99, animsSinno, sinno_attack, nullptr, nullptr}; // Bald Cleft
     chunks_main();
-    npcDataTable[10] = {270, getChunksAnims(), chunks_attack, chunks_onhit, getChunksDeath(), chunks_on_spawn}; // o'Chunks
+    npcDataTable[10] = {270, getChunksAnims(), chunks_attack, chunks_onhit, getChunksDeath(), chunks_on_spawn}; // O'Chunks
+    npcDataTable[11] = {440, getCherbilAnims(), cherbil_attack, nullptr, nullptr, nullptr}; // Cherbil
   }
 
 }

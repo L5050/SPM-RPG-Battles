@@ -43,7 +43,7 @@
 using namespace spm::npcdrv;
 using namespace spm::evtmgr;
 
-#define NPC_TABLE_MAX 11
+#define NPC_TABLE_MAX 12
 
 namespace mod {
 
