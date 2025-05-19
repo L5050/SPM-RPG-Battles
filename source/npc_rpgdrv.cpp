@@ -9,6 +9,7 @@
 #include "sproing.h"
 #include "koopa.h"
 #include "sinno.h"
+#include "met.h"
 #include "oChunks.h"
 #include "cherbil.h"
 
@@ -224,6 +225,19 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     return 2;
   }
 
+  s32 kill_rpg_npc(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+
+    s32 index = args[0];
+    wii::os::OSReport("NPC is inside map bounding box, killing NPC\n");
+    spm::an2_08::an2_08_wp->rpgNpcInfo[index].maxHp = 0;
+    spm::an2_08::an2_08_wp->rpgNpcInfo[index].killXp = 0;
+    spm::an2_08::an2_08_wp->rpgNpcInfo[index].flags = 0x8000;
+    if (firstRun == false) {}
+    return 2;
+  }
+
   EVT_BEGIN(increase_stylish)
     IF_SMALL(UW(6), 4)
       ADD(UW(6), 1)
@@ -365,7 +379,8 @@ EVT_END()
     npcDataTable[9] = {99, animsSinno, sinno_attack, nullptr, nullptr}; // Bald Cleft
     chunks_main();
     npcDataTable[10] = {270, getChunksAnims(), chunks_attack, chunks_onhit, getChunksDeath(), chunks_on_spawn}; // O'Chunks
-    npcDataTable[11] = {440, getCherbilAnims(), cherbil_attack, nullptr, nullptr, nullptr}; // Cherbil
+    //npcDataTable[11] = {440, getCherbilAnims(), cherbil_attack, nullptr, nullptr, nullptr}; // Cherbil
+    npcDataTable[11] = {25, getMetAnims(), met_attack, met_onhit, nullptr}; // Green Koopa Troopa
   }
 
 }

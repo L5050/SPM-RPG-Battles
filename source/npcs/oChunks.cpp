@@ -852,7 +852,7 @@ EVT_BEGIN(chunks_attack)
   void chunks_main()
   {
     npcTribes[270].attackStrength = 2;
-    npcTribes[270].maxHp = 20;
+    npcTribes[270].maxHp = 1;
     spm::map_data::MapData * he3_04_md = spm::map_data::mapDataPtr("he3_04");
     spm::evtmgr::EvtScriptCode* chunks_fight_setup_evt = getInstructionEvtArg(he3_04_md->initScript, 28, 0);
     chunks_fight_death_evt = getInstructionEvtArg(chunks_fight_setup_evt, 167, 3);

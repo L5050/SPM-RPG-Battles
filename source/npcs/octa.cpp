@@ -175,6 +175,7 @@ namespace mod {
           USER_FUNC(evt_npc_get_position, LW(14), LW(5), LW(6), LW(7))
           SUB(LW(5), 10)
           USER_FUNC(evt_npc_set_position, LW(15), LW(5), LW(6), LW(7))
+          USER_FUNC(evt_npc_flag8_onoff, LW(15), 1, 201326596)
           INLINE_EVT()
             SET(LW(10), 0)
             LBL(1)

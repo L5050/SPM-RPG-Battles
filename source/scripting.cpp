@@ -143,6 +143,33 @@ s32 mario_rotate(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     return 2;
 }
 
+/*s32 rpg_check_for_bounding_box(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    const char * name = (const char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    spm::npcdrv::NPCEntry * entry = spm::npcdrv::npcNameToPtr(name);
+    Vec3 pos = entry->position;
+    static s32 i;
+    if (firstRun)
+    {
+      i = 0;
+    }
+    spm::mapdrv::MapWorkGroup * mapWork = spm::mapdrv::mapGetWork();
+    for (i < mapWork->entries[0].mapObjCount; i++;)
+    {
+      Vec3 min = mapWork->entries[0].mapObjs[i].joint->bboxMin;
+      Vec3 max = mapWork->entries[0].mapObjs[i].joint->bboxMax;
+      if (pos.x > min.x && pos.x < max.x && pos.y > min.y && pos.y < max.y) {
+        spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], 1);
+      }
+      if (i < mapWork->entries[0].mapObjCount) return 0;
+    }
+    
+    i = 0;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], 0);
+    return 2;
+}*/
+
 EVT_BEGIN(rpg_snd_miss_evt)
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_HELWANWAN_MISS1"))
     DO(3)
@@ -384,7 +411,7 @@ EVT_BEGIN(rpgDeathHandler)
       USER_FUNC(spm::evt_fade::evt_fade_entry, 65538, 1000, 0, 0, 0, 255)
       USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
       USER_FUNC(mod::rpg_off)
-      USER_FUNC(rpg_set_dialogue, PTR("stg7_2_133_2_001"))
+      USER_FUNC(rpg_set_dialogue, PTR(stg7_2_133_2_002))
       USER_FUNC(spm::evt_seq::evt_seq_set_seq, 4, 0, 0)
   ELSE() //if yes, life shroom revives the party
       USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(0))
@@ -2365,6 +2392,7 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc1"), 2, LW(2))
   USER_FUNC(spm::evt_npc::evt_npc_set_property, PTR("npc1"), 0xe, LW(3))
   USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc1"), 0, 1)
+  USER_FUNC(spm::evt_npc::evt_npc_flag8_onoff, PTR("npc1"), 1, 201326596)
   IF_NOT_EQUAL(LW(5), 0)
     SET(UW(0), 0)
     SET(LW(15), PTR("npc1"))
@@ -2387,6 +2415,7 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc2"), 2, LW(2))
   USER_FUNC(spm::evt_npc::evt_npc_set_property, PTR("npc2"), 0xe, LW(3))
   USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc2"), 0, 1)
+  USER_FUNC(spm::evt_npc::evt_npc_flag8_onoff, PTR("npc2"), 1, 201326596)
   IF_NOT_EQUAL(LW(5), 0)
     SET(UW(0), 1)
     SET(LW(15), PTR("npc2"))
@@ -2409,6 +2438,7 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc3"), 2, LW(2))
   USER_FUNC(spm::evt_npc::evt_npc_set_property, PTR("npc3"), 0xe, LW(3))
   USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc3"), 0, 1)
+  USER_FUNC(spm::evt_npc::evt_npc_flag8_onoff, PTR("npc3"), 1, 201326596)
   IF_NOT_EQUAL(LW(5), 0)
     SET(UW(0), 2)
     SET(LW(15), PTR("npc3"))
@@ -2507,7 +2537,7 @@ USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
 USER_FUNC(spm::evt_fade::evt_fade_entry, 1, 500, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
 USER_FUNC(spm::evt_snd::evt_snd_bgmoff, 0)
-USER_FUNC(rpg_set_dialogue, PTR("stg7_2_133_2_001"))
+USER_FUNC(rpg_set_dialogue, PTR(stg7_2_133_2_002))
 RUN_CHILD_EVT(playMusic)
 IF_EQUAL(LW(0), 0)
 //USER_FUNC(spm::evt_snd::evt_snd_envon_f, 0, PTR("ENV_AN2_08"), 1000)

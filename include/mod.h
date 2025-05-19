@@ -40,6 +40,11 @@ EVT_DECLARE_USER_FUNC(msgSearchTribeToTattle, 2)
 
 EVT_DECLARE(evt_memcard_save)
 
+  const char stg7_2_133_2_002[32] = "<dq>\n"
+  "<p>\n"
+  "What will you do?\n"
+  "<o>\n";
+
 void patchTpl(u32 destId, u32 srcId, wii::tpl::TPLHeader *destTpl, wii::tpl::TPLHeader *srcTpl, const char *filePath = nullptr, bool free = false);
 void savemgr_main();
 void main();

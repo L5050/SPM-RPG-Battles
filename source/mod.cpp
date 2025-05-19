@@ -141,7 +141,6 @@ namespace mod {
   s32 *bp = nullptr;
   wii::tpl::TPLHeader *myTplHeader = nullptr;
   char * mainText = nullptr;
-
   /*
       Title Screen Custom Text
       Prints "Super Duper Paper Mario" at the top of the title screen
@@ -238,6 +237,9 @@ static const char * getNpcName(s32 tribeId) {
     case 14:
       return "Red Koopa Troopa";
     break;
+    case 25:
+      return "Buzzy Beetle";
+    break;
     case 99:
       return "Bald Cleft";
     break;
@@ -273,10 +275,6 @@ bool IsNpcActive(s32 index) {
 }
 
   const char * rpgStart = "Prepare for battle!\n"
-  "<o>\n";
-  const char * stg7_2_133_2_002 = "<dq>\n"
-  "<p>\n"
-  "What will you do?\n"
   "<o>\n";
   const char * stg7_2_133_2_003 = "<p>\n"
   "Attack who?\n"
@@ -1648,6 +1646,22 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 20;
         rpgTribeID[2] = 11;
       break;
+      case 25: // Buzzy Beetle
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 25;
+        rpgTribeID[1] = 25;
+        rpgTribeID[2] = 25;
+      break;
+      case 26: // Buzzy Beetle on Ceiling
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 25;
+        rpgTribeID[1] = 99;
+        rpgTribeID[2] = 25;
+      break;
       case 125: // Squiglet
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
@@ -1745,6 +1759,8 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[250].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[8].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[14].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[53].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[54].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[144].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[148].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[153].unkDefinitionTable = turnBasedCombatOverride;
