@@ -25,11 +25,13 @@ using namespace spm::evtmgr;
 
 namespace mod {
 
-EVT_DECLARE(met_onhit)
-EVT_DECLARE(met_attack)
-EVT_DECLARE(met_onspawn)
+EVT_DECLARE(fracktail_on_spawn)
+EVT_DECLARE(fracktail_onhit)
+EVT_DECLARE(frackle_attack)
+EVT_DECLARE(fracktail_attack)
 
-NPCTribeAnimDef * getMetAnims();
-void met_main();
+NPCTribeAnimDef * getFracktailAnims();
+
+void fracktail_main();
 
 }

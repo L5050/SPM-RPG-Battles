@@ -265,8 +265,12 @@ void enemyDisp()
             if (npc != nullptr) {
             // Get screen position
             wii::mtx::Vec3 pos;
-            spm::camdrv::getScreenPoint(&npc->position, &pos);
-
+            wii::mtx::Vec3 npcPos = npc->position;
+            
+            if (getRpgTribeID(i) == 313) npcPos.y = 0;
+            if (getRpgTribeID(i) == 450 && i == 0) npcPos.x -= 50.0;
+            if (getRpgTribeID(i) == 450 && i == 1) npcPos.x += 50.0;
+            spm::camdrv::getScreenPoint(&npcPos, &pos);
             // Adjust x for the left of the bar
             pos.x -= BAR_WIDTH / 2.0f;
 

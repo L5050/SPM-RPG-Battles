@@ -255,6 +255,12 @@ static const char * getNpcName(s32 tribeId) {
     case 270:
       return "O'Chunks";
     break;
+    case 313:
+      return "Fracktail";
+    break;
+    case 450:
+      return "Frackle";
+    break;
     case 529:
       return "Doopliss";
     break;
@@ -1583,7 +1589,6 @@ bool IsNpcActive(s32 index) {
     s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     s32 damageType = args[1];
     s32 damage = spm::mario::marioCalcDamageToEnemy(damageType, rpgTribeID[index]);
-    if (rpgTribeID[1] == 296) damage = damage + 4;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], damage);
     if (firstRun == false) {}
     return 2;
@@ -1602,6 +1607,12 @@ bool IsNpcActive(s32 index) {
         attackStrength = 1;
       }
     }
+    wii::os::OSReport("%x\n", spm::an2_08::an2_08_wp->rpgNpcInfo[evtEntry->uw[0]].flags);
+    if ((spm::an2_08::an2_08_wp->rpgNpcInfo[evtEntry->uw[0]].flags & 0x2) != 0) 
+    {
+    attackStrength = attackStrength * 2;
+    }
+
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], attackStrength);
     if (firstRun == false) {}
     return 2;
@@ -1718,6 +1729,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 270;
         rpgTribeID[2] = 0;
       break;
+      case 313: // Fracktail
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 450;
+        rpgTribeID[1] = 450;
+        rpgTribeID[2] = 313;
+      break;
       case 529: // Doopliss
         rpgIsActive[0] = false;
         rpgIsActive[1] = true;
@@ -1736,6 +1755,8 @@ bool IsNpcActive(s32 index) {
       //spm::npcdrv::npcTakeDamage(npcPart->owner, npcPart, 1, 5, 0, 4);
       //return 4;
     //}
+    wii::os::OSReport("%d\n", power);
+    if (power == 0) return 4;
     if (npcPart->owner->moveMode == 5 && tribeId != 440) return 4;
     spm::mario::MarioWork * mpp = spm::mario::marioGetPtr();
     if ((mpp->flags & 0x40000000) == 0){
@@ -1825,7 +1846,7 @@ bool IsNpcActive(s32 index) {
     writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C0C0003);
-    writeWord(  spm::acdrv::acdrv_acDefs[3].mainFunc, 0x54, 0x38030002);
+    //writeWord(  spm::acdrv::acdrv_acDefs[3].mainFunc, 0x54, 0x38030002);
     //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C000001);
     //writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0xA0, 0x3B9C0004);
     //writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0x8C, 0x3BA00018);
@@ -1924,28 +1945,6 @@ bool IsNpcActive(s32 index) {
     if (firstRun == false) {}
     return 2;
   }
-
-  s32 he3_02_deletions(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-      spm::hitdrv::hitDelete("A2D_J_iwa_01");
-      spm::hitdrv::hitDelete("A2D_J_iwa_02");
-      spm::hitdrv::hitDelete("A2D_J_iwa_03");
-      spm::hitdrv::hitDelete("A2D_J_iwa_04");
-      spm::hitdrv::hitDelete("A2D_J_iwa_05");
-    
-    return 2;
-  }
-
-  EVT_DECLARE_USER_FUNC(he3_02_deletions, 0)
-
-  EVT_BEGIN(fuck_rocks2)
-  WAIT_MSEC(1000)
-  USER_FUNC(he3_02_deletions)
-  RETURN()
-  EVT_END()
-
-  EVT_BEGIN(fuck_rocks)
-      RUN_EVT(fuck_rocks2)
-  RETURN_FROM_CALL()
 
   s32 setFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
@@ -2183,15 +2182,12 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     npc_rpgdrv_main();
     spm::map_data::MapData * he3_md = spm::map_data::mapDataPtr("he3_01");
     evtpatch::hookEvt(he3_md->initScript, 78, gswPatch);
-    evtpatch::hookEvt(he3_md->initScript, 77, fuck_rocks);
     evtpatch::hookEvtReplace(he3_md->initScript, 38, insertNop);
     evtpatch::hookEvtReplace(he3_md->initScript, 37, insertNop);
     fp = (s32 *)&spm::spmario::gp->gsw[1800];
     maxFp = (s32 *)&spm::spmario::gp->gsw[1804];
     bp = (s32 *)&spm::spmario::gp->gsw[1808];
     savemgr_main();
-    //he3_md = spm::map_data::mapDataPtr("he3_02");
-    //evtpatch::hookEvt(he3_md->initScript, 1, fuck_rocks);
   }
 
 }

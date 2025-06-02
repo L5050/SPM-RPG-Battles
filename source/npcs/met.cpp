@@ -20,6 +20,7 @@
 #include <spm/evt_eff.h>
 #include <spm/evt_snd.h>
 #include <spm/evt_cam.h>
+#include <spm/evt_mobj.h>
 #include <spm/evt_sub.h>
 #include <spm/evt_npc.h>
 #include <spm/evt_door.h>
@@ -67,7 +68,21 @@ NPCTribeAnimDef animsMet2[] = {
 
 namespace mod {
 
+  EVT_BEGIN(met_onspawn)
+    USER_FUNC(spm::evt_mobj::evt_mobj_set_scale, LW(14), FLOAT(1.0), FLOAT(0.5), FLOAT(1.0))
+  RETURN()
+  EVT_END()
+
   EVT_BEGIN(met_onhit)
+    SWITCH(LW(2))
+      CASE_EQUAL(0)
+        SET(LW(14), PTR("mobj1"))
+      CASE_EQUAL(1)
+        SET(LW(14), PTR("mobj2"))
+      CASE_EQUAL(2)
+        SET(LW(14), PTR("mobj3"))
+    END_SWITCH()
+    USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 1, LW(14))
     USER_FUNC(evt_npc_get_unitwork, LW(15), 3, LW(0))
     IF_EQUAL(LW(0), 0)
       INLINE_EVT()
@@ -116,6 +131,7 @@ namespace mod {
       END_IF()
       RETURN()
     ELSE()
+      SET(LW(15), LW(14))
       RUN_CHILD_EVT(rpg_jump)
     END_IF()
     RETURN()
@@ -149,7 +165,7 @@ namespace mod {
           INLINE_EVT()
             SET(LW(10), 0)
             LBL(1)
-              IF_SMALL(LW(10), 2)
+              IF_SMALL(LW(10), 7)
                 USER_FUNC(check_pressed_b_ac, LW(11))
                 IF_EQUAL(LW(11), 1)
                   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
@@ -162,7 +178,7 @@ namespace mod {
                 IF_EQUAL(LW(11), 1)
                   USER_FUNC(ac_success_toggle)
                   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
-                  IF_LARGE_EQUAL(LW(10), 7)
+                  IF_LARGE_EQUAL(LW(10), 17)
                     USER_FUNC(superguard_toggle)
                     USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("J_1A"), 0)
                   END_IF()
@@ -171,7 +187,7 @@ namespace mod {
               END_IF()
               WAIT_FRM(1)
               ADD(LW(10), 1)
-              IF_EQUAL(LW(10), 13)
+              IF_EQUAL(LW(10), 20)
                 GOTO(2)
               END_IF()
             GOTO(1)
@@ -179,6 +195,7 @@ namespace mod {
           END_INLINE()
           USER_FUNC(evt_npc_walk_to, LW(15), LW(0), LW(6), LW(7), FLOAT(250.0), 0, 0, 0)
           DELETE_EVT(LW(10))
+          USER_FUNC(evt_npc_rotate, LW(15), EVT_NULLPTR, FLOAT(0.0), EVT_NULLPTR)
           USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(3))
           USER_FUNC(check_ac_success, LW(11))
           IF_EQUAL(LW(11), 1)

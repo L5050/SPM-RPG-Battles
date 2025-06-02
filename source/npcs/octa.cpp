@@ -28,7 +28,7 @@
 #include <spm/evt_pouch.h>
 #include <spm/evt_seq.h>
 #include <spm/rel/an2_08.h>
-#include <spm/rel/sp4_13.h>
+#include <spm/rel/mi4.h>
 #include <spm/wpadmgr.h>
 #include <spm/map_data.h>
 #include <spm/seqdrv.h>
@@ -168,6 +168,10 @@ namespace mod {
           USER_FUNC(evt_npc_wait_for, LW(15), 200)
           SET(LW(14), LW(15))
           USER_FUNC(evt_npc_entry_autoname, PTR("e_octar"), 0, LW(15))
+          USER_FUNC(spm::an2_08::evt_rpg_enemy_death_check, UW(0), LW(4))
+          IF_FLAG(LW(4), 0x2)
+            USER_FUNC(evt_npc_set_animpose_disp_callback, LW(15), PTR(spm::mi4::mi4MimiHolographicEffect), 0)
+          END_IF()
           USER_FUNC(evt_npc_set_property, LW(15), 14, (s32)animsOctorProj)
           USER_FUNC(evt_npc_set_anim, LW(15), 0, 1)
           USER_FUNC(evt_npc_wait_anim_end, LW(14), 1)
