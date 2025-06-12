@@ -4,6 +4,9 @@
 #include "npc_rpgdrv.h"
 #include "hpwindow.h"
 #include "main_scripting.h"
+#include "ip_messages.h"
+#include "ip.h"
+#include "tplpatch.h"
 
 #include <spm/system.h>
 #include <spm/acdrv.h>
@@ -51,12 +54,16 @@ extern "C" {
   char bowserString[] = "Flame";
   char luigiString[] = "Super Jump";
 
+  char badgeString[] = "Yarr Harr";
+  
   char * characterStrings[] = {
     marioString,
     peachString,
     bowserString,
     luigiString
   };
+
+  s32 retCount[1] = {0};
 
   s32 rpgTribeID[3] = {
     0,
@@ -126,6 +133,61 @@ char * returnCharacterTechnique() {
         "blr\n"
   );
 
+  const char *msgSearchPatch(const char *msgName, spm::evtmgr::EvtEntry *evtEntry)
+  {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 count = spm::an2_08::an2_08_wp->rpgMenu[1].unk_2c;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], count);
+    return spm::msgdrv::msgSearch(msgName);
+  }
+
+
+  void patchTechniquesBadges(spm::an2_08::RpgMenu * menu)
+  {
+    int offSet = 0;  // Offset in bytes for unk_X fields (starts at 0)
+    int ret = 1;
+    spm::an2_08::RpgMenu* menuPtr = (spm::an2_08::RpgMenu *)&menu->option_2;
+
+    for (int i = 0; i < 256; i++)
+    {
+      
+      menuPtr->option_1 = "yarr harr harr";
+
+      // Store item ID in corresponding unk_X field
+      *((int *)((char *)menu + offSet + 4)) = 50;
+
+      // Move to the next option slot
+      menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
+      offSet += 8;
+      ret++; // Increase item count (used elsewhere)
+    }
+
+    retCount[0] = ret;
+    asm(
+        "lis 12, retCount@ha\n"
+        "ori 12, 12, retCount@l\n"
+        "lwz 30, 0(12)"
+    );
+    return;
+  }
+
+  void msgSearchPatch_1();
+  asm
+  (
+    ".global msgSearchPatch_1\n"
+    "msgSearchPatch_1:\n"
+        "mr 4, 30\n"
+        "b msgSearchPatch\n"
+  );
+
+  void patchTechniquesBadges_1();
+  asm
+  (
+    ".global patchTechniquesBadges_1\n"
+    "patchTechniquesBadges_1:\n"
+        "mr 3, 29\n"
+        "b patchTechniquesBadges\n"
+  );
 }
 
 namespace mod {
@@ -141,6 +203,7 @@ namespace mod {
   s32 *bp = nullptr;
   wii::tpl::TPLHeader *myTplHeader = nullptr;
   char * mainText = nullptr;
+  char modTplName[] = "eeeeeeeee";
   /*
       Title Screen Custom Text
       Prints "Super Duper Paper Mario" at the top of the title screen
@@ -1131,6 +1194,8 @@ bool IsNpcActive(s32 index) {
   };
 
   const char * newMsgSearch(const char * msgName) {
+    const char * ipChar = ip::messagePatch(msgName);
+    if (ipChar != nullptr) return ipChar;
     //wii::os::OSReport("%s\n", msgName);
     if (msl::string::strcmp(msgName, "stg7_2_133_2_001") == 0)
       //Override intro
@@ -1840,10 +1905,12 @@ bool IsNpcActive(s32 index) {
     msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
 
     writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
+    writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1D4, patchTechniquesBadges_1);
     writeBranchLink( & spm::an2_08::evt_rpg_npctribe_handle, 0x94, returnTribe);
     //writeBranchLink( & spm::an2_08::rpg_screen_draw, 0x2D8, setTextureIndex);
     writeBranchLink( & spm::acdrv::acMain, 0x49C, setNewFloat);
     writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
+    writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x780, msgSearchPatch_1);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C0C0003);
     //writeWord(  spm::acdrv::acdrv_acDefs[3].mainFunc, 0x54, 0x38030002);
@@ -1910,7 +1977,8 @@ bool IsNpcActive(s32 index) {
       *fp = 5;
       *maxFp = 5;
     }
-    patchTpl(116, 0, (wii::tpl::TPLHeader *)spm::icondrv::icondrv_wp->wiconTpl->sp->data, myTplHeader, "./a/n_mg_flower-", false);
+    tplpatch::TextureWork flowerTextures = {116, 0, (wii::tpl::TPLHeader *)spm::icondrv::icondrv_wp->wiconTpl->sp->data, myTplHeader, "./a/n_mg_flower-", false, spm::memory::Heap::HEAP_MEM1_UNUSED};
+    tplpatch::patchTpl(&flowerTextures);
     if (firstRun == false) {}
     if (evtEntry -> flags == 0) {}
     return 2;
@@ -2143,27 +2211,6 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::npcdrv::npcTribes[296].maxHp = 130;
   }
 
-  void patchTpl(u32 destId, u32 srcId, wii::tpl::TPLHeader *destTpl, wii::tpl::TPLHeader *srcTpl, const char *filePath = nullptr, bool free = false) {
-
-    // Loads the tpl if not already loaded by the stated filePath
-    if (srcTpl == nullptr){
-    spm::filemgr::FileEntry * srcFile = spm::filemgr::fileAllocf(4, filePath);
-    s32 tplSize = srcFile->length;
-    srcTpl = (wii::tpl::TPLHeader *)spm::memory::__memAlloc(spm::memory::Heap::HEAP_MAIN, tplSize);
-    msl::string::memcpy(srcTpl, srcFile->sp->data, tplSize);
-    spm::filemgr::fileFree(srcFile);
-    }
-
-    // Patches the destination tpl with the one given by the mod.rel
-    destTpl->imageTable[destId] = srcTpl->imageTable[srcId];
-
-    // Free the memory of the tpl loaded from mod.rel to prevent a leak
-    if (free == true){
-    spm::memory::__memFree(spm::memory::Heap::HEAP_MAIN, srcTpl);
-    }
-    return;
-  }
-
   EVT_BEGIN(insertNop)
     SET(LW(0), LW(0))
   RETURN_FROM_CALL()
@@ -2188,6 +2235,8 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     maxFp = (s32 *)&spm::spmario::gp->gsw[1804];
     bp = (s32 *)&spm::spmario::gp->gsw[1808];
     savemgr_main();
+    ip::main();
+    //tplpatch::iconPatch(modTplName);
   }
 
 }

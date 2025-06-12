@@ -45,7 +45,6 @@ EVT_DECLARE(evt_memcard_save)
   "What will you do?\n"
   "<o>\n";
 
-void patchTpl(u32 destId, u32 srcId, wii::tpl::TPLHeader *destTpl, wii::tpl::TPLHeader *srcTpl, const char *filePath = nullptr, bool free = false);
 void savemgr_main();
 void main();
 
