@@ -1587,8 +1587,6 @@ bool IsNpcActive(s32 index) {
       return stg7_2_133_2_127;
     else if (msl::string::strcmp(msgName, "stg7_2_133_2_091") == 0)
       return stg7_2_133_2_091;
-    else if (msl::string::strcmp(msgName, "brobot_toxic_serum") == 0)
-      return brobot_toxic_serum;
     else if (msl::string::strcmp(msgName, "no_fp") == 0)
       return no_fp;
     else
