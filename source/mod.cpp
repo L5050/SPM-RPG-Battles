@@ -6,6 +6,8 @@
 #include "main_scripting.h"
 #include "ip_messages.h"
 #include "ip.h"
+#include "ip_badges.h"
+#include "ip_badgepouch.h"
 #include "tplpatch.h"
 
 #include <spm/system.h>
@@ -46,6 +48,7 @@
 #include <spm/rel/sp4_13.h>
 #include <cstdio>
 USING(wii::mtx::Vec3)
+USING(ip::BadgeId)
 
 //credit to rainchus for helping me out with these ASM hooks :)
 extern "C" {
@@ -141,54 +144,51 @@ char * returnCharacterTechnique() {
     return spm::msgdrv::msgSearch(msgName);
   }
 
-
-  void patchTechniquesBadges(spm::an2_08::RpgMenu * menu)
+  void patchTechniquesBadges(spm::an2_08::RpgMenu *menu)
   {
-    int offSet = 0;  // Offset in bytes for unk_X fields (starts at 0)
+    int offSet = 0; // Offset in bytes for unk_X fields (starts at 0)
     int ret = 1;
-    spm::an2_08::RpgMenu* menuPtr = (spm::an2_08::RpgMenu *)&menu->option_2;
+    spm::an2_08::RpgMenu *menuPtr = (spm::an2_08::RpgMenu *)&menu->option_2;
 
-    for (int i = 0; i < 256; i++)
+    ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(0);
+    for (int i = 0; i < ip::pouchCountBadges(); i++)
     {
-      
-      menuPtr->option_1 = "yarr harr harr";
+      if (badgeInfo[i].equipped && mod::IsNpcActive(badgeInfo[i].id))
+      {
+        ip::BadgeDef * badgeDef = ip::pouchGetBadgeDef(i);
+        menuPtr->option_1 = spm::msgdrv::msgSearch(badgeDef->nameMsg);
 
-      // Store item ID in corresponding unk_X field
-      *((int *)((char *)menu + offSet + 4)) = 50;
+        // Store item ID in corresponding unk_X field
+        *((int *)((char *)menu + offSet + 4)) = 50;
 
-      // Move to the next option slot
-      menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
-      offSet += 8;
-      ret++; // Increase item count (used elsewhere)
+        // Move to the next option slot
+        menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
+        offSet += 8;
+        ret++; // Increase item count (used elsewhere)}
+      }
     }
-
-    retCount[0] = ret;
-    asm(
-        "lis 12, retCount@ha\n"
-        "ori 12, 12, retCount@l\n"
-        "lwz 30, 0(12)"
-    );
-    return;
+      retCount[0] = ret;
+      asm(
+          "lis 12, retCount@ha\n"
+          "ori 12, 12, retCount@l\n"
+          "lwz 30, 0(12)");
+      return;
   }
-
-  void msgSearchPatch_1();
-  asm
-  (
-    ".global msgSearchPatch_1\n"
-    "msgSearchPatch_1:\n"
+  
+    void msgSearchPatch_1();
+    asm(
+        ".global msgSearchPatch_1\n"
+        "msgSearchPatch_1:\n"
         "mr 4, 30\n"
-        "b msgSearchPatch\n"
-  );
+        "b msgSearchPatch\n");
 
-  void patchTechniquesBadges_1();
-  asm
-  (
-    ".global patchTechniquesBadges_1\n"
-    "patchTechniquesBadges_1:\n"
+    void patchTechniquesBadges_1();
+    asm(
+        ".global patchTechniquesBadges_1\n"
+        "patchTechniquesBadges_1:\n"
         "mr 3, 29\n"
-        "b patchTechniquesBadges\n"
-  );
-}
+        "b patchTechniquesBadges\n");
+  }
 
 namespace mod {
   bool rpgInProgress = false;
@@ -333,6 +333,17 @@ static const char * getNpcName(s32 tribeId) {
     default:
     return "yeet";
   }
+}
+
+bool checkBadgeTechnique(BadgeId id)
+{
+  switch (id) {
+    case BadgeId::BADGEID_POWER_BOUNCE:
+      return true;
+    default:
+      return false;
+  }
+  return false;
 }
 
 s32 getRpgTribeID(s32 index) {

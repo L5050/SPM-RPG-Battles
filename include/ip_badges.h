@@ -14,8 +14,8 @@ namespace ip {
 enum BadgeId : s8
 {
     BADGEID_NONE = -1,
-    BADGEID_TEST_1,
-    BADGEID_TEST_2,
+    BADGEID_HP_PLUS,
+    BADGEID_POWER_BOUNCE,
     BADGEID_TEST_3
 };
 

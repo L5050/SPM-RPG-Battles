@@ -101,7 +101,7 @@ namespace ip
     {
       for (s32 i = 0; i < POUCH_BADGE_COUNT; i++)
         badgePouch[i] = {BADGEID_NONE, false};
-      badgePouch[0].id = BADGEID_TEST_1;
+      badgePouch[0].id = BADGEID_POWER_BOUNCE;
     }
   }
 

@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include "evt_cmd.h"
+#include "ip_badges.h"
 #include "spm/evtmgr.h"
 #include <wii/tpl.h>
 namespace mod {
@@ -26,6 +27,7 @@ extern bool superGuard;
 
 s32 getRpgTribeID(s32 index);
 bool IsNpcActive(s32 index);
+bool checkBadgeTechnique(ip::BadgeId id);
 spm::evtmgr::EvtScriptCode* getInstructionEvtArg(spm::evtmgr::EvtScriptCode* script, s32 line, int instruction);
 EVT_DECLARE_USER_FUNC(setRpgTribeID, 2)
 EVT_DECLARE_USER_FUNC(compareStrings, 3)

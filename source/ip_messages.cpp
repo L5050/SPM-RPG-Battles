@@ -38,11 +38,11 @@ static CustomMessage msgs[]
     // Badge Names
     {
         "bn_test_1",
-        "Test Badge #1"
+        "HP Plus"
     },
     {
         "bn_test_2",
-        "Test Badge #2"
+        "Power Bounce"
     },
     {
         "bn_test_3",
