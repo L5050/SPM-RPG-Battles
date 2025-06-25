@@ -5,7 +5,6 @@
 
 namespace mod {
 
-
   EVT_DECLARE_USER_FUNC(npcEntryFromTribeId, 1)
   //EVT_DECLARE_USER_FUNC(rpg_check_for_bounding_box, 2)
   EVT_DECLARE_USER_FUNC(increaseAttack, 1)
@@ -31,6 +30,8 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(superguard_toggle, 0)
   EVT_DECLARE_USER_FUNC(ac_success_reset, 0)
   EVT_DECLARE_USER_FUNC(displayDamage, 4)
+  EVT_DECLARE_USER_FUNC(rpg_get_technique_index, 1)
+  EVT_DECLARE_USER_FUNC(mario_rotate_x, 1)
 
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)
@@ -38,5 +39,6 @@ namespace mod {
   EVT_DECLARE(damageAnims)
   EVT_DECLARE(rpg_jump)
   EVT_DECLARE(insertNop)
+  EVT_DECLARE(runEnemyDeath)
 
 }

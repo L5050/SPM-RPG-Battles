@@ -141,7 +141,7 @@ char * returnCharacterTechnique() {
     spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     //wii::os::OSReport("%d %d %d %d %d %d %d %d, yahoo\n", spm::an2_08::an2_08_wp->rpgMenu[0].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[1].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[2].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[3].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[4].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[5].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[6].unk_2c);
     s32 count = spm::an2_08::an2_08_wp->rpgMenu[5].unk_2c;
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], count);
+    mod::rpg_set_technique_index(count);
     return spm::msgdrv::msgSearch(msgName);
   }
 

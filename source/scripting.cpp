@@ -45,6 +45,8 @@
 #include <string>
 namespace mod {
 
+s32 techniqueIndex = 0;
+
 const char * tippi_fail = "<p>\n"
 "This enemy cannot be\n"
 "pacified!\n"
@@ -118,9 +120,8 @@ s32 mario_chg_paper(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     return 2;
 }
 
-s32 mario_chg_motion(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+s32 mario_reset_rotation(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
-    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     spm::mario::marioGetPtr()->ttydRotation = {0.0, 0.0, 0.0};
     return 2;
 }
@@ -140,6 +141,28 @@ s32 mario_rotate(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     f32 rotation = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[0]);
     spm::mario::marioGetPtr()->dispDirectionCurrent = rotation;
+    return 2;
+}
+
+s32 mario_rotate_x(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    f32 rotation = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[0]);
+    Vec3 *ttydRotation = &spm::mario::marioGetPtr()->ttydRotation;
+    spm::mario::marioGetPtr()->ttydRotation = {rotation, ttydRotation->y, ttydRotation->z};
+    return 2;
+}
+
+void rpg_set_technique_index(s32 index)
+{
+    techniqueIndex = index;
+    return;
+}
+
+s32 rpg_get_technique_index(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], techniqueIndex);
     return 2;
 }
 
@@ -484,10 +507,6 @@ IF_FLAG(LW(0), 0x8000)
         USER_FUNC(spm::evt_mobj::evt_mobj_delete, PTR("mobj3"))
   END_SWITCH()
   USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_ENEMY_DIE1"))
-  USER_FUNC(get_rpg_name_by_id, UW(0), LW(1))
-  USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-  USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_007"), LW(1)) //You defeated [enemy]!
-  USER_FUNC(spm::evt_msg::evt_msg_continue)
 ELSE()
   IF_FLAG(LW(0), 0x1)
       USER_FUNC(spm::an2_08::evt_rpg_status_remove, 0, UW(0), 1)
@@ -561,7 +580,7 @@ EVT_BEGIN(runEnemyTurn)
 EVT_END()
 
 EVT_BEGIN(damageAnims)
-  SWITCH(LW(2))
+  SWITCH(UW(0))
       CASE_EQUAL(0)
         USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc1"), 4, 1)
         WAIT_MSEC(300)
@@ -828,24 +847,36 @@ EVT_END()
 
 EVT_BEGIN(technique)
 SET(UW(0), LW(4))
+USER_FUNC(osReportLW, LW(4))
 USER_FUNC(spm::evt_mario::evt_mario_get_character, LW(10))
+USER_FUNC(rpg_get_technique_index, LW(1))
 SWITCH(LW(10))
     CASE_EQUAL(0) //Mario
         USER_FUNC(osReportLW, LW(1))
-        USER_FUNC(enable_disable_rpg_menu, 0)
-        USER_FUNC(spm::evt_msg::evt_msg_continue)
-        USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_SEARCH_DESIDE1_TV"))
-        USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
-        INLINE_EVT()
-          SET(LW(13), UW(3))
-          SUB(LW(13), 25)
-          USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, LW(5), EVT_NULLPTR, LW(13), LW(5), EVT_NULLPTR, 200, 1000, 11)
-        END_INLINE()
-        USER_FUNC(msgSearchTribeToTattle, UW(0), LW(0))
-        SET(LW(1), PTR("__guide__"))
-        USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, UW(0), LW(10))
-        USER_FUNC(get_rpg_enemy_max_hp, UW(0), LW(9))
-        USER_FUNC(spm::evt_msg::evt_msg_print_insert, 0, LW(0), 0, LW(1), LW(9), LW(10))
+        SWITCH(LW(1))
+          CASE_EQUAL(0)
+            USER_FUNC(enable_disable_rpg_menu, 0)
+            USER_FUNC(spm::evt_msg::evt_msg_continue)
+            USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_SEARCH_DESIDE1_TV"))
+            USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+            INLINE_EVT()
+              SET(LW(13), UW(3))
+              SUB(LW(13), 25)
+              USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, LW(5), EVT_NULLPTR, LW(13), LW(5), EVT_NULLPTR, 200, 1000, 11)
+            END_INLINE()
+            USER_FUNC(msgSearchTribeToTattle, UW(0), LW(0))
+            SET(LW(1), PTR("__guide__"))
+            USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, UW(0), LW(10))
+            USER_FUNC(get_rpg_enemy_max_hp, UW(0), LW(9))
+            USER_FUNC(spm::evt_msg::evt_msg_print_insert, 0, LW(0), 0, LW(1), LW(9), LW(10))
+          CASE_ETC()
+            USER_FUNC(ip::get_badge_script_by_technique, LW(1), LW(1))
+            IF_NOT_EQUAL(LW(1), 0)
+              USER_FUNC(enable_disable_rpg_menu, 0)
+              USER_FUNC(spm::evt_msg::evt_msg_continue)
+              RUN_CHILD_EVT(LW(1))
+            END_IF()
+        END_SWITCH()
     CASE_EQUAL(1) //Peach
         USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("peach_heal"))
         USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_ITEM_USE1"))
