@@ -831,6 +831,7 @@ SET(UW(0), LW(4))
 USER_FUNC(spm::evt_mario::evt_mario_get_character, LW(10))
 SWITCH(LW(10))
     CASE_EQUAL(0) //Mario
+        USER_FUNC(osReportLW, LW(1))
         USER_FUNC(enable_disable_rpg_menu, 0)
         USER_FUNC(spm::evt_msg::evt_msg_continue)
         USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_SEARCH_DESIDE1_TV"))

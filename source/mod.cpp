@@ -139,42 +139,56 @@ char * returnCharacterTechnique() {
   const char *msgSearchPatch(const char *msgName, spm::evtmgr::EvtEntry *evtEntry)
   {
     spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    s32 count = spm::an2_08::an2_08_wp->rpgMenu[1].unk_2c;
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], count);
+    //wii::os::OSReport("%d %d %d %d %d %d %d %d, yahoo\n", spm::an2_08::an2_08_wp->rpgMenu[0].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[1].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[2].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[3].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[4].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[5].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[6].unk_2c);
+    s32 count = spm::an2_08::an2_08_wp->rpgMenu[5].unk_2c;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], count);
     return spm::msgdrv::msgSearch(msgName);
   }
 
-  void patchTechniquesBadges(spm::an2_08::RpgMenu *menu)
+  void patchTechniquesBadges(spm::an2_08::RpgMenu * menu)
   {
     int offSet = 0; // Offset in bytes for unk_X fields (starts at 0)
     int ret = 1;
     spm::an2_08::RpgMenu *menuPtr = (spm::an2_08::RpgMenu *)&menu->option_2;
-
-    ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(0);
-    for (int i = 0; i < ip::pouchCountBadges(); i++)
-    {
-      if (badgeInfo[i].equipped && mod::IsNpcActive(badgeInfo[i].id))
+      s32 badgeCount = ip::pouchCountBadges();
+      ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(0);
+      for (int i = 0; i < badgeCount; i++)
       {
-        ip::BadgeDef * badgeDef = ip::pouchGetBadgeDef(i);
-        menuPtr->option_1 = spm::msgdrv::msgSearch(badgeDef->nameMsg);
+        if (badgeInfo[i].equipped && mod::checkBadgeTechnique(badgeInfo[i].id))
+        {
+          ip::BadgeDef *badgeDef = ip::pouchGetBadgeDef(i);
+          const char *name = spm::msgdrv::msgSearch(badgeDef->nameMsg);
+          menuPtr->option_1 = name;
 
-        // Store item ID in corresponding unk_X field
-        *((int *)((char *)menu + offSet + 4)) = 50;
+          // Store item ID in corresponding unk_X field
+          *((int *)((char *)menu + offSet + 4)) = badgeInfo[i].id;
 
-        // Move to the next option slot
-        menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
-        offSet += 8;
-        ret++; // Increase item count (used elsewhere)}
+          // Move to the next option slot
+          menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
+          offSet += 8;
+        }
+        ret++; // Increase item count
       }
-    }
-      retCount[0] = ret;
-      asm(
-          "lis 12, retCount@ha\n"
-          "ori 12, 12, retCount@l\n"
-          "lwz 30, 0(12)");
-      return;
+    retCount[0] = ret;
+    asm(
+        "lis 12, retCount@ha\n"
+        "ori 12, 12, retCount@l\n"
+        "lwz 30, 0(12)"
+    );
+    return;
   }
-  
+
+  void patchTechniquesBadges_intro(spm::an2_08::RpgMenu *menu)
+  {
+
+    spm::mario::MarioWork *mwpp = spm::mario::marioGetPtr();
+    if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_MARIO)
+    {
+      patchTechniquesBadges(menu);
+    }
+    return;
+  }
+
     void msgSearchPatch_1();
     asm(
         ".global msgSearchPatch_1\n"
@@ -187,7 +201,7 @@ char * returnCharacterTechnique() {
         ".global patchTechniquesBadges_1\n"
         "patchTechniquesBadges_1:\n"
         "mr 3, 29\n"
-        "b patchTechniquesBadges\n");
+        "b patchTechniquesBadges_intro\n");
   }
 
 namespace mod {
@@ -1988,6 +2002,8 @@ bool IsNpcActive(s32 index) {
     }
     tplpatch::TextureWork flowerTextures = {116, 0, (wii::tpl::TPLHeader *)spm::icondrv::icondrv_wp->wiconTpl->sp->data, myTplHeader, "./a/n_mg_flower-", false, spm::memory::Heap::HEAP_MEM1_UNUSED};
     tplpatch::patchTpl(&flowerTextures);
+    ip::badgePouchPatch(1700);
+    ip::badgePouchInit();
     if (firstRun == false) {}
     if (evtEntry -> flags == 0) {}
     return 2;
