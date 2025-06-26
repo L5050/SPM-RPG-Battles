@@ -42,7 +42,7 @@ static CustomMessage msgs[]
     },
     {
         "bn_test_2",
-        "Power Bounce"
+        "Power Jump"
     },
     {
         "bn_test_3",

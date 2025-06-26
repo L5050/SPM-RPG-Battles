@@ -152,6 +152,7 @@ char * returnCharacterTechnique() {
     spm::an2_08::RpgMenu *menuPtr = (spm::an2_08::RpgMenu *)&menu->option_2;
       s32 badgeCount = ip::pouchCountBadges();
       ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(0);
+      s32 ret2 = 0;
       for (int i = 0; i < badgeCount; i++)
       {
         if (badgeInfo[i].equipped && mod::checkBadgeTechnique(badgeInfo[i].id))
@@ -166,9 +167,11 @@ char * returnCharacterTechnique() {
           // Move to the next option slot
           menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
           offSet += 8;
+          ret2++;
         }
         ret++; // Increase item count
       }
+      if (ret2 == 0) ret = 1;
     retCount[0] = ret;
     asm(
         "lis 12, retCount@ha\n"

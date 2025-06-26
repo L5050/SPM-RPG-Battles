@@ -24,7 +24,7 @@ BadgeDef badgeDefs[NUM_BADGES] = {
         3,
         power_bounce
     },
-    // Power Bounce
+    // Power Jump
     {
         "bn_test_2",
         "bd_test_2",

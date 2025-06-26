@@ -153,6 +153,15 @@ s32 mario_rotate_x(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     return 2;
 }
 
+s32 mario_rotate_z(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    f32 rotation = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[0]);
+    Vec3 *ttydRotation = &spm::mario::marioGetPtr()->ttydRotation;
+    spm::mario::marioGetPtr()->ttydRotation = {ttydRotation->x, ttydRotation->y, rotation};
+    return 2;
+}
+
 void rpg_set_technique_index(s32 index)
 {
     techniqueIndex = index;
@@ -472,7 +481,12 @@ IF_FLAG(LW(0), 0x8000)
         WAIT_MSEC(1000)
         DELETE_EVT(LW(10))
         USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc1"), LW(5), LW(6), LW(7))
-        USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 0, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+        IF_EQUAL(LF(2), 0)
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 0, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
+        ELSE()
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 13, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+        END_IF()
         USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("npc1"))
         USER_FUNC(spm::evt_mobj::evt_mobj_delete, PTR("mobj1"))
       CASE_EQUAL(1)
@@ -584,21 +598,21 @@ EVT_BEGIN(damageAnims)
       CASE_EQUAL(0)
         USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc1"), 4, 1)
         WAIT_MSEC(300)
-        USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, LW(2), 0, 0, LW(0))
+        USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 0, 0, LW(0))
         IF_NOT_FLAG(LW(0), 0x8000)
           USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc1"), 0, 1)
         END_IF()
       CASE_EQUAL(1)
         USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc2"), 4, 1)
         WAIT_MSEC(300)
-        USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, LW(2), 0, 0, LW(0))
+        USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 0, 0, LW(0))
         IF_NOT_FLAG(LW(0), 0x8000)
           USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc2"), 0, 1)
         END_IF()
       CASE_EQUAL(2)
         USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc3"), 4, 1)
         WAIT_MSEC(300)
-        USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, LW(2), 0, 0, LW(0))
+        USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 0, 0, LW(0))
         IF_NOT_FLAG(LW(0), 0x8000)
           USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc3"), 0, 1)
         END_IF()
@@ -2672,7 +2686,6 @@ EVT_BEGIN(parentOfBeginRPG)
   IF_EQUAL(LW(0), 0) //only happens if you run away successfully
     WAIT_MSEC(500)
   ELSE()//only happens if you win the RPG battle
-  USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
   WAIT_MSEC(500)
   // I'll throw other enemy logic here later
   END_IF()

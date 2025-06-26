@@ -32,6 +32,7 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(displayDamage, 4)
   EVT_DECLARE_USER_FUNC(rpg_get_technique_index, 1)
   EVT_DECLARE_USER_FUNC(mario_rotate_x, 1)
+  EVT_DECLARE_USER_FUNC(mario_rotate_z, 1)
 
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)

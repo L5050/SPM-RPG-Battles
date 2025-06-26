@@ -30,6 +30,8 @@ namespace mod {
 EVT_DECLARE(chunks_onhit)
 EVT_DECLARE(chunks_on_spawn)
 EVT_DECLARE(chunks_attack)
+EVT_DECLARE(chunks_throw)
+EVT_DECLARE(power_bounce_chunks)
 
 NPCTribeAnimDef * getChunksAnims();
 spm::evtmgr::EvtScriptCode * getChunksDeath();

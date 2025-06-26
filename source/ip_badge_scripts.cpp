@@ -9,6 +9,7 @@
 #include "ip_badges.h"
 #include "ip_badgepouch.h"
 #include "tplpatch.h"
+#include "oChunks.h"
 
 #include <spm/system.h>
 #include <spm/acdrv.h>
@@ -53,13 +54,52 @@ using namespace mod;
 
 namespace ip {
 
+#define PB_OVERRIDE_COUNT 1
+
+struct PowerBounceOverride
+{
+    s32 tribeId;
+    const spm::evtmgr::EvtScriptCode * script;
+};
+
+PowerBounceOverride pbOverrides[PB_OVERRIDE_COUNT] = {
+  {
+    270,
+    power_bounce_chunks
+  }
+};
+
+const char * no_fp = "<dq>\n"
+"<p>\n"
+"Not enough FP!\n"
+"<k>\n";
+
+s32 get_pb_override(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 tribe = getRpgTribeID(index);
+    spm::evtmgr::EvtScriptCode * script = nullptr;
+    for (s32 i = 0; i < PB_OVERRIDE_COUNT; i++)
+    {
+      if (pbOverrides[i].tribeId == tribe) {
+        script = (spm::evtmgr::EvtScriptCode *)pbOverrides[i].script;
+        break;
+      }
+    }
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)script);
+    return 2;
+}
+
+EVT_DECLARE_USER_FUNC(get_pb_override, 2)
+
 EVT_BEGIN(power_bounce_stylish)
   USER_FUNC(ac_success_reset)
   INLINE_EVT()
     SET(LW(10), 0)
     LBL(1)
         USER_FUNC(check_pressed_a_ac, LW(11))
-        //USER_FUNC(enable_disable_stylish, 1)
+        USER_FUNC(enable_disable_stylish, 1)
         IF_EQUAL(LW(11), 1)
           USER_FUNC(ac_success_toggle)
           GOTO(2)
@@ -76,8 +116,9 @@ EVT_BEGIN(power_bounce_stylish)
   WAIT_FRM(11)
   USER_FUNC(check_ac_success, LW(11))
   IF_EQUAL(LW(11), 1)
+    USER_FUNC(ac_success_reset)
     USER_FUNC(spm::evt_sub::evt_sub_random, 100, LW(5))
-    ADD(LW(5), 50)
+    ADD(LW(5), 100)
     USER_FUNC(spm::an2_08::evt_rpg_add_xp, LW(5))
     USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_ACROBAT_RENZOKU1"))
@@ -88,22 +129,40 @@ EVT_BEGIN(power_bounce_stylish)
       SET(LW(11), 0)
       SETF(LW(10), FLOAT(0.0))
       DO(0)
-        USER_FUNC(mario_rotate_x, LW(10))
+        USER_FUNC(mario_rotate_z, LW(10))
         ADD(LW(11), 1)
-        ADDF(LW(10), FLOAT(25.0))
+        ADDF(LW(10), FLOAT(18.0))
         WAIT_FRM(1)
-        IF_EQUAL(LW(11), 15)
+        IF_EQUAL(LW(11), 20)
           DO_BREAK()
         END_IF()
       WHILE()
     END_INLINE()
     USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("KJ_1A"), 0)
-    USER_FUNC(ac_success_reset)
   END_IF()
   RETURN()
 EVT_END()
 
 EVT_BEGIN(power_bounce)
+    USER_FUNC(getFP, LW(14))
+    IF_SMALL(LW(14), 2)
+      USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(no_fp), 0, 0)
+      SET(LF(1), 1)
+      RETURN()
+    END_IF()
+    USER_FUNC(get_pb_override, UW(0), LW(14))
+    IF_NOT_EQUAL(LW(14), 0)
+      SWITCH(UW(0))
+        CASE_EQUAL(0)
+          SET(LW(15), PTR("npc1"))
+        CASE_EQUAL(1)
+          SET(LW(15), PTR("npc2"))
+        CASE_EQUAL(2)
+          SET(LW(15), PTR("npc3"))
+      END_SWITCH()
+      RUN_CHILD_EVT(LW(14))
+      RETURN()
+    END_IF()
   SWITCH(UW(0))
     CASE_EQUAL(0)
       SET(LW(15), PTR("mobj1"))
@@ -154,8 +213,9 @@ EVT_BEGIN(power_bounce)
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_ACROBAT_RENZOKU2"))
     USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("nice"), UW(6), 150, 0, 0, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0)
     USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(10), 0, LW(0))
-    USER_FUNC(displayDamage, LW(5), LW(6), LW(7), LW(10))
     RUN_EVT(mod::damageAnims)
+    USER_FUNC(displayDamage, LW(5), LW(6), LW(7), LW(10))
+    USER_FUNC(subtractFP, 2)
   ELSE()
     USER_FUNC(displayDamage, LW(5), LW(6), LW(7), LW(10))
     USER_FUNC(spm::evt_snd::evt_snd_sfxon_character, PTR("SFX_P_V_MARIO_ATTACK1"), PTR("SFX_P_V_PEACH_ATTACK1"), PTR("SFX_P_V_KOOPA_ATTACK1"), PTR("SFX_P_V_LUIGI_ATTACK1"))
@@ -166,11 +226,20 @@ EVT_BEGIN(power_bounce)
   SUB(LW(5), 35)
   USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 10, 300)
   SET(LW(5), UW(4))
+  BROTHER_EVT_ID(LW(2))
+    RUN_CHILD_EVT(runEnemyDeath)
+  END_BROTHER()
   USER_FUNC(spm::evt_mario::evt_mario_pos_change, LW(5), LW(7), FLOAT(180.0))
   USER_FUNC(spm::evt_mario::evt_mario_set_pos, LW(5), FLOAT(0.0), FLOAT(0.0))
   USER_FUNC(spm::evt_mario::evt_mario_direction_face, 90, 200)
-  RUN_CHILD_EVT(runEnemyDeath)
   USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, LW(15))
+  DO(0)
+    CHK_EVT(LW(2), LW(0))
+    IF_EQUAL(LW(0), 0)
+      DO_BREAK()
+    END_IF()
+    WAIT_FRM(1)
+  WHILE()
   RETURN()
 EVT_END()
 

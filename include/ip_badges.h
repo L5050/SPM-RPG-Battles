@@ -38,5 +38,6 @@ EVT_DECLARE_USER_FUNC(get_badge_script_by_technique, 2)
 
 
 EVT_DECLARE(power_bounce)
+EVT_DECLARE(power_bounce_stylish)
 
 }
