@@ -10,6 +10,7 @@
 #include "ip_badgepouch.h"
 #include "tplpatch.h"
 #include "oChunks.h"
+#include "fracktail.h"
 
 #include <spm/system.h>
 #include <spm/acdrv.h>
@@ -54,7 +55,7 @@ using namespace mod;
 
 namespace ip {
 
-#define PB_OVERRIDE_COUNT 1
+#define PB_OVERRIDE_COUNT 2
 
 struct PowerBounceOverride
 {
@@ -66,6 +67,10 @@ PowerBounceOverride pbOverrides[PB_OVERRIDE_COUNT] = {
   {
     270,
     power_bounce_chunks
+  },
+  {
+    313,
+    fracktail_pj_override
   }
 };
 

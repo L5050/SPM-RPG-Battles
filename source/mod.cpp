@@ -486,12 +486,6 @@ bool IsNpcActive(s32 index) {
   "<dkey><wait 250></dkey>\n"
   "<o>\n";
 
-  const char * stg7_2_133_2_023 = "<dkey><wait 500></dkey>\n"
-  "<p>\n"
-  "Urg... %s is too heavy to lift!\n"
-  "<k>\n"
-  "<o>\n";
-
   const char * stg7_2_133_2_024 = "<p>\n"
   "Use it on who?\n"
   "<o>\n";

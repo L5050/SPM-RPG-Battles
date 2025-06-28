@@ -46,13 +46,14 @@ static CustomMessage msgs[]
     },
     {
         "bn_test_3",
-        "Test Badge #3"
+        "Sleepy Stomp"
     },
 
     // Badge Descriptions
     {
         "bd_test_1",
-        "Testing badge 1"
+        "Raises max HP by 5\n"
+        "costs 3 BP"
     },
     {
         "bd_test_2",

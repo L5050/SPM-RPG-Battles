@@ -29,6 +29,9 @@ EVT_DECLARE(fracktail_on_spawn)
 EVT_DECLARE(fracktail_onhit)
 EVT_DECLARE(frackle_attack)
 EVT_DECLARE(fracktail_attack)
+EVT_DECLARE(fracktail_pj_override)
+EVT_DECLARE(fracktail_throw_script)
+EVT_DECLARE(frackle_throw_script)
 
 NPCTribeAnimDef * getFracktailAnims();
 

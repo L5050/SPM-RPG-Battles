@@ -48,6 +48,12 @@ EVT_DECLARE(evt_memcard_save)
   "What will you do?\n"
   "<o>\n";
 
+  const char stg7_2_133_2_023[70]= "<dkey><wait 500></dkey>\n"
+  "<p>\n"
+  "Urg... %s is too \nheavy to lift!\n"
+  "<k>\n"
+  "<o>\n";
+
 void savemgr_main();
 void main();
 

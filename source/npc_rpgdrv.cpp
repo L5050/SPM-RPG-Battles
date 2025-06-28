@@ -448,8 +448,8 @@ EVT_END()
     //npcDataTable[11] = {440, getCherbilAnims(), cherbil_attack, nullptr, nullptr, nullptr}; // Cherbil
     npcDataTable[11] = {25, getMetAnims(), 20, met_attack, met_onhit, nullptr, met_onspawn}; // Buzzy Beetle
     fracktail_main();
-    npcDataTable[12] = {313, getFracktailAnims(), 0, fracktail_attack, fracktail_onhit, nullptr, fracktail_on_spawn}; // Fracktail
-    npcDataTable[13] = {450, animsFrackle, 50, frackle_attack, nullptr, nullptr, nullptr, nullptr}; // Frackle
+    npcDataTable[12] = {313, getFracktailAnims(), 0, fracktail_attack, fracktail_onhit, nullptr, fracktail_on_spawn, fracktail_throw_script}; // Fracktail
+    npcDataTable[13] = {450, animsFrackle, 50, frackle_attack, nullptr, nullptr, nullptr, frackle_throw_script}; // Frackle
   }
 
 }
