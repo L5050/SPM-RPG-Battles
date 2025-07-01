@@ -151,41 +151,45 @@ char * returnCharacterTechnique() {
     return spm::msgdrv::msgSearch(msgName);
   }
 
-  void patchTechniquesBadges(spm::an2_08::RpgMenu * menu)
+  void patchTechniquesBadges(spm::an2_08::RpgMenu *menu)
   {
     int offSet = 0; // Offset in bytes for unk_X fields (starts at 0)
     int ret = 1;
     spm::an2_08::RpgMenu *menuPtr = (spm::an2_08::RpgMenu *)&menu->option_2;
-      s32 badgeCount = ip::pouchCountBadges();
+    s32 badgeCount = ip::pouchCountBadges();
+    s32 ret2 = 0;
+    s32 ret3 = 0;
+    for (int i = 0; i < badgeCount; i++)
+    {
       ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(0);
-      s32 ret2 = 0;
-      for (int i = 0; i < badgeCount; i++)
+      if (badgeInfo[i].equipped && mod::checkBadgeTechnique(badgeInfo[i].id))
       {
-        if (badgeInfo[i].equipped && mod::checkBadgeTechnique(badgeInfo[i].id))
-        {
-          ip::BadgeDef *badgeDef = ip::pouchGetBadgeDef(i);
-          const char *name = spm::msgdrv::msgSearch(badgeDef->nameMsg);
-          menuPtr->option_1 = name;
+        ip::BadgeDef *badgeDef = ip::pouchGetBadgeDef(i);
+        const char *name = spm::msgdrv::msgSearch(badgeDef->nameMsg);
+        menuPtr->option_1 = name;
 
-          // Store item ID in corresponding unk_X field
-          *((int *)((char *)menu + offSet + 4)) = badgeInfo[i].id;
+        // Store item ID in corresponding unk_X field
+        *((int *)((char *)menu + offSet + 4)) = badgeInfo[i].id;
 
-          // Move to the next option slot
-          menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
-          offSet += 8;
-          ret2++;
-        } else {
-          ret--;
-        }
-        ret++; // Increase item count
+        // Move to the next option slot
+        menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
+        offSet += 8;
+        ret2++;
       }
-      if (ret2 == 0) ret = 1;
+      else
+      {
+        ret3++;
+      }
+      ret++; // Increase item count
+    }
+    ret -= ret3;
+    if (ret2 == 0)
+      ret = 1;
     retCount[0] = ret;
     asm(
         "lis 12, retCount@ha\n"
         "ori 12, 12, retCount@l\n"
-        "lwz 30, 0(12)"
-    );
+        "lwz 30, 0(12)");
     return;
   }
 
