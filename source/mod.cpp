@@ -174,6 +174,8 @@ char * returnCharacterTechnique() {
           menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
           offSet += 8;
           ret2++;
+        } else {
+          ret--;
         }
         ret++; // Increase item count
       }
