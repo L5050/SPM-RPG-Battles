@@ -27,8 +27,12 @@
 #include <spm/dispdrv.h>
 #include <spm/animdrv.h>
 #include <spm/item_data.h>
+#include <spm/eff_map_block_del.h>
 #include <spm/npcdrv.h>
 #include <spm/map_data.h>
+#include <spm/evt_mobj.h>
+#include <spm/eff_small_star.h>
+#include <spm/mario_motion.h>
 #include <spm/fontmgr.h>
 #include <spm/fairy.h>
 #include <spm/seqdrv.h>
@@ -49,6 +53,8 @@
 #include <cstdio>
 USING(wii::mtx::Vec3)
 USING(ip::BadgeId)
+
+using namespace spm;
 
 //credit to rainchus for helping me out with these ASM hooks :)
 extern "C" {
@@ -218,6 +224,7 @@ namespace mod {
   s32 *fp = nullptr;
   s32 *maxFp = nullptr;
   s32 *bp = nullptr;
+  s32 *maxBp = nullptr;
   wii::tpl::TPLHeader *myTplHeader = nullptr;
   char * mainText = nullptr;
   char modTplName[] = "eeeeeeeee";
@@ -1993,6 +2000,8 @@ bool IsNpcActive(s32 index) {
       }
     }
     rpgInProgress = true;
+    wii::os::OSReport("%p\n", maxFp);
+    wii::os::OSReport("%d\n", *maxFp);
     if (*maxFp == 0) {
       *fp = 5;
       *maxFp = 5;
@@ -2253,11 +2262,13 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     evtpatch::hookEvt(he3_md->initScript, 78, gswPatch);
     evtpatch::hookEvtReplace(he3_md->initScript, 38, insertNop);
     evtpatch::hookEvtReplace(he3_md->initScript, 37, insertNop);
-    fp = (s32 *)&spm::spmario::gp->gsw[1800];
-    maxFp = (s32 *)&spm::spmario::gp->gsw[1804];
-    bp = (s32 *)&spm::spmario::gp->gsw[1808];
+    fp = (s32 *)&spm::spmario::gp->gsw[1900];
+    maxFp = (s32 *)&spm::spmario::gp->gsw[1904];
+    bp = (s32 *)&spm::spmario::gp->gsw[1908];
+    maxBp = (s32 *)&spm::spmario::gp->gsw[1912];
     savemgr_main();
     ip::main();
+    mobj_main();
     //tplpatch::iconPatch(modTplName);
   }
 

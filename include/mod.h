@@ -18,6 +18,7 @@ EVT_DECLARE(evt_memcard_save)
 extern s32 *fp;
 extern s32 *maxFp;
 extern s32 *bp;
+extern s32 *maxBp;
 extern bool gIsDolphin;
 extern bool gIsRiivolution;
 extern bool gIsPatchedDisc;
@@ -30,6 +31,7 @@ bool IsNpcActive(s32 index);
 void rpg_set_technique_index(s32 index);
 bool checkBadgeTechnique(ip::BadgeId id);
 spm::evtmgr::EvtScriptCode* getInstructionEvtArg(spm::evtmgr::EvtScriptCode* script, s32 line, int instruction);
+void mobj_main();
 EVT_DECLARE_USER_FUNC(setRpgTribeID, 2)
 EVT_DECLARE_USER_FUNC(compareStrings, 3)
 EVT_DECLARE_USER_FUNC(mario_set_scale, 3)

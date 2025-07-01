@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ip_badges.h"
+#include "evt_cmd.h"
 
 #include <common.h>
 
@@ -42,5 +43,9 @@ void badgePouchInit();
 
 // Game code patches required by the badge pouch
 void badgePouchPatch(s32 gsw);
+
+EVT_DECLARE_USER_FUNC(evt_pouch_add_badge, 1)
+EVT_DECLARE_USER_FUNC(evt_pouch_remove_badge, 1)
+EVT_DECLARE_USER_FUNC(evt_pouch_init, 0)
 
 }

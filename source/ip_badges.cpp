@@ -29,7 +29,7 @@ BadgeDef badgeDefs[NUM_BADGES] = {
         "bn_test_2",
         "bd_test_2",
         1,
-        1,
+        3,
         nullptr
     },
     // Sleepy Stomp
@@ -37,7 +37,7 @@ BadgeDef badgeDefs[NUM_BADGES] = {
         "bn_test_3",
         "bd_test_3",
         2,
-        0,
+        3,
         nullptr
     },
 };

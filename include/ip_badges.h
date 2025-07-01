@@ -8,9 +8,12 @@
 #include <common.h>
 #include <spm/evtmgr.h>
 #include <spm/evtmgr_cmd.h>
+#include <wii/tpl.h>
 
 namespace ip {
 
+extern wii::tpl::TPLHeader* badgeIconTpl;
+  
 #define NUM_BADGES 3
 
 enum BadgeId : s8
@@ -18,7 +21,7 @@ enum BadgeId : s8
     BADGEID_NONE = -1,
     BADGEID_HP_PLUS,
     BADGEID_POWER_BOUNCE,
-    BADGEID_TEST_3
+    BADGEID_SLEEPY_STOMP
 };
 
 struct BadgeDef

@@ -1,5 +1,6 @@
 #include "mod_ui_base/colours.h"
 #include "mod_ui_base/window.h"
+#include "mod.h"
 #include "patch.h"
 #include "util.h"
 
@@ -311,16 +312,23 @@ static void updateOnBadges(u32 btn)
     }
     else if (btn & WPAD_BTN_2)
     {
-        PouchBadgeInfo * info = pouchGetBadgeInfo(getSelectedBadgeSlot());
+        s32 slot = getSelectedBadgeSlot();
+        PouchBadgeInfo * info = pouchGetBadgeInfo(slot);
+        BadgeDef * badgeDef = pouchGetBadgeDef(slot);
+        //wii::os::OSReport("bp: %d\n", *mod::bp);
         if (info->equipped)
         {
+          *mod::bp += badgeDef->bpCost;
           spm::spmario_snd::spsndSFXOn("SFX_SYS_FILE_MOJI_DELETE1");
-        } else {
+        } else if (*mod::bp >= badgeDef->bpCost) {
+          *mod::bp -= badgeDef->bpCost;
           spm::spmario_snd::spsndSFXOn("SFX_SYS_FILE_MOJI_SET1");
+        } else {
+          spm::spmario_snd::spsndSFXOn("SFX_SYS_SAVE_FAIL1");
+          return;
         }
         // Equip/Dequip badge
         info->equipped = !info->equipped;
-        // TODO: bp
 
         // Special cases for equipped menu
         if (!info->equipped && work.equippedOnly)

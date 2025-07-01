@@ -2,9 +2,11 @@
 #include "ip_badgepouch.h"
 #include "patch.h"
 #include "util.h"
+#include "mod.h"
 
 #include <spm/spmario.h>
 #include <spm/swdrv.h>
+#include <spm/evtmgr.h>
 #include <msl/string.h>
 #include <common.h>
 
@@ -53,6 +55,8 @@ namespace ip
 
   bool pouchAddBadge(BadgeId badge)
   {
+    badgePouchPatch(1700);
+    badgePouchInit();
     s32 i;
     for (i = 0; i < POUCH_BADGE_COUNT; i++)
     {
@@ -73,6 +77,8 @@ namespace ip
 
   bool pouchRemoveBadge(BadgeId badge)
   {
+    badgePouchPatch(1700);
+    badgePouchInit();
     // Find badge
     for (s32 i = 0; i < POUCH_BADGE_COUNT; i++)
     {
@@ -102,13 +108,39 @@ namespace ip
       for (s32 i = 0; i < POUCH_BADGE_COUNT; i++)
         badgePouch[i] = {BADGEID_NONE, false};
       badgePouch[0].id = BADGEID_POWER_BOUNCE;
+      *mod::maxBp = 3;
+      *mod::bp = 3;
     }
   }
 
   void badgePouchPatch(s32 gsw)
   {
     // Get badge pouch location
-    badgePouch = (PouchBadgeInfo *)(&spm::spmario::gp->gsw[gsw]);
+    badgePouch = (PouchBadgeInfo *)(&spm::spmario::gp->gsw[600]);
   }
+
+s32 evt_pouch_add_badge(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
+  {
+    badgePouchInit();
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    pouchAddBadge(id);
+    return 2;
+  }
+
+s32 evt_pouch_remove_badge(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
+  {
+    badgePouchInit();
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    pouchRemoveBadge(id);
+    return 2;
+  }
+
+s32 evt_pouch_init(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
+{
+  badgePouchInit();
+  return 2;
+}
 
 }

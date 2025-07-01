@@ -50,7 +50,10 @@ using namespace spm::npcdrv;
 using namespace spm::evt_npc;
 
 namespace mod {
-spm::evtmgr::EvtScriptCode* fracktail_evt = nullptr;
+spm::map_data::MapData * he4_10_md = spm::map_data::mapDataPtr("he4_10");
+spm::evtmgr::EvtScriptCode* fracktail_fight_setup_evt = getInstructionEvtArg(he4_10_md->initScript, 24, 0);
+spm::evtmgr::EvtScriptCode* fracktail_evt = getInstructionEvtArg(fracktail_fight_setup_evt, 34, 0);
+spm::evtmgr::EvtScriptCode* fracktail_evt_death = nullptr;
 NPCTribeAnimDef animsFracktail[] = {
     {0, "zun_all_S_1"},
     {1, "zun_all_S_1B"},
@@ -898,13 +901,75 @@ EVT_BEGIN(frackle_throw_script)
   RETURN()
 EVT_END()
 
+EVT_BEGIN(fracktail_death)
+  USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg1_4_013"), 0, PTR("npc3"))
+  USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("T_7"), 0)
+  USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg1_4_013_01"), 0, PTR("npc3"))
+  USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc3"), LW(5), LW(6), LW(7))
+  USER_FUNC(spm::evt_snd::evt_snd_sfxon_3d, PTR("SFX_EVT_ZUNBABA_VOICE1"), LW(5), LW(6), LW(7))
+  USER_FUNC(evt_npc_set_anim, PTR("npc3"), 4, 1)
+      INLINE_EVT_ID(LW(10))
+        DO(0)
+            USER_FUNC(evt_npc_get_position, PTR("npc3"), LW(0), LW(1), LW(2))
+            SUBF(LW(1), FLOAT(4.0))
+            USER_FUNC(evt_npc_set_position, PTR("npc3"), LW(0), LW(1), LW(2))
+            WAIT_FRM(1)
+        WHILE()
+      END_INLINE()
+      INLINE_EVT()
+        USER_FUNC(evt_npc_get_position, PTR("npc3"), LW(0), LW(1), LW(2))
+        ADD(LW(0), -125)
+        DO(20)
+            USER_FUNC(spm::evt_sub::evt_sub_random, 200, LW(1))
+            ADD(LW(1), LW(0))
+            USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("zunbaba"), 1, LW(1), 0, 200, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0)
+            USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 23, LW(1), 0, 205, FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+            WAIT_MSEC(50)
+            USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("zunbaba"), 2, LW(1), 0, 210, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0)
+            USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 23, LW(1), 0, 215, FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+            WAIT_MSEC(50)
+        WHILE()
+        WAIT_MSEC(100)
+        USER_FUNC(evt_npc_get_position, PTR("npc3"), LW(0), LW(1), LW(2))
+        USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 24, LW(0), 0, 200, FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+    END_INLINE()
+    INLINE_EVT()
+        USER_FUNC(evt_npc_get_position, PTR("npc3"), LW(0), LW(1), LW(2))
+        ADD(LW(0), -325)
+        DO(20)
+            USER_FUNC(spm::evt_sub::evt_sub_random, 200, LW(1))
+            ADD(LW(1), LW(0))
+            USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("zunbaba"), 1, LW(1), 0, 200, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0)
+            USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 23, LW(1), 0, 205, FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+            WAIT_MSEC(50)
+            USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("zunbaba"), 2, LW(1), 0, 210, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0)
+            USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 23, LW(1), 0, 215, FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+            WAIT_MSEC(50)
+        WHILE()
+    END_INLINE()
+    SET(GSW(0), 53)
+    WAIT_MSEC(5000)
+    DELETE_EVT(LW(10))
+    INLINE_EVT()
+      CALL(fracktail_evt + evtpatch::getLineOffset(fracktail_evt, 385))
+    END_INLINE()
+    WAIT_MSEC(4000)
+    RETURN()
+EVT_END()
+
   void fracktail_main()
   {
     npcTribes[313].attackStrength = 1;
-    npcTribes[313].maxHp = 30;
-    spm::map_data::MapData * he4_10_md = spm::map_data::mapDataPtr("he4_10");
+    npcTribes[313].maxHp = 1;
     spm::evtmgr::EvtScriptCode* fracktail_fight_setup_evt = getInstructionEvtArg(he4_10_md->initScript, 24, 0);
-    fracktail_evt = getInstructionEvtArg(fracktail_fight_setup_evt, 34, 0);
+    //fracktail_evt_death = fracktail_evt;
+    //fracktail_evt_death += evtpatch::getLineOffset(fracktail_evt, 385);
+    evtpatch::hookEvtReplace(fracktail_evt, 405, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(fracktail_evt, 404, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(fracktail_evt, 403, (spm::evtmgr::EvtScriptCode*)insertNop);
+    //evtpatch::hookEvtReplace(fracktail_evt, 402, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(fracktail_evt, 399, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(fracktail_evt, 383, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(fracktail_evt, 366, (spm::evtmgr::EvtScriptCode*)fracktail_start_fight);
     evtpatch::hookEvtReplaceBlock(fracktail_evt, 340, (spm::evtmgr::EvtScriptCode*)insertNop, 355);
     //evtpatch::hookEvt(fracktail_evt, 335, (spm::evtmgr::EvtScriptCode*)fracktail_fix);

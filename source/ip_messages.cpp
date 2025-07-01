@@ -52,16 +52,18 @@ static CustomMessage msgs[]
     // Badge Descriptions
     {
         "bd_test_1",
-        "Raises max HP by 5\n"
-        "costs 3 BP"
+        "Raises max HP by 5!\n"
+        "Costs 3 BP"
     },
     {
         "bd_test_2",
-        "Testing badge 2"
+        "Attack with a powerful strike!\n"
+        "Costs 3 BP to wear, 2 FP to use."
     },
     {
         "bd_test_3",
-        "Testing badge 3"
+        "Automatically pacify enemies you defeat!\n"
+        "Costs 3 BP to wear."
     },
 };
 
