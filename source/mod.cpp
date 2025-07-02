@@ -124,9 +124,9 @@ extern "C" {
     return rpgTribeID[index];
   }
 
-char * returnCharacterTechnique() {
-  return characterStrings[spm::mario::marioGetPtr()->character];
-}
+  char * returnCharacterTechnique() {
+    return characterStrings[spm::mario::marioGetPtr()->character];
+  }
 
   void setNewFloat();
   asm
@@ -145,79 +145,58 @@ char * returnCharacterTechnique() {
   const char *msgSearchPatch(const char *msgName, spm::evtmgr::EvtEntry *evtEntry)
   {
     spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    //wii::os::OSReport("%d %d %d %d %d %d %d %d, yahoo\n", spm::an2_08::an2_08_wp->rpgMenu[0].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[1].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[2].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[3].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[4].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[5].unk_2c, spm::an2_08::an2_08_wp->rpgMenu[6].unk_2c);
-    s32 count = spm::an2_08::an2_08_wp->rpgMenu[5].unk_2c;
-    mod::rpg_set_technique_index(count);
+    //wii::os::OSReport("%d %d %d %d %d %d %d %d, yahoo\n", spm::an2_08::rpgdrv_wp->menus[0].unk_2c, spm::an2_08::rpgdrv_wp->menus[1].unk_2c, spm::an2_08::rpgdrv_wp->menus[2].unk_2c, spm::an2_08::rpgdrv_wp->menus[3].unk_2c, spm::an2_08::rpgdrv_wp->menus[4].unk_2c, spm::an2_08::rpgdrv_wp->menus[5].unk_2c, spm::an2_08::rpgdrv_wp->menus[6].unk_2c);
+    s32 selectedTechnique = spm::an2_08::rpgdrv_wp->menus[1].selected;
+    mod::rpg_set_technique_index(selectedTechnique);
     return spm::msgdrv::msgSearch(msgName);
   }
 
-  void patchTechniquesBadges(spm::an2_08::RpgMenu *menu)
+  s32 patchTechniquesMario(s32 type, spm::an2_08::RpgMenuOption* options)
   {
-    int offSet = 0; // Offset in bytes for unk_X fields (starts at 0)
-    int ret = 1;
-    spm::an2_08::RpgMenu *menuPtr = (spm::an2_08::RpgMenu *)&menu->option_2;
+    options->name = spm::msgdrv::msgSearch("wang_special_1");
+    options->index = 0;
+
+    s32 numOptions = 1;
+
     s32 badgeCount = ip::pouchCountBadges();
-    s32 ret2 = 0;
-    s32 ret3 = 0;
-    for (int i = 0; i < badgeCount; i++)
+    for (s32 i = 0; i < badgeCount; i++)
     {
-      ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(0);
-      if (badgeInfo[i].equipped && mod::checkBadgeTechnique(badgeInfo[i].id))
+      ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(i);
+      if (badgeInfo->equipped && mod::checkBadgeTechnique(badgeInfo->id))
       {
         ip::BadgeDef *badgeDef = ip::pouchGetBadgeDef(i);
         const char *name = spm::msgdrv::msgSearch(badgeDef->nameMsg);
-        menuPtr->option_1 = name;
-
-        // Store item ID in corresponding unk_X field
-        *((int *)((char *)menu + offSet + 4)) = badgeInfo[i].id;
-
-        // Move to the next option slot
-        menuPtr = (spm::an2_08::RpgMenu *)&menuPtr->option_2;
-        offSet += 8;
-        ret2++;
+        options[numOptions].name = name;
+        options[numOptions].index = badgeInfo->id;
+        numOptions++;
       }
-      else
-      {
-        ret3++;
-      }
-      ret++; // Increase item count
     }
-    ret -= ret3;
-    if (ret2 == 0)
-      ret = 1;
-    retCount[0] = ret;
-    asm(
-        "lis 12, retCount@ha\n"
-        "ori 12, 12, retCount@l\n"
-        "lwz 30, 0(12)");
-    return;
+    return numOptions;
   }
 
-  void patchTechniquesBadges_intro(spm::an2_08::RpgMenu *menu)
+  s32 patchTechniquesChars(s32 type, spm::an2_08::RpgMenuOption* options)
   {
+    if (type != 2) {
+      return mod::rpgHandleMenu(type, options);
+    }
 
     spm::mario::MarioWork *mwpp = spm::mario::marioGetPtr();
     if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_MARIO)
     {
-      patchTechniquesBadges(menu);
+      return patchTechniquesMario(type, options);
     }
-    return;
+
+    return 1;
   }
 
-    void msgSearchPatch_1();
-    asm(
-        ".global msgSearchPatch_1\n"
-        "msgSearchPatch_1:\n"
-        "mr 4, 30\n"
-        "b msgSearchPatch\n");
-
-    void patchTechniquesBadges_1();
-    asm(
-        ".global patchTechniquesBadges_1\n"
-        "patchTechniquesBadges_1:\n"
-        "mr 3, 29\n"
-        "b patchTechniquesBadges_intro\n");
-  }
+  void msgSearchPatch_1();
+  asm(
+      ".global msgSearchPatch_1\n"
+      "msgSearchPatch_1:\n"
+      "mr 4, 30\n"
+      "b msgSearchPatch\n"
+  );
+}
 
 namespace mod {
   bool rpgInProgress = false;
@@ -294,6 +273,7 @@ namespace mod {
   s32( * evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
   void( * msgUnLoad)(s32 slot);
   void( * rpg_screen_draw)();
+  s32( * rpgHandleMenu)(s32, spm::an2_08::RpgMenuOption*);
   const char * ( * msgSearch)(const char * msgName);
 
   const char fileName[] = {
@@ -304,7 +284,7 @@ namespace mod {
   {
     spm::evtmgr::EvtScriptCode* link = evtpatch::getEvtInstruction(script, line);
     wii::os::OSReport("%p\n", link);
-    spm::evtmgr::EvtScriptCode* arg = evtpatch::getInstructionArgv(link)[instruction];
+    spm::evtmgr::EvtScriptCode* arg = reinterpret_cast<spm::evtmgr::EvtScriptCode*>(evtpatch::getInstructionArgv(link)[instruction]);
     wii::os::OSReport("%p\n", arg);
     return arg;
   }
@@ -1633,19 +1613,11 @@ bool IsNpcActive(s32 index) {
   s32 compareStrings(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     {
         spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-        char *mapName = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+        const char* mapName = reinterpret_cast<const char*>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
         wii::os::OSReport("%s name\n", mapName);
-        char *comparison = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
-        int compstrReturn = 1;
-        char *result = msl::string::strstr(mapName, comparison);
-        if (result != 0)
-        {
-            compstrReturn = 1;
-        } else
-        {
-            compstrReturn = 0;
-        }
-        spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], compstrReturn);
+        const char *comparison = reinterpret_cast<const char*>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]));
+        const char *result = msl::string::strstr(mapName, comparison);
+        spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], result != 0);
         return 2;
       }
 
@@ -1695,9 +1667,9 @@ bool IsNpcActive(s32 index) {
   s32 new_evt_rpg_calc_mario_damage(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     
-    s32 attackStrength = spm::an2_08::an2_08_wp->rpgNpcInfo[evtEntry->uw[0]].attackStrength;
+    s32 attackStrength = spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].attackStrength;
     if (attackStrength == 0) attackStrength = 1;
-    if ((spm::an2_08::an2_08_wp->statusEffects & 0x40U) != 0) {
+    if ((spm::an2_08::rpgdrv_wp->statusEffects & 0x40U) != 0) {
       if (0 < attackStrength) {
         attackStrength = attackStrength / 2;
       }
@@ -1705,8 +1677,8 @@ bool IsNpcActive(s32 index) {
         attackStrength = 1;
       }
     }
-    wii::os::OSReport("%x\n", spm::an2_08::an2_08_wp->rpgNpcInfo[evtEntry->uw[0]].flags);
-    if ((spm::an2_08::an2_08_wp->rpgNpcInfo[evtEntry->uw[0]].flags & 0x2) != 0) 
+    wii::os::OSReport("%x\n", spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].flags);
+    if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].flags & 0x2) != 0) 
     {
     attackStrength = attackStrength * 2;
     }
@@ -1857,16 +1829,17 @@ bool IsNpcActive(s32 index) {
     if (power == 0) return 4;
     if (npcPart->owner->moveMode == 5 && tribeId != 440) return 4;
     spm::mario::MarioWork * mpp = spm::mario::marioGetPtr();
-    if ((mpp->flags & 0x40000000) == 0){
-    if (rpgInProgress != true && mpp->flags)  {
-    setUpPreset(tribeId);
-    spm::evtmgr::EvtEntry* battle = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
-    battle->lw[0] = 1;
-    spm::evtmgr::EvtEntry* entry = spm::evtmgr::evtEntry(deleteAttackedEnemy, 1, 0);
-    entry->lw[0] = npcPart->owner->name;
-    return 1;
-    }}
-  return 4;
+    if ((mpp->flags & 0x40000000) == 0) {
+      if (!rpgInProgress && mpp->flags) {
+        setUpPreset(tribeId);
+        spm::evtmgr::EvtEntry* battle = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
+        battle->lw[0] = 1;
+        spm::evtmgr::EvtEntry* entry = spm::evtmgr::evtEntry(deleteAttackedEnemy, 1, 0);
+        entry->lw[0] = PTR(npcPart->owner->name);
+        return 1;
+      }
+    }
+    return 4;
   }
 
   void turnBasedCombatOverrideInit() {
@@ -1938,7 +1911,7 @@ bool IsNpcActive(s32 index) {
     msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
 
     writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
-    writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1D4, patchTechniquesBadges_1);
+    rpgHandleMenu = patch::hookFunction(spm::an2_08::rpgHandleMenu, patchTechniquesChars);
     writeBranchLink( & spm::an2_08::evt_rpg_npctribe_handle, 0x94, returnTribe);
     //writeBranchLink( & spm::an2_08::rpg_screen_draw, 0x2D8, setTextureIndex);
     writeBranchLink( & spm::acdrv::acMain, 0x49C, setNewFloat);
@@ -1986,8 +1959,8 @@ bool IsNpcActive(s32 index) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 newStrength = args[0];
     s8 npcIndex = evtEntry->uw[0];
-    s32 strength = spm::an2_08::an2_08_wp->rpgNpcInfo[npcIndex].attackStrength;
-    spm::an2_08::an2_08_wp->rpgNpcInfo[npcIndex].attackStrength = strength + newStrength;
+    s32 strength = spm::an2_08::rpgdrv_wp->rpgNpcInfo[npcIndex].attackStrength;
+    spm::an2_08::rpgdrv_wp->rpgNpcInfo[npcIndex].attackStrength = strength + newStrength;
     //spm::evtmgr_cmd::evtSetValue(evtEntry, (spm::evtmgr::EvtVar*)evtEntry->pCurData, 1);
     if (firstRun == false) {}
     return 2;
@@ -1997,12 +1970,12 @@ bool IsNpcActive(s32 index) {
     spm::camdrv::camPtrTbl[5] -> isOrthoToggle = 1;
     for (int i = 0; i < 3; i++) {
       if (rpgIsActive[i]) {
-        spm::an2_08::an2_08_wp->rpgNpcInfo[i].attackStrength = spm::npcdrv::npcTribes[rpgTribeID[i]].attackStrength;
-        spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp = spm::npcdrv::npcTribes[rpgTribeID[i]].maxHp;
-        spm::an2_08::an2_08_wp->rpgNpcInfo[i].killXp = spm::npcdrv::npcTribes[rpgTribeID[i]].killXp;
-        spm::an2_08::an2_08_wp->rpgNpcInfo[i].flags = 0;
-        spm::an2_08::an2_08_wp->rpgNpcInfo[i].stunTime = 0;
-        spm::an2_08::an2_08_wp->rpgNpcInfo[i].killDisappearTimer = 0xff;
+        spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].attackStrength = spm::npcdrv::npcTribes[rpgTribeID[i]].attackStrength;
+        spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].maxHp = spm::npcdrv::npcTribes[rpgTribeID[i]].maxHp;
+        spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].killXp = spm::npcdrv::npcTribes[rpgTribeID[i]].killXp;
+        spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].flags = 0;
+        spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].stunTime = 0;
+        spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].killDisappearTimer = 0xff;
       }
     }
     rpgInProgress = true;
@@ -2080,17 +2053,16 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
 
-  s32 evt_npc_entry_autoname(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
-{
-  spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-  char name[32];
-  s32 id = spm::npcdrv::npcdrv_wp->nextTemplateNpcId;
-  msl::stdio::sprintf(name,"npc_%08x", id);
-  const char * animpose = (const char*)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-  spm::npcdrv::NPCEntry* entry = spm::npcdrv::npcEntry(name, animpose, args[1], 0);
-  spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], (s32)entry->name);
-  return 2;
-}
+  s32 evt_npc_entry_autoname(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    char name[32];
+    s32 id = spm::npcdrv::npcdrv_wp->nextTemplateNpcId;
+    msl::stdio::sprintf(name,"npc_%08x", id);
+    const char * animpose = (const char*)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    spm::npcdrv::NPCEntry* entry = spm::npcdrv::npcEntry(name, animpose, args[1], 0);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], (s32)entry->name);
+    return 2;
+  }
 
   s32 rpg_off(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::camdrv::camPtrTbl[5]->isOrthoToggle = 1;
@@ -2171,18 +2143,18 @@ bool IsNpcActive(s32 index) {
     } else {
       superGuard = false;
     }
-  return 2;
-}
-
-s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-  if (superGuard == true) {
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 1);
-  } else {
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 0);
+    return 2;
   }
-  return 2;
-}
+
+  s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    if (superGuard == true) {
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 1);
+    } else {
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 0);
+    }
+    return 2;
+  }
 
   s32 ac_success_reset(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     succeededActionCommand = false;
@@ -2265,9 +2237,9 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     patchBrobot();
     npc_rpgdrv_main();
     spm::map_data::MapData * he3_md = spm::map_data::mapDataPtr("he3_01");
-    evtpatch::hookEvt(he3_md->initScript, 78, gswPatch);
-    evtpatch::hookEvtReplace(he3_md->initScript, 38, insertNop);
-    evtpatch::hookEvtReplace(he3_md->initScript, 37, insertNop);
+    evtpatch::hookEvt(he3_md->initScript, 78, const_cast<spm::evtmgr::EvtScriptCode*>(gswPatch));
+    evtpatch::hookEvtReplace(he3_md->initScript, 38, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
+    evtpatch::hookEvtReplace(he3_md->initScript, 37, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
     fp = (s32 *)&spm::spmario::gp->gsw[1900];
     maxFp = (s32 *)&spm::spmario::gp->gsw[1904];
     bp = (s32 *)&spm::spmario::gp->gsw[1908];
@@ -2277,5 +2249,4 @@ s32 check_superguard_success(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     mobj_main();
     //tplpatch::iconPatch(modTplName);
   }
-
 }

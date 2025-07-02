@@ -119,28 +119,28 @@ namespace ip
     badgePouch = (PouchBadgeInfo *)(&spm::spmario::gp->gsw[600]);
   }
 
-s32 evt_pouch_add_badge(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
+  s32 evt_pouch_add_badge(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
   {
     badgePouchInit();
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    BadgeId id = (BadgeId)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     pouchAddBadge(id);
     return 2;
   }
 
-s32 evt_pouch_remove_badge(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
+  s32 evt_pouch_remove_badge(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
   {
     badgePouchInit();
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    BadgeId id = (BadgeId)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     pouchRemoveBadge(id);
     return 2;
   }
 
-s32 evt_pouch_init(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
-{
-  badgePouchInit();
-  return 2;
-}
+  s32 evt_pouch_init(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
+  {
+    badgePouchInit();
+    return 2;
+  }
 
 }

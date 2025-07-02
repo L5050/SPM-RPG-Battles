@@ -248,7 +248,7 @@ void enemyDisp()
     for (s32 i = 0; i < 3; i++)
     {
         // Check NPC is not dead
-        if ((spm::an2_08::an2_08_wp->rpgNpcInfo[i].flags & 0x8000) == 0)
+        if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].flags & 0x8000) == 0)
         {
             switch (i) {
               case 0:
@@ -286,25 +286,25 @@ void enemyDisp()
             s32 tribe = getRpgTribeID(i);
             
             spm::mario_pouch::MarioPouchWork *pouchPtr = spm::mario_pouch::pouchGetPtr();
-            if (pouchPtr->attack >= spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp) {
+            if (pouchPtr->attack >= spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].maxHp) {
               // Draw yellow hp bar
-              float overlayWidth = INNER_WIDTH * ((float)spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp / (float)spm::npcdrv::npcTribes[tribe].maxHp);
+              float overlayWidth = INNER_WIDTH * ((float)spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].maxHp / (float)spm::npcdrv::npcTribes[tribe].maxHp);
               if (overlayWidth > 0.0f)
                   Window::drawBoxGX(&colours::yellow, pos.x, pos.y, overlayWidth, INNER_HEIGHT);
 
               // Draw hp
               char str[16];
-              msl::stdio::sprintf(str, "%d", spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp);
+              msl::stdio::sprintf(str, "%d", spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].maxHp);
               Window::drawString(str, pos.x + 50.0f, pos.y, &colours::yellow, 1.0f, true);
             } else {
             // Draw white hp bar
-            float overlayWidth = INNER_WIDTH * ((float)spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp / (float)spm::npcdrv::npcTribes[tribe].maxHp);
+            float overlayWidth = INNER_WIDTH * ((float)spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].maxHp / (float)spm::npcdrv::npcTribes[tribe].maxHp);
             if (overlayWidth > 0.0f)
                 Window::drawBoxGX(&colours::white, pos.x, pos.y, overlayWidth, INNER_HEIGHT);
 
             // Draw hp
             char str[16];
-            msl::stdio::sprintf(str, "%d", spm::an2_08::an2_08_wp->rpgNpcInfo[i].maxHp);
+            msl::stdio::sprintf(str, "%d", spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].maxHp);
             Window::drawString(str, pos.x + 50.0f, pos.y, &colours::white, 1.0f, true);
             }
 
