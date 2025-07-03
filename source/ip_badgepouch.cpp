@@ -139,6 +139,7 @@ namespace ip
 
   s32 evt_pouch_init(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
   {
+    badgePouchPatch(1700);
     badgePouchInit();
     return 2;
   }

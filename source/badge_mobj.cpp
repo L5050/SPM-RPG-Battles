@@ -267,11 +267,10 @@ EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
     USER_FUNC(evt_mario::evt_mario_key_on)
     RETURN()
   EVT_END()
-    
+
   EVT_BEGIN(addSleepyStomp)
-    //USER_FUNC(ip::evt_pouch_init)
+    USER_FUNC(ip::evt_pouch_init)
     USER_FUNC(evt_mobj_sui_new, 0x8, PTR("sleepyStomp"), FLOAT(100.0), FLOAT(150.0), FLOAT(0.0), (s32)getSleepyStomp, 0, EVT_NULLPTR)
-    USER_FUNC(patchSleepyStompTex)
   RETURN_FROM_CALL()
 
   s32 patchSleepyStompTex(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
