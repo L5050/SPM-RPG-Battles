@@ -25,8 +25,8 @@
 #include <spm/effdrv.h>
 #include <spm/evt_mobj.h>
 #include <spm/hitdrv.h>
-#include <spm/eff_nice.h>
-#include <spm/eff_spm_hit.h>
+#include <spm/eff/eff_nice.h>
+#include <spm/eff/eff_spm_hit.h>
 #include <spm/dispdrv.h>
 #include <spm/animdrv.h>
 #include <spm/item_data.h>
