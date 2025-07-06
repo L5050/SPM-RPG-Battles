@@ -40,6 +40,7 @@ namespace mod
 
   typedef struct PowerRefreshWork
   {
+    f32 startTimer; // How much time until the action command starts
     f32 timer; // How much time until the action command ends
     Panel panels[9];
     Vec3 pos; // Position of the center of the grid, should be the same as panelWp[4].pos

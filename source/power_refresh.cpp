@@ -39,7 +39,10 @@ void initFunc(spm::acdrv::AcEntry *entry)
   entry->flags = entry->flags | 4;
   PowerRefreshWork *wp = (PowerRefreshWork *)spm::memory::__memAlloc(spm::memory::Heap::HEAP_MAP, sizeof(PowerRefreshWork));
   msl::string::memset(wp, 0, sizeof(PowerRefreshWork));
+  wp->startTimer = 3.0;
+  wp->timer = 12.0;
   entry->acDefEntry = (void *)wp;
+  return;
 }
 
 
