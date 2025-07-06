@@ -5,6 +5,7 @@
 #include "mod.h"
 #include "patch.h"
 #include "main_scripting.h"
+#include "stack.hh"
 
 #include <patch.h>
 #include <spm/rel/an.h>
