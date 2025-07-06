@@ -34,7 +34,7 @@ static Stack<spm::icondrv::IconEntry*> hpStack;
 static Stack<spm::icondrv::IconEntry*> fpStack;
 static Stack<spm::icondrv::IconEntry*> poisonStack;
 
-spm::acdrv::AcFunc * initFunc(spm::acdrv::AcEntry *entry)
+void initFunc(spm::acdrv::AcEntry *entry)
 {
   entry->flags = entry->flags | 4;
   PowerRefreshWork *wp = (PowerRefreshWork *)spm::memory::__memAlloc(spm::memory::Heap::HEAP_MAP, sizeof(PowerRefreshWork));
