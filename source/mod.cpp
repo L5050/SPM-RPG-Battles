@@ -212,7 +212,8 @@ namespace mod {
   s32 *maxBp = nullptr;
   wii::tpl::TPLHeader *myTplHeader = nullptr;
   char * mainText = nullptr;
-  char modTplName[] = "eeeeeeeee";
+  char modTplName[] = "mod/mod";
+  spm::icondrv::IconEntry * flower = nullptr;
   /*
       Title Screen Custom Text
       Prints "Super Duper Paper Mario" at the top of the title screen
@@ -2247,6 +2248,6 @@ bool IsNpcActive(s32 index) {
     savemgr_main();
     ip::main();
     mobj_main();
-    //tplpatch::iconPatch(modTplName);
+    tplpatch::iconPatch(modTplName);
   }
 }
