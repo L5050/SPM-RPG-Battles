@@ -5,6 +5,7 @@
 #include "mod.h"
 #include "patch.h"
 #include "main_scripting.h"
+#include "power_refresh.h"
 #include "stack.hh"
 
 #include <patch.h>
@@ -19,6 +20,7 @@
 #include <spm/npcdrv.h>
 #include <spm/mario.h>
 #include <spm/mario_pouch.h>
+#include <spm/memory.h>
 #include <spm/seqdef.h>
 #include <wii/os/OSError.h>
 
@@ -31,6 +33,13 @@ namespace mod
 static Stack<spm::icondrv::IconEntry*> hpStack;
 static Stack<spm::icondrv::IconEntry*> fpStack;
 static Stack<spm::icondrv::IconEntry*> poisonStack;
+
+spm::acdrv::AcFunc * initFunc(spm::acdrv::AcEntry *entry)
+{
+  entry->flags = entry->flags | 4;
+  PowerRefreshWork *wp = (PowerRefreshWork *)spm::memory::__memAlloc(spm::memory::Heap::HEAP_MAP, sizeof(PowerRefreshWork));
+  entry->acDefEntry = (void *)wp;
+}
 
 
 
