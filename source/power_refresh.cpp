@@ -8,7 +8,7 @@
 #include "power_refresh.h"
 #include "stack.hh"
 
-#include <patch.h>
+#include <msl/string.h>
 #include <spm/rel/an.h>
 #include <spm/acdrv.h>
 #include <spm/evt_ac.h>
@@ -38,6 +38,7 @@ void initFunc(spm::acdrv::AcEntry *entry)
 {
   entry->flags = entry->flags | 4;
   PowerRefreshWork *wp = (PowerRefreshWork *)spm::memory::__memAlloc(spm::memory::Heap::HEAP_MAP, sizeof(PowerRefreshWork));
+  msl::string::memset(wp, 0, sizeof(PowerRefreshWork));
   entry->acDefEntry = (void *)wp;
 }
 
