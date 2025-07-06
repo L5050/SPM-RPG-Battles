@@ -28,10 +28,10 @@ using namespace spm::evtmgr;
 namespace mod
 {
 
+static Stack<spm::icondrv::IconEntry*> hpStack;
+static Stack<spm::icondrv::IconEntry*> fpStack;
+static Stack<spm::icondrv::IconEntry*> poisonStack;
 
-static Stack<spm::icondrv::IconEntry*>* hpStacks;
-static Stack<spm::icondrv::IconEntry*>* fpStacks;
-static Stack<spm::icondrv::IconEntry*>* poisonStacks;
 
 
 }
