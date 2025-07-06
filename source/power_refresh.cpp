@@ -28,4 +28,9 @@ namespace mod
 {
 
 
+static Stack<spm::icondrv::IconEntry*>* hpStacks;
+static Stack<spm::icondrv::IconEntry*>* fpStacks;
+static Stack<spm::icondrv::IconEntry*>* poisonStacks;
+
+
 }

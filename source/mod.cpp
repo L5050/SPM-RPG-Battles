@@ -87,7 +87,7 @@ extern "C" {
   void drawStuff() {
     // Flower disp
     const Vec3 fpVec = {-100.0, -202.0, 0.0};
-    spm::icondrv::iconDispGx(0.7, &fpVec, 4, 105);
+    spm::icondrv::iconDispGx(0.7, &fpVec, 4, 1600);
     // FP number disp
     wii::gx::GXColor white = {
       255,
