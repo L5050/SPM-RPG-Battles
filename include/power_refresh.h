@@ -26,7 +26,7 @@ using namespace spm::evtmgr;
 
 namespace mod {
 
-typedef struct PanelWork {
+typedef struct Panel {
 s32 iconId; // Type of panel, sorted by Icon Id
 Vec3 pos; // Position of the center of the panel
 f32 fadeIn; // Some kind of variable that determines whether it needs to be spinning and fading in
@@ -37,7 +37,7 @@ void * func; // Logic for when the Panel is clicked, possibly pass the AcEntry t
 
 typedef struct PowerRefreshWork {
 f32 timer; // How much time until the action command ends
-PanelWork panelWp[9];
+Panel panels[9];
 Vec3 pos; // Position of the center of the grid, should be the same as panelWp[4].pos
 s32 hp; // HP gained from the action command
 s32 fp; // FP gained from the action command
