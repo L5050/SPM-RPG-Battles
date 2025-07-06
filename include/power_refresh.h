@@ -34,6 +34,7 @@ namespace mod
     Vec3 pos;    // Position of the center of the panel
     f32 fadeIn;  // Some kind of variable that determines whether it needs to be spinning and fading in
     f32 fadeOut; // Some kind of variable that determines whether it needs to be spinning and fading out
+    f32 waitTimer; // How much time until the panel is refreshed
     spm::icondrv::IconEntry * entry; // Self explanatory
     void *func;  // Logic for when the Panel is clicked, possibly pass the AcEntry through so that it can modify PowerRefreshWork
   };
