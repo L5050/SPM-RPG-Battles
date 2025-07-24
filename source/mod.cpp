@@ -41,6 +41,7 @@
 #include <spm/filemgr.h>
 #include <spm/icondrv.h>
 #include <spm/wpadmgr.h>
+#include <spm/pausewin.h>
 #include <wii/os/OSError.h>
 #include <wii/gx.h>
 #include <wii/tpl.h>
@@ -214,6 +215,8 @@ namespace mod {
   char * mainText = nullptr;
   char modTplName[] = "mod/mod";
   spm::icondrv::IconEntry * flower = nullptr;
+  bool levelInProgress = false;
+  spm::evtmgr::EvtEntry * curLevel = nullptr;
   /*
       Title Screen Custom Text
       Prints "Super Duper Paper Mario" at the top of the title screen
@@ -276,6 +279,7 @@ namespace mod {
   void( * rpg_screen_draw)();
   s32( * rpgHandleMenu)(s32, spm::an2_08::RpgMenuOption*);
   const char * ( * msgSearch)(const char * msgName);
+  void( * pouchSetEnemiesDefeated)(s32 count);
 
   const char fileName[] = {
     "stg7"
@@ -1016,8 +1020,7 @@ bool IsNpcActive(s32 index) {
   const char * stg7_2_133_2_111 = "<p>\n"
   "But the Life Shroom restores\n"
   "5 HP!\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_112 = "<p>\n"
   "%s is taking\n"
@@ -1166,6 +1169,29 @@ bool IsNpcActive(s32 index) {
   "<k>\n"
   "<o>\n";
 
+  const char * chunks_tattle = "<fairy><keyyon>\n"
+  "That's O'Chunks. <wait 150>He's a big,\n"
+  "bearded warrior of a man...\n"
+  "<k>\n"
+  "<p>\n"
+  "Max HP is %d and Attack\n"
+  "is %d.<wait 150> He can grab you by\n"
+  "the feet and hurl you...\n"
+  "<k>\n"
+  "<p>\n"
+  "If you're in reach, he'll toss\n"
+  "you, so keep your distance...\n"
+  "<k>\n"
+  "<p>\n"
+  "But you can turn the tables\n"
+  "on him and use Thoreau to\n"
+  "send him flying...\n"
+  "<k>\n"
+  "<p>\n"
+  "Or you can superguard the\n"
+  "grab. The choice is yours...\n"
+  "<k>\n";
+
   const char * peach_special = "Heal";
 
   const char wang_cmd_1[] = {
@@ -1230,6 +1256,9 @@ bool IsNpcActive(s32 index) {
     else if (msl::string::strcmp(msgName, "peach_heal_success") == 0)
           //Replace message
       return peach_heal_success;
+    else if (msl::string::strcmp(msgName, "anna_ehelp_241") == 0)
+          //Replace message
+      return chunks_tattle;
     else if (msl::string::strcmp(msgName, "wang_cmd_1") == 0)
       //Replace message
       return wang_cmd_1;
@@ -1887,6 +1916,30 @@ bool IsNpcActive(s32 index) {
     }
   }
 
+  void new_pouchSetEnemiesDefeated(s32 count)
+  {
+    if (ip::checkForBadgeEquipped(2))
+    {
+      return;
+    }
+    pouchSetEnemiesDefeated(count);
+    return;
+  }
+
+  s32 wpadGetButtonsPressed_levelHook(int controller)
+  {
+    if (!levelInProgress) {
+      levelInProgress = true;
+      curLevel = spm::evtmgr::evtEntry(levelUpScript, 1, 255);
+    }
+    if (curLevel != nullptr)
+    {
+      return 0;
+    } else {
+      return 0x100;
+    }
+  }
+
   spm::mario::MarioWork* patchTechniques()
   {
     spm::mario::MarioWork* mwp = spm::mario::marioGetPtr();
@@ -1903,6 +1956,8 @@ bool IsNpcActive(s32 index) {
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
     patchWangSpecial();
 
+    pouchSetEnemiesDefeated = patch::hookFunction(spm::mario_pouch::pouchSetEnemiesDefeated, new_pouchSetEnemiesDefeated);
+
     //marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
 
     //spsndBGMOn = patch::hookFunction(spm::spmario_snd::spsndBGMOn, new_spsndBGMOn);
@@ -1911,6 +1966,7 @@ bool IsNpcActive(s32 index) {
       
     msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
 
+    writeWord( & spm::pausewin::levelUpWindowMain, 0x0, 0x4e800020);
     writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
     rpgHandleMenu = patch::hookFunction(spm::an2_08::rpgHandleMenu, patchTechniquesChars);
     writeBranchLink( & spm::an2_08::evt_rpg_npctribe_handle, 0x94, returnTribe);
@@ -2027,8 +2083,40 @@ bool IsNpcActive(s32 index) {
 
   s32 setFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    *fp = args[0];
+    *fp = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     if (firstRun == false) {}
+    return 2;
+  }
+
+  s32 getMaxFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], *maxFp);
+    if (firstRun == false) {}
+    return 2;
+  }
+
+  s32 setMaxFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 newMax = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    *maxFp = newMax;
+    return 2;
+  }
+
+  s32 getMaxBP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], *maxBp);
+    return 2;
+  }
+
+  s32 setMaxBP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    *maxBp = args[0];
+    return 2;
+  }
+
+  s32 addBP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    *bp = *bp + args[0];
     return 2;
   }
 
@@ -2177,6 +2265,7 @@ bool IsNpcActive(s32 index) {
     s32 tribeId = getRpgTribeID(index);
     char tattleBuffer[512];
     msl::stdio::sprintf(tattleBuffer, "anna_%s", spm::item_data::itemDataTable[npcTribes[tribeId].catchCardItemId].descMsg);
+    wii::os::OSReport("%s\n", tattleBuffer);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)tattleBuffer);
     return 2;
   }

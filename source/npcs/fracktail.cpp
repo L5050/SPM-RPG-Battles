@@ -92,6 +92,62 @@ NPCTribeAnimDef animsFracktailHead[] = {
   "Fracktail gave birth!\n"
   "<k>\n";
 
+  const char * fracktail_savemgr = "<housou><p>\n"
+  "SO IT WAS YOU WHO\n"
+  "DROVE THE VILLAGERS\n"
+  "FROM YOLD TOWN.\n"
+  "<k>\n"
+  "<p>\n"
+  "IT IS MY DUTY TO\n"
+  "DEFEND THE PURE HEART\n"
+  "FROM LAWLESS INTRUDERS.\n"
+  "<dkey><wait 750></dkey>\n"
+  "<p>\n"
+  "IT WILL BE MY PLEASURE\n"
+  "TO END YOUR HEARTLESS\n"
+  "TRAIL OF BLOOD.\n"
+  "<k>\n";
+
+  const char * fracktail_dialogue_1 = "<dq>\n"
+  "<p>\n"
+  "*Snacktail snuggles with\n"
+  "Fracktail under the sand.\n"
+  "<o>\n";
+
+  const char * fracktail_dialogue_2 = "<dq>\n"
+  "<p>\n"
+  "Just keep attacking.\n"
+  "<o>\n";
+
+  const char * fracktail_dialogue_3 = "<dq>\n"
+  "<p>\n"
+  "*Snacktail defends their\n"
+  "mother at all costs!\n"
+  "<o>\n";
+
+  const char * fracktail_dialogue_3_1 = "<dq>\n"
+  "<p>\n"
+  "*Fracktail knows what you did.\n"
+  "<o>\n";
+
+  const char * fracktail_dialogue_5 = "<dq>\n"
+  "<p>\n"
+  "*Fracktail receives a call from\n"
+  "Watchitt!\n"
+  "*Fracktail blocks Watchitt.\n"
+  "<o>\n";
+
+  const char * fracktail_dialogue_6 = "<dq>\n"
+  "<p>\n"
+  "*Dimentio sneers in\n"
+  "the background.\n"
+  "<o>\n";
+
+  const char * fracktail_dialogue_7 = "<dq>\n"
+  "<p>\n"
+  "Just. keep. attacking.\n"
+  "<o>\n";
+
   NPCTribeAnimDef * getFracktailAnims()
   {
     return animsFracktail;
@@ -110,7 +166,10 @@ NPCTribeAnimDef animsFracktailHead[] = {
   EVT_BEGIN(fracktail_on_spawn)
     USER_FUNC(evt_npc_set_position, PTR("zun"), 0, -500, 0)
     USER_FUNC(evt_npc_animflag_onoff, PTR("zun"), 1, 128)
-    //USER_FUNC(evt_npc_set_animpose_disp_callback, LW(15), PTR(spm::mi4::mi4MimiHolographicEffect), 0)
+    IF_EQUAL(GSWF(1802), 1)
+      USER_FUNC(evt_npc_set_animpose_disp_callback, LW(15), PTR(spm::mi4::mi4MimiHolographicEffect), 0)
+      USER_FUNC(spm::an2_08::evt_rpg_status_remove, 1, UW(0), 0x2)
+    END_IF()
     USER_FUNC(evt_npc_set_scale, LW(15), FLOAT(4.0), FLOAT(4.0), FLOAT(4.0))
     ADD(LW(0), 500)
     USER_FUNC(evt_npc_set_position, LW(15), LW(0), -1050, LW(2))
@@ -302,7 +361,6 @@ EVT_END()
     ELSE()
       USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 1, LW(14))
       INLINE_EVT()
-        //WAIT_FRM(30)
         SET(LW(10), 0)
         LBL(1)
           IF_SMALL(LW(10), 20)
@@ -586,6 +644,9 @@ EVT_BEGIN(fracktail_head_attack)
   USER_FUNC(evt_npc_set_anim, LW(14), 0, 1)
   USER_FUNC(evt_npc_flag8_onoff, LW(14), 1, 65536)
   USER_FUNC(evt_npc_flag8_onoff, LW(14), 1, 205520900)
+  IF_EQUAL(GSWF(1802), 1)
+    USER_FUNC(evt_npc_set_animpose_disp_callback, LW(14), PTR(spm::mi4::mi4MimiHolographicEffect), 0)
+  END_IF()
   USER_FUNC(evt_npc_set_scale, LW(14), FLOAT(3.0), FLOAT(3.0), FLOAT(3.0))
   SET(LW(6), -500)
   ADD(LW(0), 300)
@@ -760,7 +821,33 @@ EVT_BEGIN(fracktail_head_attack)
   RETURN()
 EVT_END()
 
+EVT_BEGIN(fracktail_dialogue)
+  USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 14, LW(0))
+  SWITCH(LW(0))
+    CASE_EQUAL(0)
+      USER_FUNC(rpg_set_dialogue, PTR(fracktail_dialogue_1))
+    CASE_EQUAL(1)
+      USER_FUNC(rpg_set_dialogue, PTR(fracktail_dialogue_2))
+    CASE_EQUAL(2)
+      IF_EQUAL(GSWF(1802), 1)
+        USER_FUNC(rpg_set_dialogue, PTR(fracktail_dialogue_3_1))
+      ELSE()
+        USER_FUNC(rpg_set_dialogue, PTR(fracktail_dialogue_3))
+      END_IF()
+    CASE_EQUAL(3)
+      USER_FUNC(rpg_set_dialogue, PTR(fracktail_dialogue_5))
+    CASE_EQUAL(4)
+      USER_FUNC(rpg_set_dialogue, PTR(fracktail_dialogue_6))
+    CASE_EQUAL(5)
+      USER_FUNC(rpg_set_dialogue, PTR(fracktail_dialogue_7))
+  END_SWITCH()
+  ADD(LW(0), 1)
+  USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, LW(15), 14, LW(0))
+RETURN()
+EVT_END()
+
 EVT_BEGIN(fracktail_attack)
+  RUN_CHILD_EVT(fracktail_dialogue)
   USER_FUNC(evt_npc_get_unitwork, LW(15), 4, LW(0))
   IF_EQUAL(LW(0), 0)
     USER_FUNC(evt_npc_set_anim, LW(15), 4, 1)
@@ -904,7 +991,9 @@ EVT_END()
 EVT_BEGIN(fracktail_death)
   USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg1_4_013"), 0, PTR("npc3"))
   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("T_7"), 0)
-  USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg1_4_013_01"), 0, PTR("npc3"))
+  IF_EQUAL(GSWF(1802), 0)
+    USER_FUNC(spm::evt_msg::evt_msg_print, 0, PTR("stg1_4_013_01"), 0, PTR("npc3"))
+  END_IF()
   USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc3"), LW(5), LW(6), LW(7))
   USER_FUNC(spm::evt_snd::evt_snd_sfxon_3d, PTR("SFX_EVT_ZUNBABA_VOICE1"), LW(5), LW(6), LW(7))
   USER_FUNC(evt_npc_set_anim, PTR("npc3"), 4, 1)
@@ -957,6 +1046,13 @@ EVT_BEGIN(fracktail_death)
     RETURN()
 EVT_END()
 
+EVT_BEGIN(fracktail_hook_savemgr)
+  IF_EQUAL(GSWF(1802), 1)
+    USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(fracktail_savemgr), 0, PTR("zun"))
+    CALL(fracktail_evt + evtpatch::getLineOffset(fracktail_evt, 287))
+  END_IF()
+RETURN_FROM_CALL()
+
   void fracktail_main()
   {
     npcTribes[313].attackStrength = 1;
@@ -975,6 +1071,7 @@ EVT_END()
     //evtpatch::hookEvt(fracktail_evt, 335, (spm::evtmgr::EvtScriptCode*)fracktail_fix);
     evtpatch::hookEvtReplace(fracktail_evt, 330, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplaceBlock(fracktail_evt, 291, (spm::evtmgr::EvtScriptCode*)fracktail_fix3, 335);
+    evtpatch::hookEvt(fracktail_evt, 158, (spm::evtmgr::EvtScriptCode*)fracktail_hook_savemgr);
     
   }
 

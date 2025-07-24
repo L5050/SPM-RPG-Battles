@@ -270,7 +270,10 @@ EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
 
   EVT_BEGIN(addSleepyStomp)
     USER_FUNC(ip::evt_pouch_init)
-    USER_FUNC(evt_mobj_sui_new, 0x8, PTR("sleepyStomp"), FLOAT(100.0), FLOAT(150.0), FLOAT(0.0), (s32)getSleepyStomp, 0, EVT_NULLPTR)
+    USER_FUNC(ip::evt_pouch_check_for_badge, 2, LW(15))
+    IF_EQUAL(LW(15), 0)
+      USER_FUNC(evt_mobj_sui_new, 0x8, PTR("sleepyStomp"), FLOAT(100.0), FLOAT(150.0), FLOAT(0.0), (s32)getSleepyStomp, 0, EVT_NULLPTR)
+    END_IF()
   RETURN_FROM_CALL()
 
   s32 patchSleepyStompTex(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)

@@ -35,6 +35,12 @@ s32 pouchCountEquippedBadges();
 // Tries to add a badge to the pouch, true if successful
 bool pouchAddBadge(BadgeId badge);
 
+// Checks if a badge is owned
+bool checkForBadge(s32 id);
+
+// Checks if a badge is equipped
+bool checkForBadgeEquipped(s32 id);
+
 // Tries to remove a badge from the pouch, true if successful
 bool pouchRemoveBadge(BadgeId badge);
 
@@ -44,6 +50,7 @@ void badgePouchInit();
 // Game code patches required by the badge pouch
 void badgePouchPatch(s32 gsw);
 
+EVT_DECLARE_USER_FUNC(evt_pouch_check_for_badge, 2)
 EVT_DECLARE_USER_FUNC(evt_pouch_add_badge, 1)
 EVT_DECLARE_USER_FUNC(evt_pouch_remove_badge, 1)
 EVT_DECLARE_USER_FUNC(evt_pouch_init, 0)

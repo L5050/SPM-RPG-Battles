@@ -15,7 +15,12 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(start_boss_fight, 1)
   EVT_DECLARE_USER_FUNC(getFP, 1)
   EVT_DECLARE_USER_FUNC(setFP, 1)
+  EVT_DECLARE_USER_FUNC(getMaxFP, 1)
+  EVT_DECLARE_USER_FUNC(setMaxFP, 1)
   EVT_DECLARE_USER_FUNC(addFP, 1)
+  EVT_DECLARE_USER_FUNC(getMaxBP, 1)
+  EVT_DECLARE_USER_FUNC(setMaxBP, 1)
+  EVT_DECLARE_USER_FUNC(addBP, 1)
   EVT_DECLARE_USER_FUNC(getCurMap, 1)
   EVT_DECLARE_USER_FUNC(subtractFP, 1)
   EVT_DECLARE_USER_FUNC(osReportLW, 1)
@@ -42,5 +47,6 @@ namespace mod {
   EVT_DECLARE(rpg_jump)
   EVT_DECLARE(insertNop)
   EVT_DECLARE(runEnemyDeath)
+  EVT_DECLARE(levelUpScript)
 
 }

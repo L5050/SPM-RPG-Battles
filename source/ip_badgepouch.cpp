@@ -53,6 +53,38 @@ namespace ip
     return n;
   }
 
+  bool checkForBadge(s32 id)
+  {
+    badgePouchPatch(1700);
+    badgePouchInit();
+    s32 badgeCount = ip::pouchCountBadges();
+    for (s32 i = 0; i < badgeCount; i++)
+    {
+      ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(i);
+      if (badgeInfo->id == id)
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  bool checkForBadgeEquipped(s32 id)
+  {
+    badgePouchPatch(1700);
+    badgePouchInit();
+    s32 badgeCount = ip::pouchCountBadges();
+    for (s32 i = 0; i < badgeCount; i++)
+    {
+      ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(i);
+      if (badgeInfo->equipped && badgeInfo->id == id)
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
   bool pouchAddBadge(BadgeId badge)
   {
     badgePouchPatch(1700);
@@ -117,6 +149,15 @@ namespace ip
   {
     // Get badge pouch location
     badgePouch = (PouchBadgeInfo *)(&spm::spmario::gp->gsw[600]);
+  }
+
+  s32 evt_pouch_check_for_badge(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
+  {
+    badgePouchInit();
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], checkForBadge(id));
+    return 2;
   }
 
   s32 evt_pouch_add_badge(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
