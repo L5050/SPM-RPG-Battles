@@ -944,15 +944,28 @@ EVT_END()
     evtpatch::hookEvtReplace(chunks_fight_setup_evt, 168, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_setup_evt, 167, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_setup_evt, 166, (spm::evtmgr::EvtScriptCode*)insertNop);
+    #ifdef SPM_EU0
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 149, (spm::evtmgr::EvtScriptCode*)insertNopChunks);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 143, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 91, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 67, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 66, (spm::evtmgr::EvtScriptCode*)insertNop);
-    evtpatch::hookEvtReplace(chunks_fight_death_evt, 62, (spm::evtmgr::EvtScriptCode*)insertNop);
-    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 58, (spm::evtmgr::EvtScriptCode*)chunks_death_2, 60);
-    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 0, (spm::evtmgr::EvtScriptCode*)chunks_death, 54);
-    
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 65, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 61, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 57, (spm::evtmgr::EvtScriptCode*)chunks_death_2, 59);
+    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 0, (spm::evtmgr::EvtScriptCode*)chunks_death, 53);
+    #else
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 148, (spm::evtmgr::EvtScriptCode*)insertNopChunks);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 142, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 90, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 66, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 65, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 64, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 61, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 57, (spm::evtmgr::EvtScriptCode*)chunks_death_2, 59);
+    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 0, (spm::evtmgr::EvtScriptCode*)chunks_death, 53);
+    #endif
+
   }
 
 }

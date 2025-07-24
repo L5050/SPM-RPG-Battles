@@ -90,7 +90,7 @@ extern "C" {
   void drawStuff() {
     // Flower disp
     const Vec3 fpVec = {-100.0, -202.0, 0.0};
-    spm::icondrv::iconDispGx(0.7, &fpVec, 4, 105);
+    spm::icondrv::iconDispGx(0.7, &fpVec, 4, 1600);
     // FP number disp
     wii::gx::GXColor white = {
       255,
@@ -2043,7 +2043,7 @@ bool IsNpcActive(s32 index) {
       *maxFp = 5;
     }
     tplpatch::TextureWork flowerTextures = {116, 0, (wii::tpl::TPLHeader *)spm::icondrv::icondrv_wp->wiconTpl->sp->data, myTplHeader, "./a/n_mg_flower-", false, spm::memory::Heap::HEAP_MEM1_UNUSED};
-    tplpatch::patchTpl(&flowerTextures);
+    //tplpatch::patchTpl(&flowerTextures);
     ip::badgePouchPatch(1700);
     ip::badgePouchInit();
     if (firstRun == false) {}
@@ -2304,12 +2304,6 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
 
-  void patchBrobot() {
-    spm::npcdrv::npcTribes[295].maxHp = 1;
-    spm::npcdrv::npcTribes[295].killXp = 100;
-    spm::npcdrv::npcTribes[296].maxHp = 130;
-  }
-
   EVT_BEGIN(insertNop)
     SET(LW(0), LW(0))
   RETURN_FROM_CALL()
@@ -2324,7 +2318,6 @@ bool IsNpcActive(s32 index) {
     titleScreenCustomTextPatch();
     evtpatch::evtmgrExtensionInit();
     hookEvent();
-    patchBrobot();
     npc_rpgdrv_main();
     spm::map_data::MapData * he3_md = spm::map_data::mapDataPtr("he3_01");
     evtpatch::hookEvt(he3_md->initScript, 78, const_cast<spm::evtmgr::EvtScriptCode*>(gswPatch));

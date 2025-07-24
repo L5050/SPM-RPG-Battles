@@ -87,7 +87,7 @@ static FileEntry * pauseTplOverride(s32 filetype, const char * format, const cha
 */
 void pauseTexPatch()
 {
-    writeBranchLink(0x80184d6c, 0, pauseTplOverride);
+    writeBranchLink(& spm::pausewin::pausewinEntry, 0x154, pauseTplOverride);
 }
 
 }

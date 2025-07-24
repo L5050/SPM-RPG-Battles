@@ -211,6 +211,13 @@ EVT_DECLARE_USER_FUNC(reduce_game_speed, 0)
     END_IF()
   RETURN_FROM_CALL()
 
+  EVT_BEGIN(he2_03_red_green_hook_us)
+    IF_EQUAL(GSWF(1802), 1)
+      USER_FUNC(reduce_game_speed)
+      USER_FUNC(spm::evt_npc::evt_npc_set_position, PTR("mon"), FLOAT(0.0), FLOAT(-100.0), FLOAT(0.0))
+    END_IF()
+  RETURN_FROM_CALL()
+
   EVT_BEGIN(he2_03_shop_hook)
     IF_EQUAL(GSWF(1802), 1)
       RETURN()
@@ -234,7 +241,7 @@ void remove_shop_door()
     he2_md = spm::map_data::mapDataPtr("he2_03");
     evtpatch::hookEvt(he2_md->initScript, 136, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_hook));
     he2_md = spm::map_data::mapDataPtr("he2_04");
-    evtpatch::hookEvt(he2_md->initScript, 44, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_red_green_hook));
+    evtpatch::hookEvt(he2_md->initScript, 44, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_red_green_hook_us));
     he2_md = spm::map_data::mapDataPtr("he2_05");
     evtpatch::hookEvt(he2_md->initScript, 23, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_red_green_hook));
     spm::map_data::MapData * he3_md = spm::map_data::mapDataPtr("he3_08");
