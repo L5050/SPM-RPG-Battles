@@ -2042,7 +2042,7 @@ bool IsNpcActive(s32 index) {
       *fp = 5;
       *maxFp = 5;
     }
-    tplpatch::TextureWork flowerTextures = {116, 0, (wii::tpl::TPLHeader *)spm::icondrv::icondrv_wp->wiconTpl->sp->data, myTplHeader, "./a/n_mg_flower-", false, spm::memory::Heap::HEAP_MEM1_UNUSED};
+    //tplpatch::TextureWork flowerTextures = {116, 0, (wii::tpl::TPLHeader *)spm::icondrv::icondrv_wp->wiconTpl->sp->data, myTplHeader, "./a/n_mg_flower-", false, spm::memory::Heap::HEAP_MAIN};
     //tplpatch::patchTpl(&flowerTextures);
     ip::badgePouchPatch(1700);
     ip::badgePouchInit();
