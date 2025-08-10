@@ -1762,7 +1762,7 @@ bool IsNpcActive(s32 index) {
         rpgIsActive[1] = true;
         rpgIsActive[2] = true;
         rpgTribeID[0] = 25;
-        rpgTribeID[1] = 25;
+        rpgTribeID[1] = 134; // TODO change this to a random enemy
         rpgTribeID[2] = 25;
       break;
       case 26: // Buzzy Beetle on Ceiling

@@ -93,19 +93,22 @@ NPCTribeAnimDef animsFracktailHead[] = {
   "<k>\n";
 
   const char * fracktail_savemgr = "<housou><p>\n"
+  "INTRUSION DETECTED.\n"
+  "<k>\n"
+  "<p>\n"
   "SO IT WAS YOU WHO\n"
   "DROVE THE VILLAGERS\n"
   "FROM YOLD TOWN.\n"
   "<k>\n"
   "<p>\n"
-  "IT IS MY DUTY TO\n"
-  "DEFEND THE PURE HEART\n"
-  "FROM LAWLESS INTRUDERS.\n"
-  "<dkey><wait 750></dkey>\n"
+  "IT IS MY DUTY TO DEFEND\n"
+  "THE PURE HEART FROM\n"
+  "LAWLESS INTRUDERS.\n"
+  "<k>\n"
   "<p>\n"
-  "IT WILL BE MY PLEASURE\n"
-  "TO END YOUR HEARTLESS\n"
-  "TRAIL OF BLOOD.\n"
+  "THREAT LEVEL UPGRADED TO\n"
+  "JELLY ROLL 5. TERMINATING\n"
+  "ALL UNWANTED GUESTS.\n"
   "<k>\n";
 
   const char * fracktail_dialogue_1 = "<dq>\n"
@@ -1071,7 +1074,7 @@ RETURN_FROM_CALL()
     //evtpatch::hookEvt(fracktail_evt, 335, (spm::evtmgr::EvtScriptCode*)fracktail_fix);
     evtpatch::hookEvtReplace(fracktail_evt, 330, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplaceBlock(fracktail_evt, 291, (spm::evtmgr::EvtScriptCode*)fracktail_fix3, 335);
-    evtpatch::hookEvt(fracktail_evt, 158, (spm::evtmgr::EvtScriptCode*)fracktail_hook_savemgr);
+    evtpatch::hookEvt(fracktail_evt, 157, (spm::evtmgr::EvtScriptCode*)fracktail_hook_savemgr);
     
   }
 

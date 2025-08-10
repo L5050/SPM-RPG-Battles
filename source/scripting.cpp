@@ -2722,6 +2722,8 @@ EVT_END()
 
 EVT_BEGIN(parentOfBeginRPG)
   USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
+  USER_FUNC(spm::evt_cam::evt_cam_look_at_door, 1, 0)
+  SET(GW(5), 0)
   SET(LW(2), 0)
   IF_EQUAL(LW(0), 1)
     RUN_CHILD_EVT(playMusic2)
