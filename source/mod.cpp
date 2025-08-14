@@ -63,8 +63,6 @@ extern "C" {
   char peachString[] = "Heal";
   char bowserString[] = "Flame";
   char luigiString[] = "Super Jump";
-
-  char badgeString[] = "Yarr Harr";
   
   char * characterStrings[] = {
     marioString,
