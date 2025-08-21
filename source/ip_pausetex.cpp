@@ -1,4 +1,3 @@
-#include "ip_assets.h"
 #include "patch.h"
 #include "util.h"
 
@@ -22,6 +21,8 @@ using wii::tpl::ImageHeader;
 using wii::tpl::IMG_FMT_RGB5A3;
 using wii::tpl::IMG_FMT_CMPR;
 
+wii::tpl::TPLHeader* badgeMenuTpl = nullptr;
+
 /*
     Define textures to replace
 */
@@ -32,13 +33,13 @@ struct PauseTexOverride
     u16 expectedHeight;
     u16 expectedFormat;
     const u8 * image;
-    const u32 * imageSize;
+    u32 imageSize;
 };
 PauseTexOverride pauseOverrides[] =
 {
-    {PAUSETEX_CHAPTERS_BTN,  120, 40, IMG_FMT_RGB5A3, badgeTex,    &badgeTex_size},
-    {PAUSETEX_CHAPTER_1_BTN, 112, 32, IMG_FMT_CMPR,   allTex,      &allTex_size},
-    {PAUSETEX_CHAPTER_2_BTN, 112, 32, IMG_FMT_CMPR,   equippedTex, &equippedTex_size},
+    {PAUSETEX_CHAPTERS_BTN,  120, 40, IMG_FMT_RGB5A3, nullptr,    0}, // badgeTex
+    {PAUSETEX_CHAPTER_1_BTN, 112, 32, IMG_FMT_CMPR,   nullptr,      0}, // allTex
+    {PAUSETEX_CHAPTER_2_BTN, 112, 32, IMG_FMT_CMPR,   nullptr, 0}, // equippedTex
 };
 
 /*
@@ -75,7 +76,7 @@ static FileEntry * pauseTplOverride(s32 filetype, const char * format, const cha
                 def->imageId);
 
         // Copy custom texture in
-        msl::string::memcpy(img->data, def->image, *def->imageSize);
+        msl::string::memcpy(img->data, def->image, def->imageSize);
     }
 
     // Return modified file
@@ -87,6 +88,17 @@ static FileEntry * pauseTplOverride(s32 filetype, const char * format, const cha
 */
 void pauseTexPatch()
 {
+    spm::filemgr::FileEntry * srcFile = spm::filemgr::fileAllocf(4, "./mod/badgemenu.tpl");
+    s32 tplSize = srcFile->length;
+    badgeMenuTpl = (wii::tpl::TPLHeader *)spm::memory::__memAlloc(spm::memory::Heap::HEAP_MAIN, tplSize);
+    msl::string::memcpy(badgeMenuTpl, srcFile->sp->data, tplSize);
+    spm::filemgr::fileFree(srcFile);
+    pauseOverrides[0].image = (const u8 *) badgeMenuTpl->imageTable[0].image->data;
+    pauseOverrides[0].imageSize = 9600;//(badgeMenuTpl->imageTable[0].image->height * badgeMenuTpl->imageTable[0].image->width) * 2;
+    pauseOverrides[1].image = (const u8 *) badgeMenuTpl->imageTable[1].image->data;
+    pauseOverrides[1].imageSize = 1792;//(badgeMenuTpl->imageTable[1].image->height * badgeMenuTpl->imageTable[0].image->width) / 2;
+    pauseOverrides[2].image = (const u8 *) badgeMenuTpl->imageTable[2].image->data;
+    pauseOverrides[2].imageSize = 1792;//(badgeMenuTpl->imageTable[2].image->height * badgeMenuTpl->imageTable[0].image->width) / 2;
     writeBranchLink(& spm::pausewin::pausewinEntry, 0x154, pauseTplOverride);
 }
 
