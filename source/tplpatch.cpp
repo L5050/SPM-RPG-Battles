@@ -2,8 +2,12 @@
 #include "tplpatch.h"
 
 #include <common.h>
+#include <evt_cmd.h>
+#include <spm/evtmgr.h>
+#include <spm/evtmgr_cmd.h>
 #include <spm/filemgr.h>
 #include <spm/icondrv.h>
+#include <spm/item_data.h>
 #include <spm/memory.h>
 #include <spm/system.h>
 #include <wii/tpl.h>
@@ -44,9 +48,16 @@ namespace mod::tplpatch
     return;
   }
 
+  void patchTpl2(u32 destId, u32 srcId, wii::tpl::TPLHeader * destTpl, wii::tpl::TPLHeader * srcTpl, const char * filePath, bool free, s32 heapType)
+  {
+    TextureWork tw = {destId, srcId, destTpl, srcTpl, filePath, free, heapType};
+    patchTpl(&tw);
+    return;
+  }
+
   /*
   The iconpatch framework directly overrides normal uses of wicon.tpl (used for all items and many other icons) and points them to your very own custom TPL on the game's root directory.
-  You can name this file whatever you'd like, just make sure that the name in the #define down here matches with what you actually import into the game.
+  To make this library recognize your custom TPL, make sure to initialize tplpatch::iconPatch("filename") in void main() with the filename of your TPL sans .tpl.
   iconpatch automatically redirects all calls to wicon.tpl after a certain offset to your custom TPL.
 
   EXAMPLE:
@@ -56,7 +67,7 @@ namespace mod::tplpatch
   Have fun!!!!
   */
 
-  char *TPLPatchIconTPLName = nullptr;           // You can and should change this to whatever you'd like!
+  char *TPLPatchIconTPLName = nullptr;           // This corresponds to the name of your custom TPL! i.e.
   filemgr::FileEntry *TPLPatchIconTPL = nullptr; // Initializes the custom TPL pointer
 
   // These hook into vanilla icondrv functions right before they run.
@@ -125,7 +136,10 @@ namespace mod::tplpatch
       imgTbl = palette->imageTable;
       idx = id % TPLPATCH_ICON_REDIRECT;
     }
-    idx = id % palette->imageCount;
+    else
+    {
+      idx = id % palette->imageCount;
+    }
     wii::tpl::ImageHeader *img = imgTbl[idx].image;
     wii::gx::GXInitTexObj(dest, img->data, img->width, img->height, img->format, img->wrapS, img->wrapT, (((u32)img->maxLOD - (u32)img->minLOD) | ((u32)img->minLOD - (u32)img->maxLOD)) >> 0x1f);
     img = imgTbl[idx].image;
@@ -133,12 +147,32 @@ namespace mod::tplpatch
     return;
   }
 
+  s32 evt_tplpatch_set_item_icon_id(evtmgr::EvtEntry *evtEntry, bool firstRun)
+  {
+    (void)firstRun;
+    evtmgr::EvtVar *args = (evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 itemId = evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 iconId = evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+    u8 useCustomTpl = evtmgr_cmd::evtGetValue(evtEntry, args[2]);
+    if (useCustomTpl == 1)
+    {
+      item_data::itemDataTable[itemId].iconId = iconId + TPLPATCH_ICON_REDIRECT;
+    }
+    else
+    {
+      item_data::itemDataTable[itemId].iconId = iconId;
+    }
+    return 2;
+  }
+
   void iconPatch(char *iconFileName)
   {
     TPLPatchIconTPLName = iconFileName;
+
+    // Mods/libraries that hook into iconMain, iconEntry, or iconGX will likely conflict with this library. Please reach out to Yme if this is an issue for you.
     iconFuncPatch();
+
     // Mods/libraries that modify TPLGetGXTexObjFromPalette may conflict with this library. You're free to use/modify our rewritten function however you'd like for personal use, though!
     patch::hookFunction(wii::tpl::TPLGetGXTexObjFromPalette, TPLGetGXTexObjFromPaletteNew);
   }
-
 }
