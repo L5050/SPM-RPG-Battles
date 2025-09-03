@@ -4,6 +4,7 @@
 #include "evt_cmd.h"
 #include "ip_badges.h"
 #include <spm/evtmgr.h>
+#include <spm/icondrv.h>
 #include <spm/rel/an2_08.h>
 #include <wii/tpl.h>
 namespace mod {
@@ -34,6 +35,10 @@ extern s32( * rpgHandleMenu)(s32, spm::an2_08::RpgMenuOption*);
 bool checkBadgeTechnique(ip::BadgeId id);
 spm::evtmgr::EvtScriptCode* getInstructionEvtArg(spm::evtmgr::EvtScriptCode* script, s32 line, int instruction);
 void mobj_main();
+s32 _getFP();
+void _setFP(s32 count);
+s32 _getMaxFP();
+spm::icondrv::IconEntry *iconEntryAutoname(s32 iconId);
 EVT_DECLARE_USER_FUNC(setRpgTribeID, 2)
 EVT_DECLARE_USER_FUNC(compareStrings, 3)
 EVT_DECLARE_USER_FUNC(mario_set_scale, 3)

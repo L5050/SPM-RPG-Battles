@@ -30,24 +30,35 @@ namespace mod
 
   typedef struct Panel
   {
+    u32 flags; // TBD
     s32 iconId;  // Type of panel, sorted by Icon Id
     Vec3 pos;    // Position of the center of the panel
-    f32 fadeIn;  // Some kind of variable that determines whether it needs to be spinning and fading in
-    f32 fadeOut; // Some kind of variable that determines whether it needs to be spinning and fading out
-    f32 waitTimer; // How much time until the panel is refreshed
+    u32 fadeIn;  // How much time in frames that the icon is spinning and fading in
+    u32 fadeOut; // How much time in frames that the icon is spinning and fading out
+    u32 waitTimer; // How much time in frames until the panel is refreshed
     spm::icondrv::IconEntry * entry; // Self explanatory
-    void *func;  // Logic for when the Panel is clicked, possibly pass the AcEntry through so that it can modify PowerRefreshWork
+    spm::icondrv::IconEntry * background; // Background of the panel thats displayed when the panel is inactive
   };
 
   typedef struct PowerRefreshWork
   {
-    f32 startTimer; // How much time until the action command starts
-    f32 timer; // How much time until the action command ends
+    u32 flags; // TBD
+    u32 startTimer; // How much time in frames until the action command starts
+    u32 timer; // How much time in frames until the action command ends
+    u32 frameCounter;   // Current frame counter, compared against gp->frameCounter
     Panel panels[9];
-    Vec3 pos; // Position of the center of the grid, should be the same as panelWp[4].pos
+    Vec3 pos; // Position of the center of the grid, should be the same as panels[4].pos
+    spm::icondrv::IconEntry * cursorEntry; // Self explanatory
+    s32 cursorDestIndex; // The panel that the cursor is moving towards
+    u32 cursorFlags; // TBD
+    u32 cursorMoveFrames; // Amount of frames until the cursor stops moving
     s32 hp;   // HP gained from the action command
     s32 fp;   // FP gained from the action command
+    u32 poisonFrames; // Amount of frames the player is poisoned for
+    bool poisoned; // Whether the player has clicked a poisoned panel recently or not
     // Note, we can just throw the hp and fp logic in the panel work function, or we can have it handled in the evtscript post action command, either works but I may prefer the former
   };
+
+void power_refresh_main();
 
 }

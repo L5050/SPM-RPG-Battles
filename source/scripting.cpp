@@ -5,6 +5,7 @@
 #include "npc_rpgdrv.h"
 
 #include <spm/rel/an.h>
+#include <spm/rel/bos_01.h>
 #include <spm/evtmgr.h>
 #include <spm/evt_ac.h>
 #include <spm/evt_msg.h>
@@ -68,6 +69,11 @@ const char levelOptions[] =
 "Level up HP! (+5 max HP)\n"
 "Level up FP! (+5 max FP)\n"
 "Level up BP! (+3 max BP)";
+
+const char * stylish_fail = "<p>\n"
+"Not a high enough\n"
+"stylish level!\n"
+"<k>\n";
 
 const char * tippi_pacify_success = "<p>\n"
 "%d enemies were\n"
@@ -733,7 +739,7 @@ EVT_BEGIN(end_of_turn_stylish)
             LBL(2)
             USER_FUNC(enable_disable_stylish, 0)
         END_INLINE()
-        USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), 0, 0, 60, 500)
+        USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), 0, 0, 40, 500)
         USER_FUNC(check_ac_success, LW(11))
         IF_EQUAL(LF(2), 1)
           SET(LW(11), 1)
@@ -952,20 +958,43 @@ SWITCH(LW(10))
             END_IF()
         END_SWITCH()
     CASE_EQUAL(1) //Peach
-        USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("peach_heal"))
-        USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_ITEM_USE1"))
-        USER_FUNC(spm::evt_ac::evt_ac_entry, PTR("ac"), 3)
-        USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("ac"), LW(7))
-        USER_FUNC(spm::evt_ac::evt_ac_delete, PTR("ac"))
-        USER_FUNC(mod::osReportLW, LW(7))
-        IF_EQUAL(LW(7), 3)
-        USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_RECOVER_HP_EFFECT_SMALL1"))
-        USER_FUNC(calc_peach_heal, LW(7))
-        USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("peach_heal_success"), LW(7))
-        USER_FUNC(spm::evt_msg::evt_msg_continue)
-        USER_FUNC(spm::evt_pouch::evt_pouch_add_hp, 20)
+        IF_EQUAL(UW(6), 4)
+          SET(UW(6), 0)
+          USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("I_2"), 0) 
+          USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_ITEM_USE1"))
+          USER_FUNC(enable_disable_rpg_menu, 0)
+          USER_FUNC(spm::evt_msg::evt_msg_continue)
+          USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+          ADDF(LW(6), FLOAT(90.0))
+          USER_FUNC(spm::evt_eff::evt_eff, PTR("hearts"), PTR("pure_heart"), 0, LW(5), LW(6), LW(7), 0, 0, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_PUREHEART1"))
+          WAIT_FRM(60)
+          DO(30)
+            ADDF(LW(6), FLOAT(10.0))
+            USER_FUNC(spm::bos_01::evt_bos_01_pure_heart_set_pos, PTR("hearts"), LW(5), LW(6), LW(7))
+            WAIT_FRM(1)
+          WHILE()
+          USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(0))
+          USER_FUNC(spm::evt_snd::evt_snd_sfx_fadeout, LW(0), 500)
+          USER_FUNC(spm::evt_eff::evt_eff_softdelete, PTR("hearts"))
+          RUN_CHILD_EVT(PTR(spm::item_event_data::item_data_map_darken_evt))
+          USER_FUNC(spm::evt_ac::evt_ac_entry, PTR("ac"), 14)
+          USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("ac"), LW(8))
+          USER_FUNC(spm::evt_ac::evt_ac_delete, PTR("ac"))
+          RUN_CHILD_EVT(PTR(spm::item_event_data::item_data_map_lighten_evt))
+          USER_FUNC(mod::osReportLW, LW(8))
+          USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_RECOVER_HP_EFFECT_SMALL1"))
+          USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+          USER_FUNC(spm::evt_eff::evt_eff, PTR("health"), PTR("spm_recovery"), LW(5), LW(6), LW(7), LW(8), 0, 0, 0, 0, 0, 0, 0, 0)
+          //USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+          //USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("peach_heal_success"), LW(8))
+          //USER_FUNC(spm::evt_msg::evt_msg_continue)
+          USER_FUNC(spm::evt_pouch::evt_pouch_add_hp, LW(8))
         ELSE()
-          RUN_CHILD_EVT(mod::rpg_snd_miss_evt)
+          USER_FUNC(spm::evt_msg::evt_msg_continue)
+          USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+          USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(stylish_fail))
+          SET(LF(1), 1)
         END_IF()
     CASE_EQUAL(2) //Bowser
         USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_014"))
@@ -973,7 +1002,7 @@ SWITCH(LW(10))
         USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_KOOPA_FLAME1"))
         USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(0))
         WAIT_MSEC(600)
-        USER_FUNC(spm::evt_snd::func_800d2fa4, LW(0), 1000)
+        USER_FUNC(spm::evt_snd::evt_snd_sfx_fadeout, LW(0), 1000)
         SET(LW(10), LW(4))
         RUN_CHILD_EVT(mod::rpg_snd_miss_evt)
         USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_015"), LW(3))

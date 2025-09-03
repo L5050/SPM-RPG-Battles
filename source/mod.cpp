@@ -8,6 +8,7 @@
 #include "ip.h"
 #include "ip_badges.h"
 #include "ip_badgepouch.h"
+#include "power_refresh.h"
 #include "tplpatch.h"
 
 #include <spm/system.h>
@@ -173,6 +174,16 @@ extern "C" {
     return numOptions;
   }
 
+  s32 patchTechniquesPeach(s32 type, spm::an2_08::RpgMenuOption* options)
+  {
+    options->name = spm::msgdrv::msgSearch("peach_special");
+    options->index = 0;
+
+    s32 numOptions = 1;
+
+    return numOptions;
+  }
+
   s32 patchTechniquesChars(s32 type, spm::an2_08::RpgMenuOption* options)
   {
     if (type != 2) {
@@ -183,6 +194,10 @@ extern "C" {
     if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_MARIO)
     {
       return patchTechniquesMario(type, options);
+    }
+    if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_PEACH)
+    {
+      return patchTechniquesPeach(type, options);
     }
 
     return 1;
@@ -1190,7 +1205,7 @@ bool IsNpcActive(s32 index) {
   "grab. The choice is yours...\n"
   "<k>\n";
 
-  const char * peach_special = "Heal";
+  const char * peach_special = "Power Refresh";
 
   const char wang_cmd_1[] = {
     "Attack"
@@ -1948,6 +1963,26 @@ bool IsNpcActive(s32 index) {
     return mwp;
   }
 
+  spm::icondrv::IconEntry *iconEntryAutoname(s32 iconId)
+  {
+    bool nameSuccess = false;
+    char name[16];
+    s32 count = 0;
+    do
+    {
+      s32 rand = spm::system::irand(1000);
+      rand += count;
+      msl::stdio::sprintf(name, "icon_%08x", rand);
+      if (spm::icondrv::iconNameToPtr(name) == 0)
+      {
+        nameSuccess = true;
+      }
+      count += 1;
+    } while (nameSuccess == false);
+    spm::icondrv::iconEntry(name, iconId);
+    return spm::icondrv::iconNameToPtr(name);
+  }
+
   void hookEvent() {
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage);
@@ -2070,6 +2105,19 @@ bool IsNpcActive(s32 index) {
     bool stylish = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     drawStylish = stylish;
     return 2;
+  }
+
+  s32 _getFP() {
+    return *fp;
+  }
+
+  void _setFP(s32 count) {
+    *fp = count;
+    return;
+  }
+
+  s32 _getMaxFP() {
+    return *maxFp;
   }
 
   s32 getFP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
@@ -2329,5 +2377,6 @@ bool IsNpcActive(s32 index) {
     ip::main();
     mobj_main();
     tplpatch::iconPatch(modTplName);
+    power_refresh_main();
   }
 }
