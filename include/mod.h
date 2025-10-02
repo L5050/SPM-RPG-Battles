@@ -48,6 +48,7 @@ EVT_DECLARE_USER_FUNC(get_rpg_name_by_id, 2)
 EVT_DECLARE_USER_FUNC(evt_npc_entry_autoname, 3)
 EVT_DECLARE_USER_FUNC(get_attack_strength, 2)
 EVT_DECLARE_USER_FUNC(msgSearchTribeToTattle, 2)
+EVT_DECLARE_USER_FUNC(check_guards, 3)
 EVT_DECLARE_USER_FUNC(addNpcToItemEvent, 1)
 
 EVT_DECLARE(evt_memcard_save)

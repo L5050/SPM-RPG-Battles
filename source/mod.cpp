@@ -223,6 +223,7 @@ namespace mod {
   bool drawStylish = false;
   bool succeededActionCommand = false;
   bool superGuard = false;
+  u8 guardFrames = 0;
   spm::npcdrv::NPCEntryUnkDef turnBasedCombatOverride[2];
   s32 *fp = nullptr;
   s32 *maxFp = nullptr;
@@ -232,8 +233,6 @@ namespace mod {
   char * mainText = nullptr;
   char modTplName[] = "mod/mod";
   spm::icondrv::IconEntry * flower = nullptr;
-  bool levelInProgress = false;
-  spm::evtmgr::EvtEntry * curLevel = nullptr;
   /*
       Title Screen Custom Text
       Prints "Super Duper Paper Mario" at the top of the title screen
@@ -1910,6 +1909,16 @@ bool IsNpcActive(s32 index) {
     writeWord( & spm::an2_08::rpg_screen_draw, 0x310, 0x60000000);
   }
 
+  void guardLogic(){
+    u32 pressed = spm::wpadmgr::wpadGetButtonsPressed(0);
+    if (pressed & 0x400) {
+      guardFrames = 0;
+    } else if (guardFrames < 255){
+      guardFrames += 1;
+    }
+    return;
+  }
+
   void new_rpg_screen_draw()
   {
     if (screenOn)
@@ -1922,6 +1931,7 @@ bool IsNpcActive(s32 index) {
     {
     drawStylishButton();
     }
+    guardLogic();
   }
 
   void new_pouchSetEnemiesDefeated(s32 count)
@@ -1932,20 +1942,6 @@ bool IsNpcActive(s32 index) {
     }
     pouchSetEnemiesDefeated(count);
     return;
-  }
-
-  s32 wpadGetButtonsPressed_levelHook(int controller)
-  {
-    if (!levelInProgress) {
-      levelInProgress = true;
-      curLevel = spm::evtmgr::evtEntry(levelUpScript, 1, 255);
-    }
-    if (curLevel != nullptr)
-    {
-      return 0;
-    } else {
-      return 0x100;
-    }
   }
 
   spm::mario::MarioWork* patchTechniques()
@@ -2286,6 +2282,23 @@ bool IsNpcActive(s32 index) {
     } else {
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 0);
     }
+    return 2;
+  }
+  
+  s32 check_guards(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 superguard_frames = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 guard_frames = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+
+    if (guardFrames <= superguard_frames){
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 2);
+      return 2;
+    } else if (guardFrames <= guard_frames){
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 1);
+      return 2;
+    }
+    guardFrames = 255;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 0);
     return 2;
   }
 
