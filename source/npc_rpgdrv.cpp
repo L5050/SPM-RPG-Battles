@@ -257,6 +257,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)npcDataTable[index].animDefs);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], (s32)npcTribes[tribeId].animPoseName);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[3], (s32)npcDataTable[index].onSpawnScript);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[4], tribeId);
 
     if (tribeId == 313) {
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], (s32)"e_zun_all");

@@ -442,17 +442,18 @@ void mainFunc(spm::acdrv::AcEntry *entry)
       }
       if (wp->panels[i].flags == 0x2 && wp->panels[i].fadeOut == 0)
       {
-        wp->panels[i].waitTimer = 3 * (u32)gp->fps;
+        wp->panels[i].waitTimer = 2 * (u32)gp->fps;
         wp->panels[i].flags = 0x0;
       }
       if (wp->panels[i].flags == 0x3 && wp->panels[i].fadeIn == 0)
       {
-        wp->panels[i].waitTimer = 3 * (u32)gp->fps + spm::system::irand(90);
+        wp->panels[i].waitTimer = 2 * (u32)gp->fps + spm::system::irand(90);
         wp->panels[i].flags = 0x1;
       }
       if (wp->panels[i].flags == 0x1 && wp->panels[i].waitTimer == 0)
       {
         wp->panels[i].fadeOut = 1 * (u32)gp->fps;
+        wp->panels[i].fadeOut = wp->panels[i].fadeOut / 2;
         wp->panels[i].flags = 0x2;
       }
     }

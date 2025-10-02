@@ -39,6 +39,7 @@
 #include <spm/seqdrv.h>
 #include <spm/seqdef.h>
 #include <spm/system.h>
+#include <spm/item_event_data.h>
 #include <spm/filemgr.h>
 #include <spm/icondrv.h>
 #include <spm/wpadmgr.h>
@@ -145,9 +146,9 @@ extern "C" {
   const char *msgSearchPatch(const char *msgName, spm::evtmgr::EvtEntry *evtEntry)
   {
     spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    //wii::os::OSReport("%d %d %d %d %d %d %d %d, yahoo\n", spm::an2_08::rpgdrv_wp->menus[0].unk_2c, spm::an2_08::rpgdrv_wp->menus[1].unk_2c, spm::an2_08::rpgdrv_wp->menus[2].unk_2c, spm::an2_08::rpgdrv_wp->menus[3].unk_2c, spm::an2_08::rpgdrv_wp->menus[4].unk_2c, spm::an2_08::rpgdrv_wp->menus[5].unk_2c, spm::an2_08::rpgdrv_wp->menus[6].unk_2c);
     s32 selectedTechnique = spm::an2_08::rpgdrv_wp->menus[1].selected;
-    mod::rpg_set_technique_index(selectedTechnique);
+    //wii::os::OSReport("%d , yahoeo\n", selectedTechnique);
+    //mod::rpg_set_technique_index(selectedTechnique);
     return spm::msgdrv::msgSearch(msgName);
   }
 
@@ -176,10 +177,13 @@ extern "C" {
 
   s32 patchTechniquesPeach(s32 type, spm::an2_08::RpgMenuOption* options)
   {
-    options->name = spm::msgdrv::msgSearch("peach_special");
+    options->name = "Appeal";
     options->index = 0;
+    options[1].name = spm::msgdrv::msgSearch("peach_special");
+    options[1].index = 1;
 
-    s32 numOptions = 1;
+
+    s32 numOptions = 2;
 
     return numOptions;
   }
@@ -288,15 +292,12 @@ namespace mod {
   s32( * spsndSFXOn)(const char * name);
   s32( * marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
   s32( * evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
+  s32( * evt_rpg_choice_handler)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   void( * msgUnLoad)(s32 slot);
   void( * rpg_screen_draw)();
   s32( * rpgHandleMenu)(s32, spm::an2_08::RpgMenuOption*);
   const char * ( * msgSearch)(const char * msgName);
   void( * pouchSetEnemiesDefeated)(s32 count);
-
-  const char fileName[] = {
-    "stg7"
-  };
 
   spm::evtmgr::EvtScriptCode* getInstructionEvtArg(spm::evtmgr::EvtScriptCode* script, s32 line, int instruction)
   {
@@ -711,8 +712,7 @@ bool IsNpcActive(s32 index) {
 
   const char * stg7_2_133_2_063 = "<p>\n"
   "%s recovers %d HP!\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_064 = "<p>\n"
   "%s recovers from\n"
@@ -740,30 +740,25 @@ bool IsNpcActive(s32 index) {
   const char * stg7_2_133_2_068 = "<p>\n"
   "%s's attack power\n"
   "increases!\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_069 = "<p>\n"
   "%s starts to gradually\n"
   "recover HP!\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_070 = "<p>\n"
   "%s gains the power to\n"
   "shock enemies on contact!\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_071 = "<p>\n"
   "%s's defense increases!\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_072 = "<p>\n"
   "%s is invincible\nto all attacks!\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_073 = "<p>\n"
   "...The flames have no effect\n"
@@ -818,14 +813,12 @@ bool IsNpcActive(s32 index) {
   "<p>\n"
   "But the Ghost Shroom's\n"
   "attacks don't reach!\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_082 = "<p>\n"
   "%s falls\n"
   "into a deep sleep.\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_083 = "<p>\n"
   "You got <AN_ITEM>!\n"
@@ -1983,10 +1976,38 @@ bool IsNpcActive(s32 index) {
     return spm::icondrv::iconNameToPtr(name);
   }
 
+  s32 new_evt_rpg_choice_handler(spm::evtmgr::EvtEntry * entry, bool firstRun)
+  {
+    u32 temp1 = entry->tempU[1];
+    u32 temp2 = entry->tempU[2];
+    s32 ret = evt_rpg_choice_handler(entry, firstRun);
+    //wii::os::OSReport("%d e4eff\n", spm::an2_08::rpgdrv_wp->menus[1].selected);
+    wii::os::OSReport("%d this sucks \n", spm::an2_08::rpgdrv_wp->menus[0].flags);
+    wii::os::OSReport("%d this sucks \n", spm::an2_08::rpgdrv_wp->menus[1].flags);
+    wii::os::OSReport("%d this sucks \n", spm::an2_08::rpgdrv_wp->menus[2].flags);
+    if (ret == 2 && spm::an2_08::rpgdrv_wp->menus[1].options[spm::an2_08::rpgdrv_wp->menus[1].selected].index == 87 && spm::an2_08::rpgdrv_wp->menus[1].flags != 0x3)
+    {
+      const char * message = spm::msgdrv::msgSearch("stg7_2_133_2_060");
+      spm::msgdrv::msgWindow_Add(message, entry->msgWindowId);
+      u32 ret2 = spm::an2_08::func_80c6cccc(0xc06a400000000000,0x404e000000000000,0x4069000000000000,0,1,0);
+      entry->tempU[3] = ret2;
+      entry->tempU[0] = 0x2d;
+      entry->tempU[1] = temp1;
+      entry->tempU[2] = temp2;
+      spm::an2_08::rpgdrv_wp->menus[0].flags = 0x23;
+      spm::an2_08::rpgdrv_wp->menus[1].flags = 0x3;
+      spm::an2_08::rpgdrv_wp->menus[2].flags = 0x1;
+      return 0;
+    } else {
+      return ret;
+    }
+  }
+
   void hookEvent() {
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage);
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
+    //evt_rpg_choice_handler = patch::hookFunction(spm::an2_08::evt_rpg_choice_handler, new_evt_rpg_choice_handler);
     patchWangSpecial();
 
     pouchSetEnemiesDefeated = patch::hookFunction(spm::mario_pouch::pouchSetEnemiesDefeated, new_pouchSetEnemiesDefeated);
@@ -2006,9 +2027,11 @@ bool IsNpcActive(s32 index) {
     //writeBranchLink( & spm::an2_08::rpg_screen_draw, 0x2D8, setTextureIndex);
     writeBranchLink( & spm::acdrv::acMain, 0x49C, setNewFloat);
     writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
-    writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x780, msgSearchPatch_1);
+    //writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x780, msgSearchPatch_1);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C0C0003);
+    writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x1324, 0x2c000057);
+    
     //writeWord(  spm::acdrv::acdrv_acDefs[3].mainFunc, 0x54, 0x38030002);
     //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C000001);
     //writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0xA0, 0x3B9C0004);
@@ -2188,6 +2211,17 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
 
+  s32 addNpcToItemEvent(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    const char * name = (const char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    spm::npcdrv::NPCEntry * npc = spm::npcdrv::npcNameToPtr(name);
+    wii::os::OSReport("%s thename\n", npc->name);
+    wii::os::OSReport("%p\n", spm::item_event_data::item_event_data_wp->wp->ItemNpcRef[0]);
+    spm::item_event_data::item_event_data_wp->wp->ItemNpcRef[0].npcId = npc->id;
+    if (firstRun == false) {}
+    return 2;
+  }
+
   s32 evt_npc_entry_autoname(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     char name[32];
@@ -2354,6 +2388,10 @@ bool IsNpcActive(s32 index) {
     SET(LW(0), LW(0))
   RETURN_FROM_CALL()
 
+  EVT_BEGIN(addNpcToItemScript)
+    USER_FUNC(addNpcToItemEvent, LW(2))
+  RETURN_FROM_CALL()
+
   EVT_BEGIN(gswPatch)
     USER_FUNC(spm::evt_map::evt_map_playanim, PTR("anm_doa_deru"), 0, 0)
     USER_FUNC(spm::evt_door::evt_door_enable_disable_map_door_desc, 0, PTR("doa2_l"))
@@ -2369,6 +2407,9 @@ bool IsNpcActive(s32 index) {
     evtpatch::hookEvt(he3_md->initScript, 78, const_cast<spm::evtmgr::EvtScriptCode*>(gswPatch));
     evtpatch::hookEvtReplace(he3_md->initScript, 38, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
     evtpatch::hookEvtReplace(he3_md->initScript, 37, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
+    evtpatch::hookEvtReplace(spm::item_event_data::getItemUseEvt(87), 9, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
+    evtpatch::hookEvtReplace(spm::item_event_data::getItemUseEvt(87), 7, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
+    evtpatch::hookEvtReplaceBlock(spm::item_event_data::getItemUseEvt(87), 2, const_cast<spm::evtmgr::EvtScriptCode*>(addNpcToItemScript), 10);
     fp = (s32 *)&spm::spmario::gp->gsw[1900];
     maxFp = (s32 *)&spm::spmario::gp->gsw[1904];
     bp = (s32 *)&spm::spmario::gp->gsw[1908];
