@@ -1,5 +1,5 @@
 // OS Globals
-800000e4:currentThread
+800000e4:OS_CURRENT_THREAD
 800030c8:firstRel
 800030cc:lastRel
 
@@ -128,7 +128,7 @@
 803E8DC8:seq_data
 801A5634:__memAlloc
 801A56B8:__memFree
-803EAA08:size_table
+803EAA08:memory_size_table
 8056D188:memory_wp
 8056D18C:memory_swp
 802350B8:wpadGetButtonsHeld
@@ -309,7 +309,7 @@
 801112D8:evt_shop_set_defs
 8014CB04:pouchAddItem
 8014D100:pouchCheckHaveItem
-8017AFA0:getNextDanMapname
+8017AFA0:getNextDanMapName
 80183F2C:pausewinEntry
 8018439C:pausewinMoveTo
 801843EC:pausewinAppear
@@ -705,10 +705,6 @@
 8056db90:SaveStart
 8056db94:SaveEnd
 
-// temp_unk for pit rando
-80201E88:bowser_spawn_fire
-80205AF0:luigi_superjump_atk
-
 // too lazy to put this anywhere else lmao i have a lot of ports to do 
 8014C9C0:pouchSetMaxHp
 8014C920:pouchSetHp
@@ -731,8 +727,43 @@
 8049BA4C:skellobits_unk8
 800FFD50:evt_npc_arc_to
 80101B94:evt_npc_glide_to
-80104F44:evt_npc_get_axis_movement_unit
 801033DC:evt_npc_get_unitwork
+801034C8:evt_npc_set_unitwork
+800D8ADC:make_jump_table
+8010241C:evt_npc_set_hp
+8010229C:evt_npc_get_hp
+8010235C:evt_npc_get_max_hp
+800d9b14:evtDelete
+8041BC28:superDimentioHeadDefenses
+8041BC40:superDimentioBodyDefenses
+800d8cfc:evtmgrReInit
+803E71D8:marioMotTbl
+803E26F0:saffronCookingScript
+804CEA28:marioStatusApplyStatuses
+803BFB70:default_item_use_evt
+80107D1C:evt_npc_get_active_count
+80102218:evt_npc_restart_evt_id
+800FEF4C:func_800ff8f8
+80107258:func_80107c38
+80104B70:evt_npc_wait_flip_finished
+80104BC4:evt_npc_finish_flip_instant
+80104D28:evt_npc_flip_to
+80104D88:evt_npc_flip
+801E41A0:npc_dimeen_l_determine_move_pos
+80417470:dimen_unk_fight_script_1
+804174C0:dimen_unk_fight_script_2
+80419300:dimen_unk_fight_script_3
+8019B804:distABf
+801046AC:evt_npc_get_property
+8021BA80:ninjoe_bomb_calc_chance
+80D4ACD0:tree_block_trigger
+801CA9EC:npcDamageMario
+8056CFF0:icondrv_wp
+804A2EE8:evt_memcard_save
+8012A5BC:marioSetInvincibility
+80C3B574:evt_npc_sammer_display_count
+800FBB60:evt_msg_select
+80104F44:evt_npc_get_axis_movement_unit
 80102488:evt_npc_delete
 800F015C:evt_mario_walk_to
 800EFE10:evt_mario_face_npc
@@ -846,3 +877,26 @@
 8017AFA0:getDanMapName
 801B0ACC:func_801b19e4
 8010C230:evt_pouch_check_free_use_item
+// 2023-09-02
+80295834:IOS_OpenAsync
+80295A6C:IOS_CloseAsync
+80295BD4:IOS_ReadAsync
+80295DDC:IOS_WriteAsync
+80295EDC:IOS_Write
+80295FE4:IOS_SeekAsync
+80296710:iosCreateHeap
+802960C4:IOS_IoctlAsync
+80296468:IOS_IoctlvAsync
+8029654C:IOS_Ioctlv
+80296840:iosAlloc
+8056DA70:errno
+80274EA0:OSCreateThread
+80274E64:OSYieldThread
+802753C8:OSResumeThread
+80258148:memcmp
+
+// new to v10
+8017c500:loadMain
+8056d0f0:seq_load_sub_wp
+8056d1d0:nandmgr_wp
+80238af4:spsndSFXOn
