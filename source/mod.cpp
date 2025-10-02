@@ -1652,7 +1652,9 @@ bool IsNpcActive(s32 index) {
         const char* mapName = reinterpret_cast<const char*>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
         wii::os::OSReport("%s name\n", mapName);
         const char *comparison = reinterpret_cast<const char*>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]));
+        wii::os::OSReport("%s name\n", comparison);
         const char *result = msl::string::strstr(mapName, comparison);
+        wii::os::OSReport("%d name\n", result != 0);
         spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], result != 0);
         return 2;
       }

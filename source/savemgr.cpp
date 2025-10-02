@@ -228,7 +228,7 @@ void remove_shop_door()
 {
   spm::map_data::MapData * he2_md = spm::map_data::mapDataPtr("he2_03");
   spm::evt_door::DoorDesc* desc = (spm::evt_door::DoorDesc*)getInstructionEvtArg(he2_md->initScript, 93, 1);
-  evtpatch::hookEvt(desc->unkScript1, 1, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_shop_hook));
+  evtpatch::hookEvt(desc->interactScript, 1, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_shop_hook));
   return;
 }
 
