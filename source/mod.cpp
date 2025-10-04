@@ -33,6 +33,7 @@
 #include <spm/map_data.h>
 #include <spm/evt_mobj.h>
 #include <spm/eff/eff_small_star.h>
+#include <spm/mario_hit.h>
 #include <spm/mario_motion.h>
 #include <spm/fontmgr.h>
 #include <spm/fairy.h>
@@ -87,7 +88,7 @@ extern "C" {
     false
   };
 
-  void drawStuff() {
+  static void drawStuff() {
     // Flower disp
     const Vec3 fpVec = {-100.0, -202.0, 0.0};
     spm::icondrv::iconDispGx(0.7, &fpVec, 4, 1600);
@@ -113,7 +114,7 @@ extern "C" {
     return;
   }
 
-  void drawStylishButton() {
+  static void drawStylishButton() {
     // Flower disp
     const Vec3 fpVec = {0.0, 0.0, 0.0};
     spm::icondrv::iconDispGx(1.0, &fpVec, 4, 5);
@@ -1879,7 +1880,7 @@ bool IsNpcActive(s32 index) {
     return 4;
   }
 
-  void turnBasedCombatOverrideInit() {
+  static void turnBasedCombatOverrideInit() {
     turnBasedCombatOverride[0].type = 20;
     turnBasedCombatOverride[0].value = turnBasedCombatOverrideFunc;
     turnBasedCombatOverride[1].type = 0;
@@ -1898,7 +1899,7 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[410].unkDefinitionTable = turnBasedCombatOverride;
   }
 
-  void deleteUnderchompTextures() {
+  static void deleteUnderchompTextures() {
     writeWord( & spm::an2_08::rpg_screen_draw, 0x204, 0x38600000);
     writeWord( & spm::an2_08::rpg_screen_draw, 0x208, 0x60000000);
     writeWord( & spm::an2_08::rpg_screen_draw, 0x20C, 0x60000000);
@@ -1909,7 +1910,7 @@ bool IsNpcActive(s32 index) {
     writeWord( & spm::an2_08::rpg_screen_draw, 0x310, 0x60000000);
   }
 
-  void guardLogic(){
+  static void guardLogic(){
     u32 pressed = spm::wpadmgr::wpadGetButtonsPressed(0);
     if (pressed & 0x400) {
       guardFrames = 0;
@@ -2001,7 +2002,7 @@ bool IsNpcActive(s32 index) {
     }
   }
 
-  void hookEvent() {
+  static void hookEvent() {
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage);
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
@@ -2291,14 +2292,22 @@ bool IsNpcActive(s32 index) {
     s32 guard_frames = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
 
     if (guardFrames <= superguard_frames){
+      guardFrames = 255;
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 2);
       return 2;
     } else if (guardFrames <= guard_frames){
+      guardFrames = 255;
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 1);
       return 2;
     }
     guardFrames = 255;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 0);
+    return 2;
+  }
+
+  s32 mario_get_hitbox_width(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetFloat(evtEntry, args[0], spm::mario_hit::marioGetHitboxWidth());
     return 2;
   }
 

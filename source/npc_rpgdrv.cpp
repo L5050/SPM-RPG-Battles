@@ -166,7 +166,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     s32 tribeId = getRpgTribeID(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
     s32 index = getDataTableIndex(tribeId);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)npcDataTable[index].attackScript);
-    wii::os::OSReport("Getting attack script\n");
+    //wii::os::OSReport("Getting attack script\n");
     return 2;
   }
 
@@ -174,7 +174,8 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].maxHp);
+    s32 tribe = getRpgTribeID(index);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], npcTribes[tribe].maxHp);
     return 2;
   }
 
@@ -194,7 +195,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     s32 tribeId = getRpgTribeID(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
     s32 index = getDataTableIndex(tribeId);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)npcDataTable[index].onHitScript);
-    wii::os::OSReport("Getting onhit script\n");
+    //wii::os::OSReport("Getting onhit script\n");
     return 2;
   }
 
@@ -204,7 +205,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     s32 tribeId = getRpgTribeID(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
     s32 index = getDataTableIndex(tribeId);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)npcDataTable[index].chargeOdds);
-    wii::os::OSReport("Getting charge odds\n");
+    //wii::os::OSReport("Getting charge odds\n");
     return 2;
   }
 
@@ -214,7 +215,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     s32 tribeId = getRpgTribeID(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
     s32 index = getDataTableIndex(tribeId);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)npcDataTable[index].onThrowScript);
-    wii::os::OSReport("Getting throw script\n");
+    //wii::os::OSReport("Getting throw script\n");
     return 2;
   }
 
@@ -224,7 +225,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     s32 tribeId = getRpgTribeID(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
     s32 index = getDataTableIndex(tribeId);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)npcDataTable[index].deathScript);
-    wii::os::OSReport("Getting death script\n");
+    //wii::os::OSReport("Getting death script\n");
     return 2;
   }
 
@@ -272,7 +273,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
 
     s32 index = args[0];
-    wii::os::OSReport("NPC is inside map bounding box, killing NPC\n");
+    //wii::os::OSReport("NPC is inside map bounding box, killing NPC\n");
     spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].maxHp = 0;
     spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].killXp = 0;
     spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].flags = 0x8000;

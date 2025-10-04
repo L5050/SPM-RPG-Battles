@@ -224,13 +224,14 @@ EVT_BEGIN(chunks_attack)
           USER_FUNC(evt_npc_wait_anim_end, LW(15), 0)
           USER_FUNC(evt_npc_set_anim, LW(15), 9, 1)
           USER_FUNC(spm::evt_snd::evt_snd_sfxon_npc, PTR("SFX_BS_DDN_RUN1"), LW(15))
-          USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(14))
+          USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(12))
           INLINE_EVT_ID(LW(13))
               DO(0)
                   USER_FUNC(spm::evt_cam::evt_cam_shake, 5, FLOAT(1.0), FLOAT(1.0), FLOAT(0.0), 150, 0)
                   WAIT_FRM(1)
               WHILE()
           END_INLINE()
+          /*
           INLINE_EVT()
             SET(LW(10), 0)
             LBL(1)
@@ -262,36 +263,41 @@ EVT_BEGIN(chunks_attack)
             GOTO(1)
             LBL(2)
           END_INLINE()
+          */
           USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(0), LW(1), LW(2))
-          USER_FUNC(evt_npc_walk_to, LW(15), UW(4), LW(1), LW(2), FLOAT(250.0), 0, 0, 0)
-          USER_FUNC(spm::evt_snd::evt_snd_sfxoff, LW(14))
+          USER_FUNC(mario_get_hitbox_width, LW(14))
+          //DIV(LW(14), 2)
+          ADD(LW(0), LW(14))
+          USER_FUNC(evt_npc_walk_to, LW(15), LW(0), LW(1), LW(2), FLOAT(250.0), 0, 0, 0)
+          USER_FUNC(spm::evt_snd::evt_snd_sfxoff, LW(12))
           DELETE_EVT(LW(13))
           USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(3))
-          USER_FUNC(check_ac_success, LW(11))
-          IF_EQUAL(LW(11), 1)
-            USER_FUNC(check_superguard_success, LW(11))
-            IF_EQUAL(LW(11), 1)
+          USER_FUNC(check_guards, 3, 10, LW(11))
+          IF_EQUAL(LW(11), 2)
             USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_COUNTER_REBOUND1"))
             USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("J_1B"), 0)
             USER_FUNC(evt_npc_set_anim, LW(15), 4, 1)
-            USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(0), LW(6), LW(7), 20, 300)
+            USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(0), LW(1), LW(2))
+            USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(0), LW(1), LW(2), 20, 300)
             BROTHER_EVT_ID(LW(4))
               RUN_CHILD_EVT(superguard_stylish)
             END_BROTHER()
-            WAIT_MSEC(500)
-            ELSE()
-              SET(LW(11), 1)
+            ADD(LW(0), 50)
+            USER_FUNC(evt_npc_jump_to, LW(15), LW(0), LW(6), LW(7), 75, FLOAT(500.0))
+          END_IF()
+            IF_EQUAL(LW(11), 1)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
               USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
               SUB(LW(10), 2)
               IF_SMALL(LW(10), 0)
                 SET(LW(10), 0)
               END_IF()
-              RUN_CHILD_EVT(mod::marioRPGtakeDamage)
+              RUN_EVT(mod::marioRPGtakeDamage)
               USER_FUNC(spm::an2_08::evt_rpg_mario_take_damage, LW(10), 0, LW(0))
             END_IF()
-          ELSE()
+          IF_EQUAL(LW(11), 0)
             USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-            RUN_CHILD_EVT(mod::marioRPGtakeDamage)
+            RUN_EVT(mod::marioRPGtakeDamage)
             USER_FUNC(spm::an2_08::evt_rpg_mario_take_damage, LW(10), 0, LW(0))
           END_IF()
       CASE_EQUAL(1)
@@ -773,6 +779,7 @@ EVT_BEGIN(chunks_attack)
     USER_FUNC(ac_success_reset)
     USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 1, PTR("mobj2"))
     SET(LW(10), 0)
+    /*
     INLINE_EVT()
     LBL(1)
       IF_SMALL(LW(10), 27)
@@ -795,6 +802,7 @@ EVT_BEGIN(chunks_attack)
     GOTO(1)
     LBL(2)
     END_INLINE()
+    */
     INLINE_EVT()
       DO(0)
         ADD(LW(10), 1)
@@ -809,9 +817,9 @@ EVT_BEGIN(chunks_attack)
     ADDF(LW(6), FLOAT(70.0))
     ADDF(LW(7), FLOAT(10.0))
     USER_FUNC(spm::evt_mario::func_800f119c, LW(5), LW(6), LW(7), 60, 500)
-    USER_FUNC(check_ac_success, LW(11))
+    USER_FUNC(check_guards, 3, 0, LW(11))
     USER_FUNC(spm::an2_08::evt_rpg_calc_damage_to_enemy, LW(2), 0, LW(10))
-    IF_EQUAL(LW(11), 1)
+    IF_EQUAL(LW(11), 2)
       USER_FUNC(spm::evt_snd::evt_snd_sfxon_character, PTR("SFX_P_V_MARIO_ATTACK1"), PTR("SFX_P_V_PEACH_ATTACK1"), PTR("SFX_P_V_KOOPA_ATTACK1"), PTR("SFX_P_V_LUIGI_ATTACK1"))
       USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_SMASH1"))
       USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, LW(2), LW(10), 0, LW(0))
@@ -869,6 +877,7 @@ EVT_BEGIN(power_bounce_chunks)
   RUN_EVT(ip::power_bounce_stylish)
   WAIT_FRM(9)
   USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 1, PTR("mobj2"))
+  /*
   INLINE_EVT()
   SET(LW(10), 0)
   LBL(1)
@@ -892,10 +901,11 @@ EVT_BEGIN(power_bounce_chunks)
   GOTO(1)
   LBL(2)
   END_INLINE()
+  */
   ADD(LW(6), 50)
   USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 120, 500)
   USER_FUNC(mario_reset_rotation)
-  USER_FUNC(check_ac_success, LW(11))
+  USER_FUNC(check_guards, 3, 0, LW(11))
   USER_FUNC(spm::an2_08::evt_rpg_calc_damage_to_enemy, UW(0), 0, LW(10))
   IF_EQUAL(LW(11), 1)
     ADD(LW(10), 3)
@@ -948,12 +958,12 @@ EVT_END()
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 149, (spm::evtmgr::EvtScriptCode*)insertNopChunks);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 143, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 91, (spm::evtmgr::EvtScriptCode*)insertNop);
+    //evtpatch::hookEvtReplace(chunks_fight_death_evt, 67, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 67, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 66, (spm::evtmgr::EvtScriptCode*)insertNop);
-    evtpatch::hookEvtReplace(chunks_fight_death_evt, 65, (spm::evtmgr::EvtScriptCode*)insertNop);
-    evtpatch::hookEvtReplace(chunks_fight_death_evt, 61, (spm::evtmgr::EvtScriptCode*)insertNop);
-    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 57, (spm::evtmgr::EvtScriptCode*)chunks_death_2, 59);
-    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 0, (spm::evtmgr::EvtScriptCode*)chunks_death, 53);
+    evtpatch::hookEvtReplace(chunks_fight_death_evt, 62, (spm::evtmgr::EvtScriptCode*)insertNop);
+    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 58, (spm::evtmgr::EvtScriptCode*)chunks_death_2, 60);
+    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 1, (spm::evtmgr::EvtScriptCode*)chunks_death, 53);
     #else
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 148, (spm::evtmgr::EvtScriptCode*)insertNopChunks);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 142, (spm::evtmgr::EvtScriptCode*)insertNop);
@@ -963,7 +973,7 @@ EVT_END()
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 64, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplace(chunks_fight_death_evt, 61, (spm::evtmgr::EvtScriptCode*)insertNop);
     evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 57, (spm::evtmgr::EvtScriptCode*)chunks_death_2, 59);
-    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 0, (spm::evtmgr::EvtScriptCode*)chunks_death, 53);
+    evtpatch::hookEvtReplaceBlock(chunks_fight_death_evt, 1, (spm::evtmgr::EvtScriptCode*)chunks_death, 53);
     #endif
 
   }
