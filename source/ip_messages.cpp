@@ -63,7 +63,7 @@ static CustomMessage msgs[]
     {
         "bd_test_3",
         "Automatically pacify enemies you defeat!\n"
-        "Costs 3 BP to wear."
+        "Costs 0 BP to wear."
     },
 };
 

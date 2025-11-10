@@ -25,8 +25,10 @@ using namespace spm::evtmgr;
 
 namespace mod {
 
-EVT_DECLARE(kuribo_attack)
+EVT_DECLARE(pukupuku_attack)
+EVT_DECLARE(pukupuku_onspawn)
+NPCTribeAnimDef * getPukuAnims();
 
-void kuribo_main();
+void pukupuku_main();
 
 }

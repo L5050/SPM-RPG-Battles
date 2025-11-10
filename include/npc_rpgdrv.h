@@ -43,7 +43,7 @@
 using namespace spm::npcdrv;
 using namespace spm::evtmgr;
 
-#define NPC_TABLE_MAX 14
+#define NPC_TABLE_MAX 16
 
 namespace mod {
 
@@ -70,6 +70,10 @@ EVT_DECLARE_USER_FUNC(get_rpg_enemy_death_script, 2)
 EVT_DECLARE_USER_FUNC(get_rpg_enemy_info, 5)
 EVT_DECLARE_USER_FUNC(kill_rpg_npc, 1)
 EVT_DECLARE_USER_FUNC(evt_rpg_revive_enemy, 2)
+EVT_DECLARE_USER_FUNC(get_rpg_enemy_card_id, 2)
+EVT_DECLARE_USER_FUNC(get_rpg_enemy_card_count, 3)
+EVT_DECLARE_USER_FUNC(set_respawn_pos, 3)
+EVT_DECLARE_USER_FUNC(calc_mario_position, 4)
 EVT_DECLARE_USER_FUNC(set_npc_as_me, 1)
 EVT_DECLARE_USER_FUNC(mobjChangeAnimPoseName, 2)
 EVT_DECLARE(doopliss_attack)

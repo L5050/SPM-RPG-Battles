@@ -256,7 +256,7 @@ EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
   "pacifies enemies you defeat!\n"
   "<k>\n"
   "<p>\n"
-  "It costs 3 BP to wear.\n"
+  "It costs 0 BP to wear.\n"
   "<k>\n";
 
   EVT_BEGIN(getSleepyStomp)

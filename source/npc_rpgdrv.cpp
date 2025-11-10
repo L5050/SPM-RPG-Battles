@@ -4,6 +4,7 @@
 #include "main_scripting.h"
 #include "npc_rpgdrv.h"
 #include "doopliss.h"
+#include "pukupuku.h"
 #include "kuribo.h"
 #include "octa.h"
 #include "sproing.h"
@@ -46,6 +47,7 @@
 #include <spm/mario.h>
 #include <spm/mario_pouch.h>
 #include <spm/seqdef.h>
+#include <msl/string.h>
 #include <wii/os/OSError.h>
 #include <patch.h>
 #include <string>
@@ -67,6 +69,20 @@ NPCTribeAnimDef animsKuribo[] = {
     {10, "kuribo_Z_1"},
     {11, "kuribo_Z_1"},
     {14, "kuribo_N_1"},
+    {-1, nullptr}
+  };
+
+NPCTribeAnimDef animsParaKuribo[] = {
+    {0, "pata_kuribo_S_1"},
+    {1, "pata_kuribo_W_1"},
+    {2, "pata_kuribo_R_1"},
+    {3, "pata_kuribo_T_1"},
+    {4, "pata_kuribo_D_1"},
+    {7, "pata_kuribo_D_1"},
+    {6, "pata_kuribo_D_1"},
+    {10, "pata_kuribo_Z_1"},
+    {11, "pata_kuribo_Z_1"},
+    {14, "pata_kuribo_N_1"},
     {-1, nullptr}
   };
 
@@ -268,6 +284,207 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     return 2;
   }
 
+  s32 get_rpg_enemy_card_id(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 tribeId = getRpgTribeID(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
+    
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::npcdrv::npcTribes[tribeId].catchCardItemId);
+    if (firstRun == false) {}
+    return 2;
+  }
+
+  s32 get_rpg_enemy_card_count(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 tribeId = getRpgTribeID(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
+    
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::npcdrv::npcTribes[tribeId].catchCardItemId);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], spm::mario_pouch::pouchGetCardCount(spm::npcdrv::npcTribes[tribeId].catchCardItemId));
+    if (firstRun == false) {}
+    return 2;
+  }
+
+  s32 set_respawn_pos(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    f32 x = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[0]);
+    f32 y = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[1]);
+    f32 z = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[2]);
+    spm::mario::marioGetPtr()->respawnPosition.x = x;
+    spm::mario::marioGetPtr()->respawnPosition.y = y;
+    spm::mario::marioGetPtr()->respawnPosition.z = z;
+    return 2;
+  }
+
+  s32 calc_mario_position(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    const char *mapName = reinterpret_cast<const char *>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
+    wii::os::OSReport("%s name\n", mapName);
+
+    const char * comparison = "he1_01";
+    const char *result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], -970.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "he1_02";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -1816.0;
+      if (spm::mario::marioGetPtr()->position.x >= -1716.0)
+      {
+        x = 1100.0;
+      }
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "he1_04";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -1690.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "he2_01";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -15.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "he3_01";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -1350.0;
+      if (spm::mario::marioGetPtr()->position.x >= -1000.0)
+      {
+        if (spm::mario::marioGetPtr()->position.x <= 0.0)
+        {
+          x = -135.0;
+        } else {
+          x = 2125.0;
+        }
+      }
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "he3_03";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -1560.0;
+      if (spm::mario::marioGetPtr()->position.x >= -1110.0)
+      {
+        if (spm::mario::marioGetPtr()->position.x <= 0.0)
+        {
+          x = -690.0;
+        } else {
+          x = 1225.0;
+        }
+      }
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "he4_02";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -387.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "he4_06";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -75.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "he4_07";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = 86.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi1_01";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -2605.0;
+      if (spm::mario::marioGetPtr()->position.x >= -600.0)
+      {
+        x = -450.0;
+      }
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi1_08";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -830.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi1_05";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -145.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi1_10";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -1030.0;
+      if (spm::mario::marioGetPtr()->position.x > 0.0)
+      {
+        x = 375.0;
+      }
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    return 2;
+  }
+
   s32 kill_rpg_npc(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
@@ -433,6 +650,7 @@ EVT_END()
   void npc_rpgdrv_main()
   {
     npcDataTable[0] = {0, animsKuribo, 10, kuribo_attack, nullptr, nullptr};
+    kuribo_main();
     npcDataTable[1] = {125, animsOcta2, 10, octa_attack, nullptr, nullptr};
     doopliss_main();
     npcDataTable[2] = {529, getDooplissAnims(), 0, doopliss_attack, nullptr, doopliss_death}; // Doopliss
@@ -453,6 +671,9 @@ EVT_END()
     fracktail_main();
     npcDataTable[12] = {313, getFracktailAnims(), 0, fracktail_attack, fracktail_onhit, fracktail_death, fracktail_on_spawn, fracktail_throw_script}; // Fracktail
     npcDataTable[13] = {450, animsFrackle, 50, frackle_attack, nullptr, nullptr, nullptr, frackle_throw_script}; // Frackle
+    npcDataTable[14] = {89, getPukuAnims(), 25, pukupuku_attack, nullptr, nullptr, pukupuku_onspawn, nullptr}; // Cheep Cheep
+    pukupuku_main();
+    npcDataTable[15] = {7, animsParaKuribo, 25, para_koopa_attack, nullptr, nullptr, nullptr, nullptr}; // Paragoomba
   }
 
 }

@@ -88,11 +88,12 @@ static FileEntry * pauseTplOverride(s32 filetype, const char * format, const cha
 */
 void pauseTexPatch()
 {
-    spm::filemgr::FileEntry * srcFile = spm::filemgr::fileAllocf(4, "./mod/badgemenu.tpl");
+    spm::filemgr::FileEntry * srcFile = spm::filemgr::fileAllocf(0, "./mod/badgemenu.tpl");
     s32 tplSize = srcFile->length;
     badgeMenuTpl = (wii::tpl::TPLHeader *)spm::memory::__memAlloc(spm::memory::Heap::HEAP_MAIN, tplSize);
     msl::string::memcpy(badgeMenuTpl, srcFile->sp->data, tplSize);
     spm::filemgr::fileFree(srcFile);
+    wii::tpl::TPLBind(badgeMenuTpl);
     pauseOverrides[0].image = (const u8 *) badgeMenuTpl->imageTable[0].image->data;
     pauseOverrides[0].imageSize = 9600;//(badgeMenuTpl->imageTable[0].image->height * badgeMenuTpl->imageTable[0].image->width) * 2;
     pauseOverrides[1].image = (const u8 *) badgeMenuTpl->imageTable[1].image->data;

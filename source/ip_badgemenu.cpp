@@ -556,11 +556,12 @@ static void menuOpen()
 */
 void badgeMenuPatch()
 {
-    spm::filemgr::FileEntry * srcFile = spm::filemgr::fileAllocf(4, "./mod/badgeicon.tpl");
+    spm::filemgr::FileEntry * srcFile = spm::filemgr::fileAllocf(0, "./mod/badgeicon.tpl");
     s32 tplSize = srcFile->length;
     badgeIconTpl = (wii::tpl::TPLHeader *)spm::memory::__memAlloc(spm::memory::Heap::HEAP_MAIN, tplSize);
     msl::string::memcpy(badgeIconTpl, srcFile->sp->data, tplSize);
     spm::filemgr::fileFree(srcFile);
+    wii::tpl::TPLBind(badgeIconTpl);
     writeBranch(spm::pausewin::pluswinChapterWinOpen, 0, menuOpen);
 }
 

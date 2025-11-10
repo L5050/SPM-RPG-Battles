@@ -6,7 +6,6 @@
 namespace mod {
 
   EVT_DECLARE_USER_FUNC(npcEntryFromTribeId, 1)
-  //EVT_DECLARE_USER_FUNC(rpg_check_for_bounding_box, 2)
   EVT_DECLARE_USER_FUNC(increaseAttack, 1)
   EVT_DECLARE_USER_FUNC(rpg_npc_setup, 0)
   EVT_DECLARE_USER_FUNC(rpg_off, 0)
@@ -24,7 +23,6 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(getCurMap, 1)
   EVT_DECLARE_USER_FUNC(subtractFP, 1)
   EVT_DECLARE_USER_FUNC(osReportLW, 1)
-  EVT_DECLARE_USER_FUNC(calc_peach_heal, 1)
   EVT_DECLARE_USER_FUNC(check_pressed_2_ac, 1)
   EVT_DECLARE_USER_FUNC(check_pressed_b_ac, 1)
   EVT_DECLARE_USER_FUNC(check_pressed_a_ac, 1)

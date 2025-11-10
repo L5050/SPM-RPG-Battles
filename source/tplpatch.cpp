@@ -30,11 +30,12 @@ namespace mod::tplpatch
     // Loads the tpl if not already loaded by the stated filePath
     if (textureWork->srcTpl == nullptr)
     {
-      spm::filemgr::FileEntry *srcFile = spm::filemgr::fileAllocf(4, textureWork->filePath);
+      spm::filemgr::FileEntry *srcFile = spm::filemgr::fileAllocf(0, textureWork->filePath);
       s32 tplSize = srcFile->length;
       textureWork->srcTpl = (wii::tpl::TPLHeader *)spm::memory::__memAlloc(textureWork->heapType, tplSize);
       msl::string::memcpy(textureWork->srcTpl, srcFile->sp->data, tplSize);
       spm::filemgr::fileFree(srcFile);
+      wii::tpl::TPLBind(textureWork->srcTpl);
     }
 
     // Patches the destination tpl with the one given by the mod.rel

@@ -25,6 +25,10 @@
 #include <spm/hitdrv.h>
 #include <spm/eff/eff_nice.h>
 #include <spm/eff/eff_spm_hit.h>
+#include <spm/framedrv.h>
+#include <spm/offscreendrv.h>
+#include <spm/evt_offscreen.h>
+#include <spm/evt_item.h>
 #include <spm/dispdrv.h>
 #include <spm/animdrv.h>
 #include <spm/item_data.h>
@@ -183,8 +187,15 @@ extern "C" {
     options[1].name = spm::msgdrv::msgSearch("peach_special");
     options[1].index = 1;
 
-
     s32 numOptions = 2;
+
+    if(spm::spmario::gp->gsw0 >= 63)
+    {
+    options[2].name = "Soulstopper";
+    options[2].index = 2;
+    numOptions++;
+    }
+
 
     return numOptions;
   }
@@ -225,6 +236,7 @@ namespace mod {
   bool succeededActionCommand = false;
   bool superGuard = false;
   u8 guardFrames = 0;
+  u8 stylishFrames = 0;
   spm::npcdrv::NPCEntryUnkDef turnBasedCombatOverride[2];
   s32 *fp = nullptr;
   s32 *maxFp = nullptr;
@@ -233,6 +245,7 @@ namespace mod {
   wii::tpl::TPLHeader *myTplHeader = nullptr;
   char * mainText = nullptr;
   char modTplName[] = "mod/mod";
+  s32 itemMax = 0;
   spm::icondrv::IconEntry * flower = nullptr;
   /*
       Title Screen Custom Text
@@ -317,6 +330,9 @@ static const char * getNpcName(s32 tribeId) {
     case 0:
       return "Goomba";
     break;
+    case 7:
+      return "Paragoomba";
+    break;
     case 125:
       return "Squiglet";
     break;
@@ -331,6 +347,9 @@ static const char * getNpcName(s32 tribeId) {
     break;
     case 25:
       return "Buzzy Beetle";
+    break;
+    case 89:
+      return "Cheep Cheep";
     break;
     case 99:
       return "Bald Cleft";
@@ -383,7 +402,7 @@ bool IsNpcActive(s32 index) {
   return rpgIsActive[index];
 }
 
-  const char * rpgStart = "Prepare for battle!\n"
+  const char * rpgStart = "Can't flee from this fight!\n"
   "<o>\n";
   const char * stg7_2_133_2_003 = "<p>\n"
   "Attack who?\n"
@@ -508,11 +527,9 @@ bool IsNpcActive(s32 index) {
   "<dkey><wait 250></dkey>\n"
   "<o>\n";
 
-  const char * stg7_2_133_2_026 = "<dkey><wait 250></dkey>\n"
-  "<p>\n"
+  const char * stg7_2_133_2_026 = "<dq><p>\n"
   "Miss! The attack is a failure!\n"
-  "<k>\n"
-  "<o>\n";
+  "<k>\n";
 
   const char * stg7_2_133_2_027 = "<dkey><wait 250></dkey>\n"
   "<p>\n"
@@ -1647,17 +1664,17 @@ bool IsNpcActive(s32 index) {
   }
 
   s32 compareStrings(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
-    {
-        spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-        const char* mapName = reinterpret_cast<const char*>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
-        wii::os::OSReport("%s name\n", mapName);
-        const char *comparison = reinterpret_cast<const char*>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]));
-        wii::os::OSReport("%s name\n", comparison);
-        const char *result = msl::string::strstr(mapName, comparison);
-        wii::os::OSReport("%d name\n", result != 0);
-        spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], result != 0);
-        return 2;
-      }
+  {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    const char *mapName = reinterpret_cast<const char *>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
+    wii::os::OSReport("%s name\n", mapName);
+    const char *comparison = reinterpret_cast<const char *>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]));
+    wii::os::OSReport("%s name\n", comparison);
+    const char *result = msl::string::strstr(mapName, comparison);
+    wii::os::OSReport("%d name\n", result != 0);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], result != 0);
+    return 2;
+  }
 
   spm::effdrv::EffEntry * newEffNiceEntry(double param_1, double param_2, double param_3, double param_4, int param_5) {
 
@@ -1741,6 +1758,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 0;
       break;
+      case 7: // Paragoomba
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 7;
+        rpgTribeID[1] = 7;
+        rpgTribeID[2] = 7;
+      break;
       case 11: // Green Koopa Troopa
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
@@ -1813,6 +1838,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 142;
       break;
+      case 89: // Cheep Cheep
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = false;
+        rpgIsActive[2] = false;
+        rpgTribeID[0] = 89;
+        rpgTribeID[1] = 0;
+        rpgTribeID[2] = 0;
+      break;
       case 99: // Bald Cleft
         rpgIsActive[0] = true;
         rpgIsActive[1] = false;
@@ -1868,7 +1901,8 @@ bool IsNpcActive(s32 index) {
     if (npcPart->owner->moveMode == 5 && tribeId != 440) return 4;
     spm::mario::MarioWork * mpp = spm::mario::marioGetPtr();
     if ((mpp->flags & 0x40000000) == 0) {
-      if (!rpgInProgress && mpp->flags) {
+      if (!rpgInProgress) {
+        rpgInProgress = true;
         setUpPreset(tribeId);
         spm::evtmgr::EvtEntry* battle = spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
         battle->lw[0] = 1;
@@ -1886,6 +1920,7 @@ bool IsNpcActive(s32 index) {
     turnBasedCombatOverride[1].type = 0;
     turnBasedCombatOverride[1].value = nullptr;
     spm::npcdrv::npcEnemyTemplates[2].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[4].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[250].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[8].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[14].unkDefinitionTable = turnBasedCombatOverride;
@@ -1897,6 +1932,7 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[77].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[9].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[410].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[67].unkDefinitionTable = turnBasedCombatOverride;
   }
 
   static void deleteUnderchompTextures() {
@@ -1916,6 +1952,11 @@ bool IsNpcActive(s32 index) {
       guardFrames = 0;
     } else if (guardFrames < 255){
       guardFrames += 1;
+    }
+    if (pressed & 0x800) {
+      stylishFrames = 0;
+    } else if (stylishFrames < 255){
+      stylishFrames += 1;
     }
     return;
   }
@@ -2091,8 +2132,6 @@ bool IsNpcActive(s32 index) {
       }
     }
     rpgInProgress = true;
-    wii::os::OSReport("%p\n", maxFp);
-    wii::os::OSReport("%d\n", *maxFp);
     if (*maxFp == 0) {
       *fp = 5;
       *maxFp = 5;
@@ -2111,6 +2150,14 @@ bool IsNpcActive(s32 index) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     setUpPreset(args[0]);
     spm::evtmgr::evtEntry(parentOfBeginRPG, 1, 0);
+    bossFight = true;
+    return 2;
+  }
+
+  s32 check_for_boss_fight(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)bossFight);
     return 2;
   }
 
@@ -2232,21 +2279,23 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
 
+  s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    char name[11];
+    msl::stdio::sprintf(name,"item_%08x", itemMax);
+    itemMax++;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 0);
+    spm::evt_item::evt_item_entry(evtEntry, firstRun);
+    return 2;
+  }
+
   s32 rpg_off(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::camdrv::camPtrTbl[5]->isOrthoToggle = 1;
     rpgInProgress = false;
     succeededActionCommand = false;
+    bossFight = false;
     if (firstRun == false) {}
     if (evtEntry->flags == 0) {}
-    return 2;
-  }
-
-  s32 calc_peach_heal(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    s32 gsw = 5;
-    if (spm::spmario::gp->gsw0 >= 170) gsw = 20;
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], gsw);
-    if (firstRun == false) {}
     return 2;
   }
 
@@ -2302,6 +2351,20 @@ bool IsNpcActive(s32 index) {
     }
     guardFrames = 255;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 0);
+    return 2;
+  }
+
+  s32 check_stylish(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 stylish_frames = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    drawStylish = false;
+    if (stylishFrames <= stylish_frames){
+      stylishFrames = 255;
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], 1);
+      return 2;
+    }
+    guardFrames = 255;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], 0);
     return 2;
   }
 
@@ -2395,6 +2458,13 @@ bool IsNpcActive(s32 index) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     char * dialogue = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     mainText = dialogue;
+    return 2;
+  }
+
+    s32 evt_offscreen_set_type(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    char * name = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    spm::offscreendrv::offscreenSetEntryType(name, args[1]);
     return 2;
   }
 

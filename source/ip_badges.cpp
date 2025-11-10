@@ -37,7 +37,7 @@ BadgeDef badgeDefs[NUM_BADGES] = {
         "bn_test_3",
         "bd_test_3",
         2,
-        3,
+        0,
         nullptr
     },
 };
