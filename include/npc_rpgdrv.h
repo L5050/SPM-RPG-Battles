@@ -43,7 +43,7 @@
 using namespace spm::npcdrv;
 using namespace spm::evtmgr;
 
-#define NPC_TABLE_MAX 3
+#define NPC_TABLE_MAX 16
 
 namespace mod {
 
@@ -51,20 +51,36 @@ typedef struct
 {
   s32 tribeId;
   NPCTribeAnimDef* animDefs;
+  s32 chargeOdds;
   const EvtScriptCode* attackScript;
   const EvtScriptCode* onHitScript;
   const EvtScriptCode* deathScript;
-  const char * battle_script = nullptr;
+  const EvtScriptCode* onSpawnScript = nullptr;
+  const EvtScriptCode* onThrowScript = nullptr;
 } npc_rpg_data;
 
 extern NPCTribeAnimDef animsKuribo[];
 
+EVT_DECLARE_USER_FUNC(get_rpg_enemy_max_hp, 2)
 EVT_DECLARE_USER_FUNC(get_rpg_enemy_attack_script, 2)
+EVT_DECLARE_USER_FUNC(get_rpg_enemy_throw_script, 2)
+EVT_DECLARE_USER_FUNC(get_rpg_enemy_charge_odds, 2)
+EVT_DECLARE_USER_FUNC(get_rpg_enemy_damage_script, 2)
 EVT_DECLARE_USER_FUNC(get_rpg_enemy_death_script, 2)
-EVT_DECLARE_USER_FUNC(get_rpg_enemy_info, 3)
+EVT_DECLARE_USER_FUNC(get_rpg_enemy_info, 5)
+EVT_DECLARE_USER_FUNC(kill_rpg_npc, 1)
 EVT_DECLARE_USER_FUNC(evt_rpg_revive_enemy, 2)
+EVT_DECLARE_USER_FUNC(get_rpg_enemy_card_id, 2)
+EVT_DECLARE_USER_FUNC(get_rpg_enemy_card_count, 3)
+EVT_DECLARE_USER_FUNC(set_respawn_pos, 3)
+EVT_DECLARE_USER_FUNC(calc_mario_position, 4)
+EVT_DECLARE_USER_FUNC(set_npc_as_me, 1)
+EVT_DECLARE_USER_FUNC(mobjChangeAnimPoseName, 2)
 EVT_DECLARE(doopliss_attack)
 EVT_DECLARE(doopliss_death)
+EVT_DECLARE(superguard_stylish)
+EVT_DECLARE(increase_stylish)
+EVT_DECLARE(npc_charge)
 
 void npc_rpgdrv_main();
 

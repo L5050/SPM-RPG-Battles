@@ -11,6 +11,12 @@
 
 namespace mod {
 
+    /*
+        Draw HP bars under enemies
+    */
+
+    void enemyDisp();
+
 class HPWindow final : public Window
 {
 private:
@@ -58,11 +64,6 @@ private:
         Draws the boss HP bar at the top of the screen if a boss is active
     */
     void bossDisp();
-
-    /*
-        Draw HP bars under enemies
-    */
-    void enemyDisp();
 
 protected:
     virtual void disp() override;
