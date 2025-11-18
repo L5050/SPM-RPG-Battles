@@ -10,6 +10,7 @@
 #include "ip_badgepouch.h"
 #include "power_refresh.h"
 #include "tplpatch.h"
+#include "map_data/map_data_main.h"
 
 #include <spm/system.h>
 #include <spm/acdrv.h>
@@ -2513,5 +2514,6 @@ bool IsNpcActive(s32 index) {
     mobj_main();
     tplpatch::iconPatch(modTplName);
     power_refresh_main();
+    map_data_main();
   }
 }

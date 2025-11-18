@@ -289,7 +289,7 @@ EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
             ip::badgeIconTpl,
             nullptr,
             false,
-            spm::memory::Heap::HEAP_MEM1_UNUSED};
+            spm::memory::Heap::HEAP_MAIN};
         tplpatch::patchTpl(&texWrk);
         return 2;
   }
