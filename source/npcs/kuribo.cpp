@@ -109,7 +109,6 @@ namespace mod {
         DELETE_EVT(LW(10))
         USER_FUNC(evt_npc_rotate, LW(15), EVT_NULLPTR, EVT_NULLPTR, FLOAT(0.0))
         USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(3))
-        USER_FUNC(check_ac_success, LW(11))
         USER_FUNC(check_guards, 3, 11, LW(11))
         IF_EQUAL(LW(11), 2)
           USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_COUNTER_REBOUND1"))
