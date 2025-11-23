@@ -160,6 +160,15 @@ namespace ip
     return 2;
   }
 
+  s32 evt_pouch_check_badge_equipped(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
+  {
+    badgePouchInit();
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], checkForBadgeEquipped(id));
+    return 2;
+  }
+
   s32 evt_pouch_add_badge(spm::evtmgr::EvtEntry *evtEntry, bool isFirstCall)
   {
     badgePouchInit();

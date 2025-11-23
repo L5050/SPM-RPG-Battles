@@ -51,6 +51,7 @@ void badgePouchInit();
 void badgePouchPatch(s32 gsw);
 
 EVT_DECLARE_USER_FUNC(evt_pouch_check_for_badge, 2)
+EVT_DECLARE_USER_FUNC(evt_pouch_check_badge_equipped, 2)
 EVT_DECLARE_USER_FUNC(evt_pouch_add_badge, 1)
 EVT_DECLARE_USER_FUNC(evt_pouch_remove_badge, 1)
 EVT_DECLARE_USER_FUNC(evt_pouch_init, 0)
