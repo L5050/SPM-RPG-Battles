@@ -132,12 +132,35 @@ const char * tutorial = "<dq>\n"
 "<k>\n"
 "<o>\n";
 
-s32 mario_chg_paper(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+s32 mario_paper_on(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     spm::mario::marioPaperOn((const char *) args[0]);
     return 2;
 }
+
+s32 mario_chg_paper(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::mario::marioChgPaper((const char *) args[0]);
+    return 2;
+}
+
+s32 mario_paper_off(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::mario::marioPaperOff();
+    return 2;
+}
+EVT_DECLARE_USER_FUNC(mario_paper_off, 0)
+
+s32 mario_chg_mot(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::mario_motion::marioChgMot(args[0]);
+    return 2;
+}
+EVT_DECLARE_USER_FUNC(mario_chg_mot, 1)
+
 
 s32 mario_reset_rotation(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -208,6 +231,16 @@ s32 rpg_get_technique_index(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], spm::an2_08::rpgdrv_wp->menus[1].selected);
+    return 2;
+}
+
+s32 evt_rpg_add_player_effect(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    u32 status = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    spm::an2_08::rpgdrv_wp->statusEffects = spm::an2_08::rpgdrv_wp->statusEffects | status;
+    s32 staintus = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+    spm::an2_08::rpgdrv_wp->statusEffectsTimer[staintus] = spm::evtmgr_cmd::evtGetValue(evtEntry, args[2]);
     return 2;
 }
 
@@ -512,9 +545,18 @@ EVT_BEGIN(rpg_snd_hit_evt)
 EVT_END()
 
 EVT_BEGIN(marioRPGtakeDamage) //80def490
+    USER_FUNC(check_slim, LF(2))
+    IF_EQUAL(LF(2), 1)
+      USER_FUNC(slim_off_on, 1)
+      USER_FUNC(mario_paper_off)
+      USER_FUNC(mario_chg_mot, 0)
+      SET(LF(2), 0)
+      USER_FUNC(spm::an2_08::evt_rpg_menu_effects_handler, 0, 1)
+    END_IF()
     ADDF(LW(1), FLOAT(25.0))
     USER_FUNC(displayDamage, LW(0), LW(1), LW(2), LW(10))
     IF_EQUAL(LW(11), 0)
+      WAIT_FRM(1)
       USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("D_2"), 0)
     END_IF()
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_MARIO_DAMAGE1"))
@@ -1297,6 +1339,26 @@ USER_FUNC(enable_disable_rpg_menu, 0)
 RETURN()
 EVT_END()
 
+EVT_BEGIN(slim_jump_evt)
+  DO(0)
+    WAIT_FRM(1)
+    USER_FUNC(check_pressed_2_ac, LW(11))
+    IF_EQUAL(LW(11), 1)
+      USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+      SUB(LW(5), 50)
+      USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 10, 300)
+      ADD(LW(5), 50)
+      USER_FUNC(spm::evt_mario::evt_mario_pos_change, LW(5), LW(7), FLOAT(180.0))
+      WAIT_FRM(3)
+    END_IF()
+    USER_FUNC(check_slim, LW(12))
+    IF_EQUAL(LW(12), 0)
+      DO_BREAK()
+    END_IF()
+  WHILE()
+  RETURN()
+EVT_END()
+
 EVT_BEGIN(pixls)
     SET(UW(0), LW(4))
     SWITCH(LW(2))
@@ -1816,7 +1878,8 @@ EVT_BEGIN(pixls)
             USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_F_SLIT_RETURN1"))
             USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_029"), LW(10))
             USER_FUNC(spm::evt_msg::evt_msg_continue)
-            USER_FUNC(spm::an2_08::evt_rpg_menu_effects_handler, 1, 1)
+            USER_FUNC(evt_rpg_add_player_effect, 1, 0, 2)
+            //USER_FUNC(spm::an2_08::evt_rpg_menu_effects_handler, 1, 1)
             SET(LF(1), 1)
         ELSE()
           USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_HELWANWAN_MISS1"))
@@ -2740,13 +2803,24 @@ EVT_BEGIN(rpg_check_win_or_continue_evt)
     END_IF()
     USER_FUNC(spm::an2_08::evt_rpg_effects_handle, 0, LW(0))
     IF_EQUAL(LW(0), 2)
-        USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(1))
-        USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-        USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_125"), LW(1))
+        USER_FUNC(slim_off_on, 0)
         USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_SLIT_RETURN1"))
-        USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_F_SLIT_RETURN1"))
+        USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("I_2"), 0)
+        USER_FUNC(mario_chg_paper, PTR("PM_R_1C"))
+        WAIT_FRM(45)
+        USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+        ADD(LW(7), 10)
+        USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 0, LW(5), LW(6), LW(7), FLOAT(2.5), 0, 0, 0, 0, 0, 0, 0)
+        USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_BOMB_FIRE1"))
+        USER_FUNC(mario_paper_off)
+        USER_FUNC(mario_chg_mot, 0)
+        WAIT_FRM(1)
+        USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("I_2"), 0)
+        WAIT_FRM(45)
+        //USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(1))
+        //USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+        //USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_125"), LW(1))
         USER_FUNC(spm::an2_08::evt_rpg_menu_effects_handler, 0, 1)
-        USER_FUNC(spm::evt_msg::evt_msg_continue)
     END_IF()
     USER_FUNC(spm::an2_08::evt_rpg_effects_handle, 1, LW(0))
     IF_EQUAL(LW(0), 2)
@@ -3113,9 +3187,13 @@ END_IF()
 USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
 IF_EQUAL(LF(1), 0)
   USER_FUNC(spm::an2_08::evt_rpg_effects_handle, 0, LW(0))
-  IF_EQUAL(LW(0), 1)
-    USER_FUNC(mario_chg_paper, PTR("p_roll"))
-    WAIT_MSEC(30)
+  IF_EQUAL(LW(0), 2)
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_SLIT_RETURN1"))
+    USER_FUNC(mario_paper_on, PTR("p_roll"))
+    WAIT_FRM(45)
+    USER_FUNC(slim_off_on, 1)
+    RUN_EVT(slim_jump_evt)
+    USER_FUNC(mario_chg_paper, PTR("PM_R_1B"))
   END_IF()
   RUN_CHILD_EVT(mod::runEnemyTurn)
 ELSE()

@@ -236,6 +236,7 @@ namespace mod {
   bool drawStylish = false;
   bool succeededActionCommand = false;
   bool superGuard = false;
+  bool isFrog = false;
   u8 guardFrames = 0;
   u8 stylishFrames = 0;
   spm::npcdrv::NPCEntryUnkDef turnBasedCombatOverride[2];
@@ -307,6 +308,7 @@ namespace mod {
   s32( * marioCalcDamageToEnemy)(s32 damageType, s32 tribeId);
   s32( * evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
   s32( * evt_rpg_choice_handler)(spm::evtmgr::EvtEntry * entry, bool firstRun);
+  s32 ( * evt_mario_get_height)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   void( * msgUnLoad)(s32 slot);
   void( * rpg_screen_draw)();
   s32( * rpgHandleMenu)(s32, spm::an2_08::RpgMenuOption*);
@@ -2017,31 +2019,15 @@ bool IsNpcActive(s32 index) {
     return spm::icondrv::iconNameToPtr(name);
   }
 
-  s32 new_evt_rpg_choice_handler(spm::evtmgr::EvtEntry * entry, bool firstRun)
+  s32 new_evt_mario_get_height(spm::evtmgr::EvtEntry * entry, bool firstRun)
   {
-    u32 temp1 = entry->tempU[1];
-    u32 temp2 = entry->tempU[2];
-    s32 ret = evt_rpg_choice_handler(entry, firstRun);
-    //wii::os::OSReport("%d e4eff\n", spm::an2_08::rpgdrv_wp->menus[1].selected);
-    wii::os::OSReport("%d this sucks \n", spm::an2_08::rpgdrv_wp->menus[0].flags);
-    wii::os::OSReport("%d this sucks \n", spm::an2_08::rpgdrv_wp->menus[1].flags);
-    wii::os::OSReport("%d this sucks \n", spm::an2_08::rpgdrv_wp->menus[2].flags);
-    if (ret == 2 && spm::an2_08::rpgdrv_wp->menus[1].options[spm::an2_08::rpgdrv_wp->menus[1].selected].index == 87 && spm::an2_08::rpgdrv_wp->menus[1].flags != 0x3)
+    evt_mario_get_height(entry, firstRun);
+    if (isFrog)
     {
-      const char * message = spm::msgdrv::msgSearch("stg7_2_133_2_060");
-      spm::msgdrv::msgWindow_Add(message, entry->msgWindowId);
-      u32 ret2 = spm::an2_08::func_80c6cccc(0xc06a400000000000,0x404e000000000000,0x4069000000000000,0,1,0);
-      entry->tempU[3] = ret2;
-      entry->tempU[0] = 0x2d;
-      entry->tempU[1] = temp1;
-      entry->tempU[2] = temp2;
-      spm::an2_08::rpgdrv_wp->menus[0].flags = 0x23;
-      spm::an2_08::rpgdrv_wp->menus[1].flags = 0x3;
-      spm::an2_08::rpgdrv_wp->menus[2].flags = 0x1;
-      return 0;
-    } else {
-      return ret;
+      spm::evtmgr::EvtVar * args = entry -> pCurData;
+      spm::evtmgr_cmd::evtSetFloat(entry, args[0], 0.0);
     }
+    return 2;
   }
 
   static void hookEvent() {
@@ -2049,6 +2035,7 @@ bool IsNpcActive(s32 index) {
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage);
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
     //evt_rpg_choice_handler = patch::hookFunction(spm::an2_08::evt_rpg_choice_handler, new_evt_rpg_choice_handler);
+    evt_mario_get_height = patch::hookFunction(spm::evt_mario::evt_mario_get_height, new_evt_mario_get_height);
     patchWangSpecial();
 
     pouchSetEnemiesDefeated = patch::hookFunction(spm::mario_pouch::pouchSetEnemiesDefeated, new_pouchSetEnemiesDefeated);
@@ -2295,6 +2282,7 @@ bool IsNpcActive(s32 index) {
     rpgInProgress = false;
     succeededActionCommand = false;
     bossFight = false;
+    isFrog = false;
     if (firstRun == false) {}
     if (evtEntry->flags == 0) {}
     return 2;
@@ -2336,10 +2324,33 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
   
+  s32 check_slim(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], isFrog);
+    return 2;
+  }
+
+  s32 slim_off_on(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    bool slim = (bool)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    isFrog = slim;
+    return 2;
+  }
+
   s32 check_guards(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 superguard_frames = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     s32 guard_frames = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+    
+    if(isFrog)
+    {
+      spm::mario::MarioWork* mwp = spm::mario::marioGetPtr();
+      if (mwp->motionId == MOT_JUMP_EVT)
+      {
+        spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 3);
+        return 2;
+      }
+    }
 
     if (guardFrames <= superguard_frames){
       guardFrames = 255;
