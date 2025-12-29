@@ -366,6 +366,9 @@ static const char * getNpcName(s32 tribeId) {
     case 142:
       return "Boomboxer";
     break;
+    case 63:
+      return "Kamek";
+    break;
     case 270:
       return "O'Chunks";
     break;
@@ -1736,7 +1739,7 @@ bool IsNpcActive(s32 index) {
       }
     }
     wii::os::OSReport("%x\n", spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].flags);
-    if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].flags & 0x2) != 0) 
+    if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].flags & 0x3) != 0) 
     {
     attackStrength = attackStrength * 2;
     }
@@ -1751,6 +1754,7 @@ bool IsNpcActive(s32 index) {
   }
 
   static inline void setUpPreset(s32 tribeId) {
+    s32 sequence = spm::spmario::gp->gsw0;
     switch(tribeId)
     {
       case 0: // Goomba
@@ -1813,17 +1817,35 @@ bool IsNpcActive(s32 index) {
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
         rpgIsActive[2] = true;
+        if (sequence >= 67)
+        {
+          rpgTribeID[0] = 125;
+          rpgTribeID[1] = 125;
+          rpgTribeID[2] = 125;
+        }
+        else
+        {
         rpgTribeID[0] = 0;
         rpgTribeID[1] = 125;
         rpgTribeID[2] = 0;
+        }
       break;
       case 126: // Squig
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
         rpgIsActive[2] = true;
+        if (sequence >= 67)
+        {
+          rpgTribeID[0] = 25;
+          rpgTribeID[1] = 126;
+          rpgTribeID[2] = 25;
+        }
+        else
+        {
         rpgTribeID[0] = 125;
         rpgTribeID[1] = 126;
         rpgTribeID[2] = 125;
+        }
       break;
       case 134: // Sproing-Oing
         rpgIsActive[0] = true;
@@ -1840,6 +1862,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[0] = 142;
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 142;
+      break;
+      case 63: // Kamek
+        rpgIsActive[0] = false;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = false;
+        rpgTribeID[0] = 99;
+        rpgTribeID[1] = 63;
+        rpgTribeID[2] = 99;
       break;
       case 89: // Cheep Cheep
         rpgIsActive[0] = true;
@@ -2435,6 +2465,14 @@ bool IsNpcActive(s32 index) {
     s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     s32 value = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
     rpgTribeID[index] = value;
+    return 2;
+  }
+
+  s32 setRpgActivity(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 value = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+    rpgIsActive[index] = value;
     return 2;
   }
 

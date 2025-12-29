@@ -4,7 +4,6 @@
 #include "evt_cmd.h"
 #include "mod.h"
 #include "patch.h"
-#include "main_scripting.h"
 
 #include <patch.h>
 #include <spm/rel/an.h>
@@ -25,7 +24,10 @@ using namespace spm::evtmgr;
 
 namespace mod {
 
-EVT_DECLARE(sinno_attack)
-void sinno_main();
+EVT_DECLARE(kamek_attack)
+EVT_DECLARE(kamek_onspawn)
+EVT_DECLARE(kamek_death)
+
+void kamek_main();
 
 }

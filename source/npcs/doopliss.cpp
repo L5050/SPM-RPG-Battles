@@ -167,7 +167,7 @@ s32 fix_doopliss_being_annoying(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
   char * name = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
   NPCEntry * npc = spm::npcdrv::npcNameToPtr(name);
-  npc->name[0] = "e";
+  npc->name[0] = *"e";
   return 2;
 }
 
@@ -614,7 +614,7 @@ EVT_DECLARE_USER_FUNC(fix_doopliss_being_annoying, 1)
   {
     npcTribes[529].animDefs = animsDoopliss;
     npcTribes[529].animPoseName = "c_ranpel";
-    npcTribes[529].maxHp = 20;
+    npcTribes[529].maxHp = 40;
     npcTribes[529].killXp = 4500;
     npcTribes[529].attackStrength = 4;
     spm::map_data::MapData * mi3_03_md = spm::map_data::mapDataPtr("mi3_03");

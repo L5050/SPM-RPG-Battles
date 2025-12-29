@@ -39,6 +39,7 @@ void _setFP(s32 count);
 s32 _getMaxFP();
 spm::icondrv::IconEntry *iconEntryAutoname(s32 iconId);
 EVT_DECLARE_USER_FUNC(setRpgTribeID, 2)
+EVT_DECLARE_USER_FUNC(setRpgActivity, 2)
 EVT_DECLARE_USER_FUNC(compareStrings, 3)
 EVT_DECLARE_USER_FUNC(mario_set_scale, 3)
 EVT_DECLARE_USER_FUNC(rpg_set_dialogue, 1)
@@ -57,6 +58,7 @@ EVT_DECLARE_USER_FUNC(check_slim, 1)
 EVT_DECLARE_USER_FUNC(slim_off_on, 1)
 EVT_DECLARE_USER_FUNC(check_stylish, 2)
 EVT_DECLARE_USER_FUNC(npc_get_bounding_box, 5)
+EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
 
 EVT_DECLARE(evt_memcard_save)
 

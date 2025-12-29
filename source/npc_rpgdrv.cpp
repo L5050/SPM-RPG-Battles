@@ -14,6 +14,7 @@
 #include "oChunks.h"
 #include "cherbil.h"
 #include "fracktail.h"
+#include "kamek.h"
 
 #include <spm/rel/an.h>
 #include <spm/animdrv.h>
@@ -148,6 +149,22 @@ NPCTribeAnimDef animsParaKuribo[] = {
     {-1, nullptr}
   };
 
+  NPCTribeAnimDef _animsKMK[] = {
+  {0, "KMK_S_1"},
+  {1, "KMK_W_1"},
+  {2, "KMK_R_1"},
+  {3, "KMK_T_1"},
+  {4, "KMK_D_1"},
+  {5, "KMK_S_3"},
+  {6, "KMK_A_1A"},
+  {7, "KMK_A_1B"},
+  {8, "KMK_A_1C"},
+  {9, "KMK_A_1D"},
+  {10, "KMK_A_1E"},
+  {14, "KMK_N_1"},
+  {-1, nullptr}
+};
+
   NPCTribeAnimDef animsCharge[] = {
     {0, "Z_1"},
     {1, "S_1"},
@@ -271,6 +288,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       return 2;
     }
     s32 index = getDataTableIndex(tribeId);
+    spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].flags = 0;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)npcDataTable[index].animDefs);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], (s32)npcTribes[tribeId].animPoseName);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[3], (s32)npcDataTable[index].onSpawnScript);
@@ -468,6 +486,16 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
       return 2;
     }
+    comparison = "mi1_09";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -156.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
     comparison = "mi1_10";
     result = msl::string::strstr(mapName, comparison);
     if (result != 0)
@@ -628,6 +656,7 @@ EVT_END()
     npcDataTable[6] = {20, getParaKoopaAnims(), 10, para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
     npcDataTable[7] = {14, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Red Koopa Troopa
     npcDataTable[8] = {22, getParaKoopaAnims(), 10, para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
+    sinno_main();
     npcDataTable[9] = {99, animsSinno, 10, sinno_attack, nullptr, nullptr}; // Bald Cleft
     chunks_main();
     npcDataTable[10] = {270, getChunksAnims(), 0, chunks_attack, chunks_onhit, getChunksDeath(), chunks_on_spawn}; // O'Chunks
@@ -637,9 +666,11 @@ EVT_END()
     fracktail_main();
     npcDataTable[12] = {313, getFracktailAnims(), 0, fracktail_attack, fracktail_onhit, fracktail_death, fracktail_on_spawn, fracktail_throw_script}; // Fracktail
     npcDataTable[13] = {450, animsFrackle, 50, frackle_attack, nullptr, nullptr, nullptr, frackle_throw_script}; // Frackle
-    npcDataTable[14] = {89, getPukuAnims(), 25, pukupuku_attack, nullptr, nullptr, pukupuku_onspawn, nullptr}; // Cheep Cheep
     pukupuku_main();
+    npcDataTable[14] = {89, getPukuAnims(), 25, pukupuku_attack, nullptr, nullptr, pukupuku_onspawn, nullptr}; // Cheep Cheep
     npcDataTable[15] = {7, animsParaKuribo, 25, para_koopa_attack, nullptr, nullptr, nullptr, nullptr}; // Paragoomba
+    kamek_main();
+    npcDataTable[16] = {63, _animsKMK, 0, kamek_attack, nullptr, kamek_death, kamek_onspawn, nullptr}; // Kamek
   }
 
 }

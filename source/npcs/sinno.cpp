@@ -66,39 +66,6 @@ namespace mod {
         USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_SHINEMON_CHARGE1"))
         USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_E_SHINEMON_CHARGE1"))
         USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_SHINEMON_DASH1"))
-        /*
-        INLINE_EVT()
-          SET(LW(10), 0)
-          LBL(1)
-            IF_SMALL(LW(10), 2)
-              USER_FUNC(check_pressed_b_ac, LW(11))
-              IF_EQUAL(LW(11), 1)
-                USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
-                WAIT_FRM(3)
-                USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
-                GOTO(2)
-              END_IF()
-            ELSE()
-              USER_FUNC(check_pressed_b_ac, LW(11))
-              IF_EQUAL(LW(11), 1)
-                USER_FUNC(ac_success_toggle)
-                USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
-                IF_LARGE_EQUAL(LW(10), 7)
-                  USER_FUNC(superguard_toggle)
-                  USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("J_1A"), 0)
-                END_IF()
-                GOTO(2)
-              END_IF()
-            END_IF()
-            WAIT_FRM(1)
-            ADD(LW(10), 1)
-            IF_EQUAL(LW(10), 13)
-              GOTO(2)
-            END_IF()
-          GOTO(1)
-          LBL(2)
-        END_INLINE()
-        */
         USER_FUNC(mario_get_hitbox_width, LW(14))
         DIV(LW(14), 2)
         ADD(LW(0), LW(14))
@@ -151,5 +118,10 @@ namespace mod {
   WAIT_FRM(1)
   GOTO(5)
   EVT_END()
+
+void sinno_main()
+{
+  npcTribes[99].attackStrength = 2;
+}
 
 }

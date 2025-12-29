@@ -48,6 +48,10 @@ static CustomMessage msgs[]
         "bn_test_3",
         "Sleepy Stomp"
     },
+    {
+        "n_luckystart",
+        "Lucky Start"
+    },
 
     // Badge Descriptions
     {
@@ -64,6 +68,12 @@ static CustomMessage msgs[]
         "bd_test_3",
         "Automatically pacify enemies you defeat!\n"
         "Costs 0 BP to wear."
+    },
+    {
+        "d_luckystart",
+        "50 percent chance of fully restoring\n"
+        "HP and FP upon entering a battle!\n"
+        "Costs 4 BP to wear."
     },
 };
 

@@ -99,8 +99,7 @@ const char * kamek_3 = "<p>\n"
 "<k>\n"
 "<p>\n"
 "<scale 1.4>ALL<wait 250> HAIL<wait 250> COUNT<wait 250> BLECK!\n"
-"<k>\n"
-"<p>\n start battle here\n";
+"<k>\n";
 
 const char * throw_silence = "<p><small>\n"
 "... <wait 750> \n";
@@ -183,7 +182,14 @@ EVT_BEGIN(kamek_evt)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(throw_2), 0, PTR(pixl))
     USER_FUNC(spm::evt_fairy::evt_fairy_all_enter_run_mode2)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(kamek_3), 0, PTR(kamek))
+    USER_FUNC(spm::evt_snd::evt_snd_bgmon, 0, PTR("BGM_EVT_KAMEK_BTL"))
+    USER_FUNC(spm::evt_mario::evt_mario_key_on)
+    USER_FUNC(start_boss_fight, 63)
   ELSE()
+    IF_EQUAL(GSWF(1803), 1)
+      RETURN()
+    END_IF()
+    SET(GSWF(1803), 1)
     WAIT_FRM(1)
     USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
     WAIT_MSEC(2000)
