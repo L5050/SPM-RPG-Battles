@@ -102,13 +102,13 @@ NPCTribeAnimDef animsDoopliss[] = {
   "<k>\n"
   "<p>\n"
   "Do you recognize me?\n"
-  "<wait 150>Guess, whats my name?\n"
+  "<wait 150>Guess, what's my name?\n"
   "<wait 150>Hit me with your best shot!\n"
   "<k>\n";
 
   const char * kansyu_no_response = "<p>\n"
   "Speechless?\n"
-  "<wait 150>Come on, whats my name?\n"
+  "<wait 150>Come on, what's my name?\n"
   "<wait 150>Hit me with your best shot!\n"
   "<k>\n";
 
