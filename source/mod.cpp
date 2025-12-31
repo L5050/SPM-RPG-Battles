@@ -357,6 +357,9 @@ static const char * getNpcName(s32 tribeId) {
     case 99:
       return "Bald Cleft";
     break;
+    case 108:
+      return "Swooper";
+    break;
     case 20:
       return "Paratroopa";
     break;
@@ -1887,6 +1890,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 99;
       break;
+      case 108: // Swooper
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = false;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 108;
+        rpgTribeID[1] = 108;
+        rpgTribeID[2] = 108;
+      break;
       case 440: // Cherbil
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
@@ -1966,6 +1977,7 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[9].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[410].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[67].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[70].unkDefinitionTable = turnBasedCombatOverride;
   }
 
   static void deleteUnderchompTextures() {
@@ -2244,6 +2256,12 @@ bool IsNpcActive(s32 index) {
   s32 setMaxBP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     *maxBp = args[0];
+    return 2;
+  }
+
+  s32 getCurrentCombatStatus(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], rpgInProgress);
     return 2;
   }
 

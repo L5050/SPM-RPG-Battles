@@ -13,6 +13,7 @@
 #include "met.h"
 #include "oChunks.h"
 #include "cherbil.h"
+#include "barabara.h"
 #include "fracktail.h"
 #include "kamek.h"
 
@@ -121,6 +122,22 @@ NPCTribeAnimDef animsParaKuribo[] = {
     {2, "A_1"},
     {3, "T_1"},
     {4, "D_1"},
+    {7, "W_1a"},
+    {6, "D_1"},
+    {10, "Z_1"},
+    {11, "Z_1"},
+    {14, "N_1"},
+    {-1, nullptr}
+  };
+
+  NPCTribeAnimDef animsBarabara[] = {
+    {0, "S_1"},
+    {1, "W_1"},
+    {2, "R_1"},
+    {3, "T_1"},
+    {4, "D_1"},
+    {5, "A_1"},
+    {6, "A_2"},
     {7, "W_1a"},
     {6, "D_1"},
     {10, "Z_1"},
@@ -317,6 +334,13 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 tribeId = getRpgTribeID(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
     
+    if (tribeId == 529)
+    {
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], 0);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 0);
+    return 2;
+    }
+
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::npcdrv::npcTribes[tribeId].catchCardItemId);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], spm::mario_pouch::pouchGetCardCount(spm::npcdrv::npcTribes[tribeId].catchCardItemId));
     if (firstRun == false) {}
@@ -510,6 +534,45 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
       return 2;
     }
+    comparison = "mi2_06";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi2_09";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -190.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi2_10";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -178.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi3_03";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = 110.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
     return 2;
   }
 
@@ -671,6 +734,8 @@ EVT_END()
     npcDataTable[15] = {7, animsParaKuribo, 25, para_koopa_attack, nullptr, nullptr, nullptr, nullptr}; // Paragoomba
     kamek_main();
     npcDataTable[16] = {63, _animsKMK, 0, kamek_attack, nullptr, kamek_death, kamek_onspawn, nullptr}; // Kamek
+    barabara_main();
+    npcDataTable[17] = {108, animsBarabara, 10, barabara_attack, nullptr, nullptr, nullptr, nullptr}; // Swooper
   }
 
 }

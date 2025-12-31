@@ -228,6 +228,26 @@ EVT_BEGIN(mi1_09_patch)
   RUN_EVT(kamek_evt)
 RETURN_FROM_CALL()
 
+EVT_BEGIN(mi_spike_damage)
+  WAIT_MSEC(25000)
+  USER_FUNC(getCurrentCombatStatus, LW(0))
+  IF_EQUAL(LW(0), 1)
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon_character, PTR("SFX_P_V_MARIO_DAMEGE1"), PTR("SFX_P_V_PEACH_DAMEGE1"), PTR("SFX_P_V_KOOPA_DAMEGE1"), PTR("SFX_P_V_LUIGI_DAMEGE1"))
+    USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(0), LW(1), LW(2))
+    USER_FUNC(displayDamage, LW(0), LW(1), LW(2), 99)
+    WAIT_MSEC(1000)
+    USER_FUNC(spm::evt_seq::evt_seq_set_seq, 4, 0, 0)
+  END_IF()
+RETURN()
+EVT_END()
+
+EVT_BEGIN(mi_spike_patch)
+  USER_FUNC(spm::evt_mario::evt_mario_key_on)
+  USER_FUNC(start_boss_fight, 99)
+  USER_FUNC(spm::evt_snd::evt_snd_bgmon, 0, PTR("BGM_EVT_STG7_RPG1"))
+  RUN_EVT(mi_spike_damage)
+RETURN_FROM_CALL()
+
 void mi1_08_main()
 {
   spm::map_data::MapData * mi1_08_md = spm::map_data::mapDataPtr("mi1_08");
@@ -236,6 +256,10 @@ void mi1_08_main()
   spm::map_data::MapData * mi1_09_md = spm::map_data::mapDataPtr("mi1_09");
   spm::evtmgr::EvtScriptCode* mi1_09_init_evt = mi1_09_md->initScript;
   evtpatch::hookEvtReplace(mi1_09_init_evt, 19, (spm::evtmgr::EvtScriptCode*)mi1_09_patch);
+  spm::map_data::MapData * mi2_06_md = spm::map_data::mapDataPtr("mi2_06");
+  spm::evtmgr::EvtScriptCode* mi2_06_init_evt = mi2_06_md->initScript;
+  spm::evtmgr::EvtScriptCode* mi2_06_spike = getInstructionEvtArg(mi2_06_init_evt, 11, 5);
+  evtpatch::hookEvtReplaceBlock(mi2_06_spike, 81, (spm::evtmgr::EvtScriptCode*)mi_spike_patch, 85);
 }
 
 }
