@@ -94,31 +94,31 @@ namespace mod {
   EVT_END()
   
   EVT_BEGIN(kamek_death)
-    IF_EQUAL(UW(0), 1)
-        USER_FUNC(spm::evt_npc::evt_npc_set_anim, PTR("npc2"), 4, 1)
+    //IF_EQUAL(UW(0), 1)
+        USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(15), 4, 1)
         BROTHER_EVT_ID(LW(10))
           SET(LW(9), FLOAT(0.0))
           DO(0)
           ADDF(LW(9), FLOAT(9.0))
-          USER_FUNC(spm::evt_npc::evt_npc_rotate, PTR("npc2"), EVT_NULLPTR, LW(9), EVT_NULLPTR)
+          USER_FUNC(spm::evt_npc::evt_npc_rotate, LW(15), EVT_NULLPTR, LW(9), EVT_NULLPTR)
           WAIT_FRM(1)
           WHILE()
         END_BROTHER()
         WAIT_MSEC(1000)
         DELETE_EVT(LW(10))
-        USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc2"), LW(5), LW(6), LW(7))
+        USER_FUNC(spm::evt_npc::evt_npc_get_position, LW(15), LW(5), LW(6), LW(7))
         IF_EQUAL(LF(2), 0)
           USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 0, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
           USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
         ELSE()
           USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 13, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
         END_IF()
-        USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("npc2"))
-        USER_FUNC(npc_change_name, PTR("npc2"), PTR("deadNPC"))
-        USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj2"))
-        USER_FUNC(spm::evt_mobj::evt_mobj_delete, PTR("mobj2"))
+        USER_FUNC(spm::evt_npc::evt_npc_delete, LW(15))
+        USER_FUNC(npc_change_name, LW(15), PTR("deadNPC"))
+        USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, LW(14))
+        USER_FUNC(spm::evt_mobj::evt_mobj_delete, LW(14))
         RUN_CHILD_EVT(addLuckyStart)
-    END_IF()
+    //END_IF()
   RETURN()
   EVT_END()
 
@@ -150,8 +150,10 @@ namespace mod {
       ADD(LW(1), 1)
     END_IF()
     USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 15, LW(0))
-    IF_SMALL(LW(0), 2)
+    IF_SMALL(LW(0), 3)
       ADD(LW(1), 1)
+    ELSE()
+      USER_FUNC(rpg_set_dialogue, PTR(btl_kamek_dialogue_2))
     END_IF()
     IF_EQUAL(LW(1), 3)
       ADD(LW(0), 1)
@@ -225,7 +227,6 @@ namespace mod {
 
   EVT_BEGIN(kamek_attack)
     SET(LW(0), 0)
-    SET(LW(4), 0)
     INLINE_EVT()
       USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, UW(1), EVT_NULLPTR, UW(3), UW(1), EVT_NULLPTR, 200, 1000, 11)
     END_INLINE()
@@ -296,7 +297,6 @@ namespace mod {
       IF_NOT_FLAG(LW(1), 0x3)
         IF_NOT_FLAG(LW(1), 0x8000)
           USER_FUNC(spm::an2_08::evt_rpg_status_remove, 1, 0, 0x3)
-          USER_FUNC(spm::an2_08::evt_rpg_status_remove, 0, 0, 0x1)
           USER_FUNC(spm::evt_npc::evt_npc_set_animpose_disp_callback, PTR("npc1"), PTR(spm::mi4::mi4MimiHolographicEffect), 0)
           USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, 0, -2, 0, EVT_NULLPTR)
         END_IF()
@@ -305,7 +305,6 @@ namespace mod {
       IF_NOT_FLAG(LW(1), 0x3)
         IF_NOT_FLAG(LW(1), 0x8000)
           USER_FUNC(spm::an2_08::evt_rpg_status_remove, 1, 2, 0x3)
-          USER_FUNC(spm::an2_08::evt_rpg_status_remove, 0, 2, 0x1)
           USER_FUNC(spm::evt_npc::evt_npc_set_animpose_disp_callback, PTR("npc3"), PTR(spm::mi4::mi4MimiHolographicEffect), 0)
           USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, 2, -2, 0, EVT_NULLPTR)
         END_IF()
@@ -321,6 +320,7 @@ namespace mod {
   LBL(5)
     CHK_EVT(LW(4), LW(0))
     IF_EQUAL(LW(0), 0)
+      SET(LW(0), 0)
       RETURN()
     END_IF()
     WAIT_FRM(1)
@@ -329,8 +329,8 @@ namespace mod {
 
   void kamek_main()
   {
-    npcTribes[63].maxHp = 30;
-    npcTribes[63].attackStrength = 5;
+    npcTribes[63].maxHp = 35;
+    npcTribes[63].attackStrength = 4;
   }
 
 }
