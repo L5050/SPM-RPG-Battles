@@ -2288,7 +2288,7 @@ bool IsNpcActive(s32 index) {
   s32 osReportLW(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 lw = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-    wii::os::OSReport("%d\n", lw);
+    wii::os::OSReport("lw %d\n", lw);
     if (firstRun == false) {}
     return 2;
   }

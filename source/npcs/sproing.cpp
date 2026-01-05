@@ -148,7 +148,6 @@ namespace mod {
   USER_FUNC(evt_npc_set_anim, LW(15), 7, 1)
   USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_TEKUTAI_JUMP1"))
   USER_FUNC(evt_npc_jump_to, LW(15), LW(0), LW(1), LW(2), 75, FLOAT(500.0))
-  //USER_FUNC(evt_npc_walk_to, LW(15), LW(0), LW(1), LW(2), FLOAT(240.0), 0, 0, 0)
   USER_FUNC(evt_npc_set_anim, LW(15), 0, 1)
   USER_FUNC(ac_success_reset)
   LBL(5)

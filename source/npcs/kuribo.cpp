@@ -62,7 +62,7 @@ namespace mod {
           USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, LW(5), EVT_NULLPTR, LW(13), LW(5), EVT_NULLPTR, 200, 1000, 11)
         END_INLINE()
         USER_FUNC(evt_npc_set_anim, LW(15), 2, 1)
-        USER_FUNC(evt_npc_walk_to, LW(15), LW(5), 0, LW(7), FLOAT(140.0), 0, 0, 0)
+        USER_FUNC(evt_npc_walk_to, LW(15), LW(5), LW(7), FLOAT(0.0), FLOAT(140.0), 0, 0, 0)
         USER_FUNC(evt_npc_set_anim, LW(15), 11, 1)
         /* new superguard method
         INLINE_EVT()
@@ -146,7 +146,7 @@ namespace mod {
   USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 0, LW(0))
   USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 1, LW(1))
   USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 2, LW(2))
-  USER_FUNC(evt_npc_walk_to, LW(15), LW(0), LW(1), LW(2), FLOAT(240.0), 0, 0, 0)
+  USER_FUNC(evt_npc_walk_to, LW(15), LW(0), LW(2), FLOAT(0.0), FLOAT(240.0), 0, 0, 0)
   USER_FUNC(evt_npc_set_anim, LW(15), 0, 1)
   USER_FUNC(ac_success_reset)
   LBL(5)

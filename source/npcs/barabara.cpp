@@ -107,7 +107,6 @@ namespace mod {
       USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 0, LW(0))
       USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 1, LW(1))
       USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 2, LW(2))
-      //USER_FUNC(evt_npc_walk_to, LW(15), LW(0), LW(1), LW(2), FLOAT(240.0), 0, 0, 0)
       USER_FUNC(evt_npc_glide_to, LW(15), LW(0), LW(1), LW(2), 0, FLOAT(200.0), 0, 0, 0, 0)
       USER_FUNC(evt_npc_set_anim, LW(15), 0, 1)
       USER_FUNC(ac_success_reset)
