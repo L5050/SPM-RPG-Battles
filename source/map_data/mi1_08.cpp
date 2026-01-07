@@ -262,6 +262,7 @@ void mi1_08_main()
   spm::evtmgr::EvtScriptCode* mi2_06_init_evt = mi2_06_md->initScript;
   spm::evtmgr::EvtScriptCode* mi2_06_spike = getInstructionEvtArg(mi2_06_init_evt, 11, 5);
   evtpatch::hookEvtReplaceBlock(mi2_06_spike, 81, (spm::evtmgr::EvtScriptCode*)mi_spike_patch, 85);
+  return;
 }
 
 }

@@ -2255,7 +2255,7 @@ bool IsNpcActive(s32 index) {
 
   s32 setMaxBP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    *maxBp = args[0];
+    *maxBp = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     return 2;
   }
 
@@ -2267,7 +2267,7 @@ bool IsNpcActive(s32 index) {
 
   s32 addBP(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    *bp = *bp + args[0];
+    *bp = *bp + spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     return 2;
   }
 

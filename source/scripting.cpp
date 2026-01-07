@@ -71,6 +71,7 @@ const char * level_up = "<system><p>\n"
 
 const char levelOptions[] =
 "<select 0 -1 540 10>\n"
+"Level up ATK! (+1 ATK)\n"
 "Level up HP! (+5 max HP)\n"
 "Level up FP! (+5 max FP)\n"
 "Level up BP! (+3 max BP)";
@@ -85,6 +86,28 @@ const char * tippi_pacify_success = "<p>\n"
 "pacified!\n"
 "<k>\n"
 "<o>\n";
+
+const char * tutorial_peach = "<dq>\n"
+"<p>\n"
+"While Mario can use badge moves,\n"
+"Peach can use the power of the\n"
+"Pure Hearts to aid in battle!\n"
+"<k>\n"
+"<p>\n"
+"The red Pure Heart lets you\n"
+"use Power Refresh! Press the\n"
+"good panels to heal HP and FP!\n"
+"<k>\n"
+"<p>\n"
+"The orange Pure Heart lets you\n"
+"use Soulstopper, which consumes\n"
+"Cards to insta-kill enemies!\n"
+"<k>\n"
+"<p>\n"
+"Your stylish level must be\n"
+"\"Excellent\" in order to use\n"
+"these special moves.\n"
+"<k>\n";
 
 const char * tutorial = "<dq>\n"
 "<p>\n"
@@ -131,8 +154,7 @@ const char * tutorial = "<dq>\n"
 "<p>\n"
 "<scale 1.0>Enjoy!\n"
 "-Lily\n"
-"<k>\n"
-"<o>\n";
+"<k>\n";
 
 s32 mario_paper_on(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -562,16 +584,20 @@ EVT_BEGIN(levelUpScript)
   USER_FUNC(spm::evt_msg::evt_msg_continue)
   SWITCH(LW(0))
     CASE_EQUAL(0)
+      USER_FUNC(spm::evt_pouch::evt_pouch_get_attack, LW(1))
+      ADD(LW(1), 1)
+      USER_FUNC(spm::evt_pouch::evt_pouch_set_attack, LW(1))
+    CASE_EQUAL(1)
       USER_FUNC(spm::evt_pouch::evt_pouch_get_max_hp, LW(0))
       ADD(LW(0), 5)
       USER_FUNC(spm::evt_pouch::evt_pouch_set_max_hp, LW(0))
       USER_FUNC(spm::evt_pouch::evt_pouch_set_hp, LW(0))
-    CASE_EQUAL(1)
+    CASE_EQUAL(2)
       USER_FUNC(getMaxFP, LW(1))
       ADD(LW(1), 5)
       USER_FUNC(setMaxFP, LW(1))
       USER_FUNC(setFP, LW(1))
-    CASE_EQUAL(2)
+    CASE_EQUAL(3)
       USER_FUNC(getMaxBP, LW(1))
       ADD(LW(1), 3)
       USER_FUNC(setMaxBP, LW(1))
@@ -1916,7 +1942,8 @@ EVT_BEGIN(pixls)
                 SET(LW(10), UW(0))
                 USER_FUNC(spm::evt_npc::evt_npc_get_position, LW(15), LW(5), LW(6), LW(7))
                 USER_FUNC(spm::an2_08::evt_rpg_calc_damage_to_enemy, UW(0), 0, LW(10))
-                MUL(LW(10), 4)
+                ADD(LW(10), 1)
+                MUL(LW(10), 2)
                 USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(10), 0, LW(0))
                 USER_FUNC(displayDamage, LW(5), LW(6), LW(7), LW(10))
                 RUN_EVT(damageAnims)
@@ -3278,6 +3305,14 @@ IF_EQUAL(GSWF(1800), 0)
   USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
   USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(tutorial))
   SET(GSWF(1800), 1)
+END_IF()
+IF_EQUAL(GSWF(1804), 0)
+  USER_FUNC(spm::evt_pouch::evt_pouch_check_have_item, 0xd9, LW(2))
+  IF_EQUAL(LW(2), 1)
+    SET(GSWF(1804), 1)
+    USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+    USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(tutorial_peach))
+  END_IF()
 END_IF()
 USER_FUNC(ip::evt_pouch_check_badge_equipped, 3, LW(6))
 IF_EQUAL(LW(6), 1)

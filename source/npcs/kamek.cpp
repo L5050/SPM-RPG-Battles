@@ -329,7 +329,7 @@ namespace mod {
 
   void kamek_main()
   {
-    npcTribes[63].maxHp = 35;
+    npcTribes[63].maxHp = 55;
     npcTribes[63].attackStrength = 4;
   }
 

@@ -138,12 +138,12 @@ NPCTribeAnimDef animsDoopliss[] = {
   "<p>\n"
   "Long time no see, slick.\n"
   "<wait 150>I see you were tricked by\n"
-  "Mimi as well.\n"
+  "Mimi like everyone else was.\n"
   "<k>\n"
   "<p>\n"
-  "I must flee this place before she\n"
-  "traps me again, but I wouldn't be\n"
-  "against some trickery first...\n"
+  "I must leave this place soon...\n"
+  "<wait 150>but before I do that...\n"
+  "<wait 150>lets dance, slick!\n"
   "<k>\n";
 
   const char * doopliss_yup = "<p>\n"
@@ -154,12 +154,12 @@ NPCTribeAnimDef animsDoopliss[] = {
   "<p>\n"
   "Long time no see, slick.\n"
   "<wait 150>I see you were tricked by\n"
-  "Mimi as well.\n"
+  "Mimi like everyone else was.\n"
   "<k>\n"
   "<p>\n"
-  "I must flee this place before she\n"
-  "traps me again, but I wouldn't be\n"
-  "against some trickery first...\n"
+  "I must leave this place soon...\n"
+  "<wait 150>but before I do that...\n"
+  "<wait 150>lets dance, slick!\n"
   "<k>\n";
 
   const char * doopliss_death_feign_1 = "<p>\n"
@@ -565,7 +565,7 @@ EVT_DECLARE_USER_FUNC(fix_doopliss_being_annoying, 1)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
     USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(doopliss_transform_system))
     USER_FUNC(spm::an2_08::evt_rpg_status_remove, 0, 1, 0x8000)
-    USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, 1, -20, 0, LW(0))
+    USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, 1, -40, 0, LW(0))
     SET(LW(0), 0)
     USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, UW(1), EVT_NULLPTR, UW(3), UW(1), EVT_NULLPTR, 200, 500, 11)
     WAIT_FRM(4)
@@ -576,8 +576,8 @@ EVT_DECLARE_USER_FUNC(fix_doopliss_being_annoying, 1)
   {
     npcTribes[529].animDefs = animsDoopliss;
     npcTribes[529].animPoseName = "c_ranpel";
-    npcTribes[529].maxHp = 40;
-    npcTribes[529].killXp = 4500;
+    npcTribes[529].maxHp = 60;
+    npcTribes[529].killXp = 10500;
     npcTribes[529].attackStrength = 4;
     spm::map_data::MapData * mi3_03_md = spm::map_data::mapDataPtr("mi3_03");
     evtpatch::hookEvtReplace(mi3_03_md->initScript, 184, (spm::evtmgr::EvtScriptCode*)hampter_room_init);
