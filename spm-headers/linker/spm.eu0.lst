@@ -153,8 +153,14 @@
 805ae7e4:effsub_wp
 
 // fadedrv.c
+80065d60:fadeEntry
 800677f8:fadeIsFinish
+800678d0:fadeGetMapChangeInTransition
+800678dc:fadeGetMapChangeOutTransition
 800678e8:fadeSetMapChangeTransition
+800678fc:fadeGetFadeOutLength
+80067908:fadeGetFadeInLength
+80067914:fadeSetTransitionLengths
 // more
 805ae828:fadedrv_wp
 
@@ -837,7 +843,7 @@
 
 // seq_title.c
 8017b250:seq_titleMain
-8017bc4c:getNextDanMapName
+8017bc4c:getDanMapName
 // more
 
 // seq_game.c
@@ -855,7 +861,7 @@
 
 //seq_load_sub.c
 // text
-8017d1ac:loadMain
+8017d1ac:seq_load_sub_loadMain
 // data
 805ae0d0:seq_load_sub_wp
 

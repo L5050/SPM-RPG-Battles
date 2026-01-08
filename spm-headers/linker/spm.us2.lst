@@ -308,7 +308,7 @@
 80111708:evt_shop_set_defs
 8014CF5C:pouchAddItem
 8014D558:pouchCheckHaveItem
-8017B40C:getNextDanMapName
+8017B40C:getDanMapName
 80184398:pausewinEntry
 80184808:pausewinMoveTo
 80184858:pausewinAppear
@@ -974,4 +974,12 @@
 8056CAD0:seq_load_sub_wp
 8056CBB0:nandmgr_wp
 8023950C:spsndSFXOn
-8017C96C:loadMain
+8017C96C:seq_load_sub_loadMain
+
+// 2025-09-27
+80067758:fadeGetMapChangeInTransition
+80067764:fadeGetMapChangeOutTransition
+80067784:fadeGetFadeOutLength
+80067790:fadeGetFadeInLength
+8006779C:fadeSetTransitionLengths
+8056D228:fadedrv_wp
