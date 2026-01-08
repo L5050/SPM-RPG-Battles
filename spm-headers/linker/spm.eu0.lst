@@ -645,7 +645,7 @@
 80224804:func_80224804
 80224874:func_80224874
 80225380:func_80225380
-80c6a8e0:evt_npc_sammer_display_count
+1,1,24fe4:evt_npc_sammer_display_count
 // more
 
 // not sure where you want this
@@ -1416,14 +1416,14 @@
 
 // he1_01.c
 // data
-1,5,3aa88:tippi_tutorial_evt
+1,5,3aa88:he1_01_tippi_tutorial_evt
 // more
 
 // mi4.c
 1,1,cac4:mi4MimiHolographicEffect
 
 // ta3_02.c
-1,5,85b00:tree_block_trigger
+1,5,85b00:ta3_02_tree_block_trigger
 // more
 
 // ta4_01.c
@@ -1441,8 +1441,8 @@
 
 // bos_01.c 
 // data
-80c7e598:evt_bos_01_pure_heart_set_pos
-80c7e644:evt_bos_01_pure_heart_get_pos
+1,1,38c9c:evt_bos_01_pure_heart_set_pos
+1,1,38d48:evt_bos_01_pure_heart_get_pos
 
 // sp4_13.c
 // text
