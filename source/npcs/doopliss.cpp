@@ -286,7 +286,6 @@ EVT_DECLARE_USER_FUNC(fix_doopliss_being_annoying, 1)
       USER_FUNC(evt_npc_set_property, PTR("kansyu"), 9, PTR(kansyu_fwd))
       USER_FUNC(evt_npc_set_property, PTR("doopliss"), 14, PTR(animsDoopliss))
     END_IF()
-    //RUN_EVT(doopliss_cutscene)
   RETURN()
   EVT_END()
 

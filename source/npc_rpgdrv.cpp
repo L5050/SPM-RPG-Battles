@@ -15,6 +15,7 @@
 #include "cherbil.h"
 #include "barabara.h"
 #include "fracktail.h"
+#include "teresa.h"
 #include "kamek.h"
 
 #include <spm/rel/an.h>
@@ -102,6 +103,9 @@ NPCTribeAnimDef animsParaKuribo[] = {
     {-1, nullptr}
   };
 
+  NPC_RPG_Defense sinnoDefense = {0, 2, 0x0, 0};
+  NPC_RPG_Defense metDefense[] = {{0, 1, 0x0, 0}, {8, 99, 0x0, 0}};
+
   NPCTribeAnimDef animsOcta2[] = {
     {0, "S_1"},
     {1, "W_1"},
@@ -139,9 +143,21 @@ NPCTribeAnimDef animsParaKuribo[] = {
     {5, "A_1"},
     {6, "A_2"},
     {7, "W_1a"},
-    {6, "D_1"},
     {10, "Z_1"},
-    {11, "Z_1"},
+    {14, "N_1"},
+    {-1, nullptr}
+  };
+
+  NPCTribeAnimDef animsTeresa[] = {
+    {0, "S_1"},
+    {1, "W_1"},
+    {2, "R_1"},
+    {3, "T_1"},
+    {4, "D_1"},
+    {5, "A_1"},
+    {6, "A_2"},
+    {7, "W_1a"},
+    {10, "Z_1"},
     {14, "N_1"},
     {-1, nullptr}
   };
@@ -198,6 +214,18 @@ NPCTribeAnimDef animsParaKuribo[] = {
     }
     wii::os::OSReport("Invalid TribeId Loaded, loading goomba instead\n");
     return 0;
+  }
+
+  NPC_RPG_Defense * getNpcDefense(s32 tribeId)
+  {
+    for (s32 i = 0; i < NPC_TABLE_MAX; i++)
+    {
+      if (npcDataTable[i].tribeId == tribeId) {
+        return npcDataTable[i].defense;
+      }
+    }
+    wii::os::OSReport("Invalid TribeId Loaded, loading 0 defense instead\n");
+    return nullptr;
   }
 
 s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
@@ -589,6 +617,32 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     return 2;
   }
 
+  EVT_BEGIN(make_npc_transparent)
+    USER_FUNC(spm::evt_sub::evt_sub_intpl_msec_init, 11, 255, 0, LW(8))
+    DO(0)
+      USER_FUNC(spm::evt_sub::evt_sub_intpl_msec_get_value)
+      USER_FUNC(spm::evt_npc::evt_npc_set_color, LW(9), 255, 255, 255, LW(0))
+      WAIT_FRM(1)
+      IF_EQUAL(LW(1), 0)
+        DO_BREAK()
+      END_IF()
+    WHILE()
+    RETURN()
+  EVT_END()
+
+  EVT_BEGIN(make_npc_not_transparent)
+    USER_FUNC(spm::evt_sub::evt_sub_intpl_msec_init, 11, 0, 255, LW(8))
+    DO(0)
+      USER_FUNC(spm::evt_sub::evt_sub_intpl_msec_get_value)
+      USER_FUNC(spm::evt_npc::evt_npc_set_color, LW(9), 255, 255, 255, LW(0))
+      WAIT_FRM(1)
+      IF_EQUAL(LW(1), 0)
+        DO_BREAK()
+      END_IF()
+    WHILE()
+    RETURN()
+  EVT_END()
+
   EVT_BEGIN(increase_stylish)
     IF_SMALL(UW(6), 4)
       ADD(UW(6), 1)
@@ -706,36 +760,55 @@ EVT_END()
 
   void npc_rpgdrv_main()
   {
-    npcDataTable[0] = {0, animsKuribo, 10, kuribo_attack, nullptr, nullptr};
     kuribo_main();
-    npcDataTable[1] = {125, animsOcta2, 10, octa_attack, nullptr, nullptr};
+    npcDataTable[0] = {0, animsKuribo, 10, kuribo_attack, nullptr, nullptr};
+
     doopliss_main();
-    npcDataTable[2] = {529, getDooplissAnims(), 0, doopliss_attack, nullptr, doopliss_death}; // Doopliss
+    npcDataTable[1] = {125, animsOcta2, 10, octa_attack, nullptr, nullptr};
+
     koopa_main();
+    npcDataTable[2] = {529, getDooplissAnims(), 0, doopliss_attack, nullptr, doopliss_death}; // Doopliss
+
     npcDataTable[3] = {11, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Green Koopa Troopa
+
     sproing_main();
     npcDataTable[4] = {134, animsTecti, 50, sproing_oing_attack, nullptr, nullptr}; // Sproing-Oing
+
     npcDataTable[5] = {126, animsOctar, 10, octar_attack, nullptr, nullptr}; // Squig
+
     npcDataTable[6] = {20, getParaKoopaAnims(), 10, para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
+
     npcDataTable[7] = {14, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Red Koopa Troopa
+
     npcDataTable[8] = {22, getParaKoopaAnims(), 10, para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
+
     sinno_main();
-    npcDataTable[9] = {99, animsSinno, 10, sinno_attack, nullptr, nullptr}; // Bald Cleft
+    npcDataTable[9] = {99, animsSinno, 10, sinno_attack, nullptr, nullptr, nullptr, nullptr, &sinnoDefense}; // Bald Cleft 
+
     chunks_main();
     npcDataTable[10] = {270, getChunksAnims(), 0, chunks_attack, chunks_onhit, getChunksDeath(), chunks_on_spawn}; // O'Chunks
-    //npcDataTable[11] = {440, getCherbilAnims(), cherbil_attack, nullptr, nullptr, nullptr}; // Cherbil
-    npcDataTable[11] = {25, getMetAnims(), 20, met_attack, met_onhit, nullptr, met_onspawn}; // Buzzy Beetle
+    
     met_main();
+    npcDataTable[11] = {25, getMetAnims(), 20, met_attack, met_onhit, nullptr, met_onspawn, nullptr, metDefense}; // Buzzy Beetle
+
     fracktail_main();
     npcDataTable[12] = {313, getFracktailAnims(), 0, fracktail_attack, fracktail_onhit, fracktail_death, fracktail_on_spawn, fracktail_throw_script}; // Fracktail
+
     npcDataTable[13] = {450, animsFrackle, 50, frackle_attack, nullptr, nullptr, nullptr, frackle_throw_script}; // Frackle
+
     pukupuku_main();
     npcDataTable[14] = {89, getPukuAnims(), 25, pukupuku_attack, nullptr, nullptr, pukupuku_onspawn, nullptr}; // Cheep Cheep
+
     npcDataTable[15] = {7, animsParaKuribo, 25, para_koopa_attack, nullptr, nullptr, nullptr, nullptr}; // Paragoomba
+
     kamek_main();
     npcDataTable[16] = {63, _animsKMK, 0, kamek_attack, nullptr, kamek_death, kamek_onspawn, nullptr}; // Kamek
+
     barabara_main();
     npcDataTable[17] = {108, animsBarabara, 10, barabara_attack, nullptr, nullptr, nullptr, nullptr}; // Swooper
+
+    teresa_main();
+    npcDataTable[18] = {84, animsTeresa, 0, teresa_attack, nullptr, nullptr, teresa_onspawn, nullptr}; // Boo
   }
 
 }

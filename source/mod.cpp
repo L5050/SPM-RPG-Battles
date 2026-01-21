@@ -351,6 +351,9 @@ static const char * getNpcName(s32 tribeId) {
     case 25:
       return "Buzzy Beetle";
     break;
+    case 84:
+      return "Boo";
+    break;
     case 89:
       return "Cheep Cheep";
     break;
@@ -1721,10 +1724,34 @@ bool IsNpcActive(s32 index) {
   s32 new_evt_rpg_calc_damage_to_enemy(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-    s32 damageType = args[1];
+    s32 damageType = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
     s32 damage = spm::mario::marioCalcDamageToEnemy(damageType, rpgTribeID[index]);
+    NPC_RPG_Defense * defense = getNpcDefense(rpgTribeID[index]);
+    if (defense != nullptr)
+    {
+      if (defense->max > 0)
+      {
+        for (s32 i = 0; i < defense->max; i++)
+        {
+          if (damageType == defense[i].type)
+          {
+            damage -= defense[i].defense;
+          }
+        }
+      }
+      else
+      {
+        if (damageType == defense->type)
+        {
+          damage -= defense->defense;
+        }
+      }
+    }
+    if (damage < 0)
+    {
+      damage = 0;
+    }
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], damage);
-    if (firstRun == false) {}
     return 2;
   }
 
@@ -1874,6 +1901,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 63;
         rpgTribeID[2] = 99;
       break;
+      case 84: // Boo
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 84;
+        rpgTribeID[1] = 84;
+        rpgTribeID[2] = 84;
+      break;
       case 89: // Cheep Cheep
         rpgIsActive[0] = true;
         rpgIsActive[1] = false;
@@ -1978,6 +2013,7 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[410].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[67].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[70].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[110].unkDefinitionTable = turnBasedCombatOverride;
   }
 
   static void deleteUnderchompTextures() {
