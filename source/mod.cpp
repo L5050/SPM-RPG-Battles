@@ -2108,6 +2108,18 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
 
+  static void patchXP()
+  {
+    for (int i = 0; i < ITEM_ID_MAX; i++)
+    {
+      if (spm::item_data::itemDataTable[i].xpGain >= 2)
+      {
+        spm::item_data::itemDataTable[i].xpGain = spm::item_data::itemDataTable[i].xpGain / 2;
+      }
+    }
+    return;
+  }
+
   static void hookEvent() {
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage);
@@ -2601,6 +2613,7 @@ bool IsNpcActive(s32 index) {
     evtpatch::evtmgrExtensionInit();
     hookEvent();
     npc_rpgdrv_main();
+    patchXP();
     spm::map_data::MapData * he3_md = spm::map_data::mapDataPtr("he3_01");
     evtpatch::hookEvt(he3_md->initScript, 78, const_cast<spm::evtmgr::EvtScriptCode*>(gswPatch));
     evtpatch::hookEvtReplace(he3_md->initScript, 38, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
