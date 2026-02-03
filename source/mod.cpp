@@ -311,6 +311,7 @@ namespace mod {
   s32 ( * evt_mario_get_height)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   void( * msgUnLoad)(s32 slot);
   void( * rpg_screen_draw)();
+  void( * C_MTXPerspective)(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, f32 far);
   s32( * rpgHandleMenu)(s32, spm::an2_08::RpgMenuOption*);
   const char * ( * msgSearch)(const char * msgName);
   void( * pouchSetEnemiesDefeated)(s32 count);
@@ -2042,6 +2043,11 @@ bool IsNpcActive(s32 index) {
     return;
   }
 
+void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, f32 far)
+{
+  return wii::mtx::C_MTXPerspective(dest, fovY, aspect, near, 5000.0f);
+}
+  
   void new_rpg_screen_draw()
   {
     if (screenOn)
@@ -2122,8 +2128,10 @@ bool IsNpcActive(s32 index) {
 
   static void hookEvent() {
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
-    patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage);
+    patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage); 
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
+    //C_MTXPerspective = patch::hookFunction(wii::mtx::C_MTXPerspective, new_C_MTXPerspective);
+    //writeBranchLink(0x80057c50, 0x0, new_C_MTXPerspective);
     //evt_rpg_choice_handler = patch::hookFunction(spm::an2_08::evt_rpg_choice_handler, new_evt_rpg_choice_handler);
     evt_mario_get_height = patch::hookFunction(spm::evt_mario::evt_mario_get_height, new_evt_mario_get_height);
     patchWangSpecial();
