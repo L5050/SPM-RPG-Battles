@@ -65,7 +65,6 @@ namespace mod {
           WAIT_MSEC(500)
           USER_FUNC(evt_npc_set_anim, LW(15), 6, 1)
           WAIT_MSEC(500)
-          USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(3))
           USER_FUNC(check_guards, 3, 14, LW(11))
           IF_EQUAL(LW(11), 2)
             USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_COUNTER_REBOUND1"))
