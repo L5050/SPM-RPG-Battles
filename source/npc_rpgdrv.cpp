@@ -16,6 +16,7 @@
 #include "barabara.h"
 #include "fracktail.h"
 #include "teresa.h"
+#include "mimi.h"
 #include "kamek.h"
 
 #include <spm/rel/an.h>
@@ -809,6 +810,9 @@ EVT_END()
 
     teresa_main();
     npcDataTable[18] = {84, animsTeresa, 0, teresa_attack, nullptr, nullptr, teresa_onspawn, nullptr}; // Boo
+
+    mimi_main();
+    npcDataTable[19] = {280, getMimiAnims(), 0, mimi_attack, mimi_onhit, nullptr, mimi_onspawn, mimi_throw_script}; // Mimi
   }
 
 }

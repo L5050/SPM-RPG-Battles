@@ -407,6 +407,9 @@ static const char * getNpcName(s32 tribeId) {
     case 270:
       return "O'Chunks";
     break;
+    case 280:
+      return "Spider Mimi";
+    break;
     case 313:
       return "Fracktail";
     break;
@@ -1976,6 +1979,14 @@ bool IsNpcActive(s32 index) {
         rpgIsActive[2] = false;
         rpgTribeID[0] = 0;
         rpgTribeID[1] = 270;
+        rpgTribeID[2] = 0;
+      break;
+      case 280: // Mimi
+        rpgIsActive[0] = false;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = false;
+        rpgTribeID[0] = 0;
+        rpgTribeID[1] = 280;
         rpgTribeID[2] = 0;
       break;
       case 313: // Fracktail

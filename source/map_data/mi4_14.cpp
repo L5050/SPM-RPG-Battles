@@ -28,23 +28,18 @@ const char * peach = "peach";
 const char * tippi = "__guide__";
 const char * pixl = "__fairy__";
 
-const char * tippi_wait = "<p><fairy>\n"
-"Something isn't right.\n"
-"There must be something\n"
-"or someone hidden here.\n"
-"<k>\n";
-
 EVT_BEGIN(turtle)
+  USER_FUNC(start_boss_fight, 280)
   RETURN()
 EVT_END()
-
 
 void mi4_14_main()
 {
   spm::map_data::MapData * mi4_14_md = spm::map_data::mapDataPtr("mi4_14");
   spm::evtmgr::EvtScriptCode* mi4_14_init_evt = mi4_14_md->initScript;
   spm::evtmgr::EvtScriptCode* quiz = getInstructionEvtArg(mi4_14_init_evt, 154, 0);
-  evtpatch::hookEvtReplace(quiz, 448, (spm::evtmgr::EvtScriptCode*)turtle);
+  evtpatch::hookEvtReplace(quiz, 456, (spm::evtmgr::EvtScriptCode*)turtle);
+  evtpatch::hookEvtReplaceBlock(quiz, 449, (spm::evtmgr::EvtScriptCode*)insertNop, 453);
   return;
 }
 
