@@ -388,6 +388,7 @@
 800e57bc:evt_eff
 800e6148:evt_eff_softdelete
 800E6250:evt_eff_exclamation_question
+80c52738:evt_eff_sundale_support
 // more
 
 // evt_env.c
