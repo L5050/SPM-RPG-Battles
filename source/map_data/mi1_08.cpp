@@ -24,12 +24,12 @@ using namespace spm::evt_npc;
 
 namespace mod {
 
-const char * kamek = "kamek";
-const char * peach = "peach";
-const char * tippi = "__guide__";
-const char * pixl = "__fairy__";
+static const char * kamek = "kamek";
+static const char * peach = "peach";
+static const char * tippi = "__guide__";
+static const char * pixl = "__fairy__";
 
-NPCTribeAnimDef animsKMK[] = {
+static NPCTribeAnimDef animsKMK[] = {
   {0, "KMK_S_1"},
   {1, "KMK_W_1"},
   {2, "KMK_R_1"},
@@ -45,7 +45,7 @@ NPCTribeAnimDef animsKMK[] = {
   {-1, nullptr}
 };
 
-NPCTribeAnimDef animsPeach_KMK[] = {
+static NPCTribeAnimDef animsPeach_KMK[] = {
   {0, "S_1B"},
   {1, "W_1"},
   {2, "R_1"},
@@ -59,13 +59,13 @@ NPCTribeAnimDef animsPeach_KMK[] = {
   {-1, nullptr}
 };
 
-const char * tippi_wait = "<p><fairy>\n"
+static const char * tippi_wait = "<p><fairy>\n"
 "Something isn't right.\n"
 "There must be something\n"
 "or someone hidden here.\n"
 "<k>\n";
 
-const char * kamek_1 = "<p>\n"
+static const char * kamek_1 = "<p>\n"
 "Ah, Mario! Peach!<wait 250> \n"
 "Fancy meeting you here!<wait 250> \n"
 "King Bowser sends his regards. \n"
@@ -80,20 +80,19 @@ const char * kamek_1 = "<p>\n"
 "would love to see you again...\n"
 "<k>\n";
 
-const char * peach_1 = "<p>\n"
+static const char * peach_1 = "<p>\n"
 "If Bowser is alive... I wonder\n"
 "if he knows where Luigi is.\n"
 "<k>\n";
 
-const char * peach_2 = "<p>\n"
+static const char * peach_2 = "<p>\n"
 "Please, take us to him!\n"
 "<k>\n";
 
-const char * kamek_2 = "<p>\n"
+static const char * kamek_2 = "<p>\n"
 "Of course...\n"
 "<k>\n";
-
-const char * kamek_3 = "<p>\n"
+static const char * kamek_3 = "<p>\n"
 "Very well. We can do this\n"
 "the hard way.\n"
 "<k>\n"
@@ -101,10 +100,10 @@ const char * kamek_3 = "<p>\n"
 "<scale 1.4>ALL<wait 250> HAIL<wait 250> COUNT<wait 250> BLECK!\n"
 "<k>\n";
 
-const char * throw_silence = "<p><small>\n"
+static const char * throw_silence = "<p><small>\n"
 "... <wait 750> \n";
 
-const char * throw_2 = "<p>\n"
+static const char * throw_2 = "<p>\n"
 "Pardon me, Princess, but this\n"
 "wizard is not to be trusted.\n"
 "<k>\n";

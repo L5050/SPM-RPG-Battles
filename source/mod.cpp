@@ -57,6 +57,7 @@
 #include <msl/string.h>
 #include <msl/stdio.h>
 #include <spm/rel/an2_08.h>
+#include <spm/rel/aa1_01.h>
 #include <spm/rel/an.h>
 #include <spm/rel/sp4_13.h>
 #include <cstdio>
@@ -297,6 +298,33 @@ namespace mod {
     //seq_gameMainReal = spm::seqdef::seq_data[spm::seqdrv::SEQ_GAME].main;
     //spm::seqdef::seq_data[spm::seqdrv::SEQ_GAME].main = & seq_gameMainOverride;
   }
+
+    // Quickstart
+    const char quickstartOptions[] =
+        "<select 0 -1 260 20>\n"
+        "Start from 1-1\n"
+        "New Save";
+
+  const char * quickie_1 = "<scale 0.9><system><p>\n"
+  "Thank you to Sergoo and Nilyoshi\n"
+  "for contributing badge menu\n"
+  "assets and music to this mod!\n"
+  "<k>\n"
+  "<p>\n"
+  "Also thank you to Yme, JohnP55,\n"
+  "and Seeky for contributing to\n"
+  "the codebase!\n"
+  "<k>\n"
+  "<p>\n"
+  "As always, full credits are\n"
+  "available on the github repo!\n"
+  "<k>\n";
+
+  const char quickstartText[] =
+      "<system>"
+      "Do you want to quickstart or\n"
+      "create a new save file?\n"
+      "<o>";
 
   /*
       Various hooks
@@ -2126,6 +2154,37 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     return;
   }
 
+    // Yme is a good bunny
+    EVT_BEGIN(determine_quickstart)
+    USER_FUNC(evt_msg::evt_msg_print, 1, PTR(quickie_1), 0, 0)
+    USER_FUNC(evt_msg::evt_msg_print, 1, PTR(quickstartText), 0, 0)
+    USER_FUNC(evt_msg::evt_msg_select, 1, PTR(quickstartOptions))
+    USER_FUNC(evt_msg::evt_msg_continue)
+    SWITCH(LW(0))
+      CASE_EQUAL(0)
+        SET(GSW(0), 17)
+        SET(GSWF(2), 1)
+        SET(GSWF(9), 1)
+        SET(GSWF(12), 1)
+        SET(GSWF(386), 1)
+        SET(GSWF(387), 1)
+        SET(GSWF(392), 1)
+        SET(GSWF(393), 1)
+        SET(GSWF(394), 1)
+        SET(GSWF(395), 1)
+        SET(GSWF(396), 1)
+        SET(GSWF(397), 1)
+        SET(GSWF(398), 1)
+        SET(GSWF(399), 1) 
+        SET(GSWF(420), 1) 
+        SET(GSWF(431), 1)
+        USER_FUNC(spm::evt_pouch::evt_pouch_add_item, 50)
+        USER_FUNC(spm::evt_fade::evt_set_transition, 4, 3)
+        USER_FUNC(spm::evt_seq::evt_seq_set_seq, spm::seqdrv::SEQ_MAPCHANGE, PTR("he1_01"), PTR("doa1_l"))
+        RETURN()
+    END_SWITCH()
+    RETURN_FROM_CALL()
+
   static void hookEvent() {
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage); 
@@ -2143,7 +2202,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     //spsndBGMOn = patch::hookFunction(spm::spmario_snd::spsndBGMOn, new_spsndBGMOn);
 
     //spsndSFXOn = patch::hookFunction(spm::spmario_snd::spsndSFXOn, new_spsndSFXOn);
-      
+
     msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
 
     writeWord( & spm::pausewin::levelUpWindowMain, 0x0, 0x4e800020);
@@ -2629,6 +2688,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     evtpatch::hookEvtReplace(spm::item_event_data::getItemUseEvt(87), 9, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
     evtpatch::hookEvtReplace(spm::item_event_data::getItemUseEvt(87), 7, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
     evtpatch::hookEvtReplaceBlock(spm::item_event_data::getItemUseEvt(87), 2, const_cast<spm::evtmgr::EvtScriptCode*>(addNpcToItemScript), 10);
+    evtpatch::hookEvtReplace((spm::evtmgr::EvtScriptCode*)spm::aa1_01::aa1_01_mario_house_transition_evt, 10, (spm::evtmgr::EvtScriptCode*)determine_quickstart);
     fp = (s32 *)&spm::spmario::gp->gsw[1900];
     maxFp = (s32 *)&spm::spmario::gp->gsw[1904];
     bp = (s32 *)&spm::spmario::gp->gsw[1908];
