@@ -72,7 +72,7 @@ static FileEntry * pauseTplOverride(s32 filetype, const char * format, const cha
         ImageHeader * img = tpl->imageTable[def->imageId].image;
 
         // Verify user mods don't interfere
-        assertf(verifyImageProperties(img, def), "Unsupported pause.tpl edit to image %d",
+        SPM_ASSERT(verifyImageProperties(img, def), "Unsupported pause.tpl edit to image %d",
                 def->imageId);
 
         // Copy custom texture in
