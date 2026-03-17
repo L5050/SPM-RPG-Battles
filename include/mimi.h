@@ -28,6 +28,8 @@ EVT_DECLARE(mimi_attack)
 EVT_DECLARE(mimi_ruby_attack)
 EVT_DECLARE(mimi_onspawn)
 EVT_DECLARE(mimi_onhit) 
+EVT_DECLARE(mimi_ondeath) 
+EVT_DECLARE(power_jump_mimi) 
 EVT_DECLARE(mimi_throw_script)
 
 void mimi_main();

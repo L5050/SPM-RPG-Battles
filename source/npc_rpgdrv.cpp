@@ -106,6 +106,7 @@ NPCTribeAnimDef animsParaKuribo[] = {
 
   NPC_RPG_Defense sinnoDefense = {0, 2, 0x0, 0};
   NPC_RPG_Defense metDefense[] = {{0, 1, 0x0, 0}, {8, 99, 0x0, 0}};
+  NPC_RPG_Defense mimiDefense = {2, 1, 0x0, 0};
 
   NPCTribeAnimDef animsOcta2[] = {
     {0, "S_1"},
@@ -602,6 +603,16 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
       return 2;
     }
+    comparison = "mi4_14";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -100.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
     return 2;
   }
 
@@ -812,7 +823,7 @@ EVT_END()
     npcDataTable[18] = {84, animsTeresa, 0, teresa_attack, nullptr, nullptr, teresa_onspawn, nullptr}; // Boo
 
     mimi_main();
-    npcDataTable[19] = {280, getMimiAnims(), 0, mimi_attack, mimi_onhit, nullptr, mimi_onspawn, mimi_throw_script}; // Mimi
+    npcDataTable[19] = {280, getMimiAnims(), 0, mimi_attack, mimi_onhit, mimi_ondeath, mimi_onspawn, mimi_throw_script, &mimiDefense}; // Mimi
   }
 
 }

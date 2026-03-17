@@ -28,18 +28,32 @@ const char * peach = "peach";
 const char * tippi = "__guide__";
 const char * pixl = "__fairy__";
 
-EVT_BEGIN(turtle)
-  USER_FUNC(start_boss_fight, 280)
+EVT_BEGIN(endEvt)
   RETURN()
 EVT_END()
+
+EVT_BEGIN(turtle)
+  USER_FUNC(start_boss_fight, 280)
+  WAIT_MSEC(1000)
+RETURN_FROM_CALL()
+
+EVT_BEGIN(quiz_1)
+  SET(GSWF(1810), 1)
+RETURN_FROM_CALL()
+
+EVT_BEGIN(quiz_2)
+  SET(GSWF(1810), 0)
+RETURN_FROM_CALL()
 
 void mi4_14_main()
 {
   spm::map_data::MapData * mi4_14_md = spm::map_data::mapDataPtr("mi4_14");
   spm::evtmgr::EvtScriptCode* mi4_14_init_evt = mi4_14_md->initScript;
   spm::evtmgr::EvtScriptCode* quiz = getInstructionEvtArg(mi4_14_init_evt, 154, 0);
-  evtpatch::hookEvtReplace(quiz, 456, (spm::evtmgr::EvtScriptCode*)turtle);
-  evtpatch::hookEvtReplaceBlock(quiz, 449, (spm::evtmgr::EvtScriptCode*)insertNop, 453);
+  evtpatch::hookEvtReplace(quiz, 456, (spm::evtmgr::EvtScriptCode*)endEvt);
+  evtpatch::hookEvtReplaceBlock(quiz, 449, (spm::evtmgr::EvtScriptCode*)turtle, 453);
+  evtpatch::hookEvt(quiz, 269, (spm::evtmgr::EvtScriptCode*)quiz_1);
+  evtpatch::hookEvt(quiz, 259, (spm::evtmgr::EvtScriptCode*)quiz_2);
   return;
 }
 

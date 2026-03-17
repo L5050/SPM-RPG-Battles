@@ -238,6 +238,7 @@ namespace mod {
   bool succeededActionCommand = false;
   bool superGuard = false;
   bool isFrog = false;
+  bool is3dCam = false;
   u8 guardFrames = 0;
   u8 stylishFrames = 0;
   spm::npcdrv::NPCEntryUnkDef turnBasedCombatOverride[2];
@@ -337,6 +338,8 @@ namespace mod {
   s32( * evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
   s32( * evt_rpg_choice_handler)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   s32 ( * evt_mario_get_height)(spm::evtmgr::EvtEntry * entry, bool firstRun);
+  s32 ( * evt_cam3d_evt_zoom_in)(spm::evtmgr::EvtEntry * entry, bool firstRun);
+  s32 ( * evt_seq_set_seq)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   void( * msgUnLoad)(s32 slot);
   void( * rpg_screen_draw)();
   void( * C_MTXPerspective)(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, f32 far);
@@ -1765,19 +1768,32 @@ bool IsNpcActive(s32 index) {
       {
         for (s32 i = 0; i < defense->max; i++)
         {
-          if (damageType == defense[i].type)
+          if (damageType == defense[i].type && damageType != 0x2)
           {
             damage -= defense[i].defense;
+          }
+          if (0x2 == defense[i].type && damage > defense[i].defense)
+          {
+            damage = defense[i].defense;
           }
         }
       }
       else
       {
-        if (damageType == defense->type)
+        if (damageType == defense->type && damageType != 0x2)
         {
           damage -= defense->defense;
         }
+        if (0x2 == defense->type && damage > defense->defense)
+        {
+          damage = defense->defense;
+        }
+     
       }
+    }
+    if (spm::mario::marioGetPtr()->character == 1 && damage > 1)
+    {
+      damage -= 1;
     }
     if (damage < 0)
     {
@@ -1787,27 +1803,42 @@ bool IsNpcActive(s32 index) {
     return 2;
   }
 
-  s32 new_evt_rpg_calc_mario_damage(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    
+  s32 new_evt_rpg_calc_mario_damage(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+  {
+    (void)firstRun;
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+
     s32 attackStrength = spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].attackStrength;
-    if (attackStrength == 0) attackStrength = 1;
-    if ((spm::an2_08::rpgdrv_wp->statusEffects & 0x40U) != 0) {
-      if (0 < attackStrength) {
+    if (attackStrength == 0)
+      attackStrength = 1;
+    if ((spm::an2_08::rpgdrv_wp->statusEffects & 0x40U) != 0)
+    {
+      if (0 < attackStrength)
+      {
         attackStrength = attackStrength / 2;
       }
-      if (attackStrength == 0) {
+      if (attackStrength == 0)
+      {
         attackStrength = 1;
       }
     }
     wii::os::OSReport("%x\n", spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].flags);
-    if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].flags & 0x3) != 0) 
+    if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[evtEntry->uw[0]].flags & 0x3) != 0)
     {
-    attackStrength = attackStrength * 2;
+      attackStrength = attackStrength * 2;
+    }
+
+    if (spm::mario::marioGetPtr()->character == 1)
+    {
+      attackStrength -= 1;
+    }
+
+    if (attackStrength < 0)
+    {
+      attackStrength = 0;
     }
 
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], attackStrength);
-    if (firstRun == false) {}
     return 2;
   }
 
@@ -2151,6 +2182,21 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
       spm::evtmgr_cmd::evtSetFloat(entry, args[0], 0.0);
     }
     return 2;
+  } 
+
+  s32 new_evt_cam3d_evt_zoom_in(spm::evtmgr::EvtEntry * entry, bool firstRun)
+  {
+    if (is3dCam)
+    {
+      return 2;
+    }
+    return evt_cam3d_evt_zoom_in(entry, firstRun);
+  }
+
+  s32 new_evt_seq_set_seq(spm::evtmgr::EvtEntry * entry, bool firstRun)
+  {
+    is3dCam = false;
+    return evt_seq_set_seq(entry, firstRun);
   }
 
   static void patchXP()
@@ -2197,6 +2243,8 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     RETURN_FROM_CALL()
 
   static void hookEvent() {
+    evt_cam3d_evt_zoom_in = patch::hookFunction(spm::evt_cam::evt_cam3d_evt_zoom_in, new_evt_cam3d_evt_zoom_in);
+    evt_seq_set_seq = patch::hookFunction(spm::evt_seq::evt_seq_set_seq, new_evt_seq_set_seq);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage); 
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
@@ -2221,7 +2269,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     rpgHandleMenu = patch::hookFunction(spm::an2_08::rpgHandleMenu, patchTechniquesChars);
     writeBranchLink( & spm::an2_08::evt_rpg_npctribe_handle, 0x94, returnTribe);
     //writeBranchLink( & spm::an2_08::rpg_screen_draw, 0x2D8, setTextureIndex);
-    writeBranchLink( & spm::acdrv::acMain, 0x49C, setNewFloat);
+    //writeBranchLink( & spm::acdrv::acMain, 0x49C, setNewFloat);
     writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
     //writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x780, msgSearchPatch_1);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
@@ -2457,6 +2505,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     succeededActionCommand = false;
     bossFight = false;
     isFrog = false;
+    is3dCam = false;
     if (firstRun == false) {}
     if (evtEntry->flags == 0) {}
     return 2;
@@ -2501,6 +2550,13 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
   s32 check_slim(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], isFrog);
+    return 2;
+  }
+
+  s32 cam_3d_off_on(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    bool cam = (bool)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    is3dCam = cam;
     return 2;
   }
 

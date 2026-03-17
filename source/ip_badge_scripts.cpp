@@ -11,6 +11,7 @@
 #include "tplpatch.h"
 #include "oChunks.h"
 #include "fracktail.h"
+#include "mimi.h"
 
 #include <spm/system.h>
 #include <spm/acdrv.h>
@@ -55,7 +56,7 @@ using namespace mod;
 
 namespace ip {
 
-#define PB_OVERRIDE_COUNT 2
+#define PB_OVERRIDE_COUNT 3
 
 struct PowerBounceOverride
 {
@@ -71,6 +72,10 @@ PowerBounceOverride pbOverrides[PB_OVERRIDE_COUNT] = {
   {
     313,
     fracktail_pj_override
+  },
+  {
+    280,
+    power_jump_mimi
   }
 };
 
