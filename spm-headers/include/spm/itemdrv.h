@@ -98,7 +98,8 @@ UNKNOWN_FUNCTION(func_80079814)
 UNKNOWN_FUNCTION(func_80079df4)
 UNKNOWN_FUNCTION(func_8007a2e0)
 UNKNOWN_FUNCTION(func_8007a598)
-UNKNOWN_FUNCTION(func_8007a758)
+
+bool itemCollectPouchItem(ItemEntry *item);
 
 /*
     Handles most of the pickup behaviour for items (deletion, xp, switchNumber etc),
@@ -132,7 +133,7 @@ UNKNOWN_FUNCTION(func_8007d684)
 /*
     Sets the current animation of an item
 */
-void itemSetAnim(char * itemName,char * animName);
+void itemSetAnim(const char * itemName, const char * animName);
 
 UNKNOWN_FUNCTION(func_8007d868)
 

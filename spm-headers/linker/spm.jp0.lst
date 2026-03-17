@@ -305,7 +305,7 @@
 801112D8:evt_shop_set_defs
 8014CB04:pouchAddItem
 8014D100:pouchCheckHaveItem
-8017AF90:getNextDanMapName
+8017AF90:getDanMapName
 80183F1C:pausewinEntry
 8018438C:pausewinMoveTo
 801843DC:pausewinAppear
@@ -724,12 +724,10 @@
 8019B7F4:distABf
 801046AC:evt_npc_get_property
 8021BA28:ninjoe_bomb_calc_chance
-80D65BF0:tree_block_trigger
 801CA994:npcDamageMario
 805422F0:icondrv_wp
 80478188:evt_memcard_save
 8012A5BC:marioSetInvincibility
-80C56494:evt_npc_sammer_display_count
 800FBB60:evt_msg_select
 80104F44:evt_npc_get_axis_movement_unit
 800D4934:evt_sub_get_mapname
@@ -797,4 +795,12 @@
 805423F0:seq_load_sub_wp
 805424D0:nandmgr_wp
 80238A9C:spsndSFXOn
-8017C4F0:loadMain
+8017C4F0:seq_load_sub_loadMain
+
+// 2025-09-27
+800677B8:fadeGetMapChangeInTransition
+800677C4:fadeGetMapChangeOutTransition
+800677E4:fadeGetFadeOutLength
+800677F0:fadeGetFadeInLength
+800677FC:fadeSetTransitionLengths
+80542B48:fadedrv_wp

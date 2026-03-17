@@ -14,6 +14,7 @@
 #include <spm/icondrv.h>
 #include <spm/pausewin.h>
 #include <spm/wpadmgr.h>
+#include <spm/fontmgr.h>
 #include <msl/string.h>
 #include <msl/stdio.h>
 #include <wii/mtx.h>
@@ -76,6 +77,7 @@ enum BadgeSubmenuIdx
 {
     BADGE_BTN_ALL = 0,
     BADGE_BTN_EQUIPPED = 1,
+    BADGE_BTN_BP = 2,
     // This position is requied, if deleted then this menu is considered closed by the game
     BADGE_BTN_MAIN = 9,
     // No PausewinEntry
@@ -101,6 +103,18 @@ static void menuOpen();
 /*
     Returns the badge inventory slot for an index into the displayed list
 */
+
+static void bpDisp(PausewinEntry *entry)
+{
+  (void)entry;
+  char buf[32];
+  f32 x = (-200.0f - (spm::fontmgr::FontGetMessageWidth("BP:") / 2));
+  mod::Window::drawMessage("BP:", x, 0.0f, &colours::black, 1.0f);
+  msl::stdio::sprintf(buf, "%d/%d", *mod::bp, *mod::maxBp);
+  x = (-200.0f - (spm::fontmgr::FontGetMessageWidth(buf) / 2));
+  mod::Window::drawMessage(buf, x, -30.0f, &colours::black, 0.7f);
+}
+
 static s32 menuIdxToBadgeSlot(s32 idx)
 {
     if (work.equippedOnly)
@@ -524,6 +538,10 @@ static void menuOpen()
                       menuDisp, nullptr, nullptr),
         BADGE_BTN_MAIN
     );
+        initElement(
+            pausewinEntry(-260.0f, 10.0f, 122.0f, 80.0f, 1, PAUSETEX_NONE, 0, nullptr, nullptr,
+                          bpDisp, nullptr, nullptr),
+            BADGE_BTN_BP);
 
     // Select default button
     pausewin_pluswinWp->submenuSelectedButton = -1;

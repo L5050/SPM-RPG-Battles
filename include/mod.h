@@ -39,10 +39,10 @@ void _setFP(s32 count);
 s32 _getMaxFP();
 spm::icondrv::IconEntry *iconEntryAutoname(s32 iconId);
 EVT_DECLARE_USER_FUNC(setRpgTribeID, 2)
+EVT_DECLARE_USER_FUNC(setRpgActivity, 2)
 EVT_DECLARE_USER_FUNC(compareStrings, 3)
 EVT_DECLARE_USER_FUNC(mario_set_scale, 3)
 EVT_DECLARE_USER_FUNC(rpg_set_dialogue, 1)
-EVT_DECLARE_USER_FUNC(mario_chg_paper, 1)
 EVT_DECLARE_USER_FUNC(mario_reset_rotation, 0)
 EVT_DECLARE_USER_FUNC(get_rpg_name_by_id, 2)
 EVT_DECLARE_USER_FUNC(evt_npc_entry_autoname, 3)
@@ -52,10 +52,15 @@ EVT_DECLARE_USER_FUNC(msgSearchTribeToTattle, 2)
 EVT_DECLARE_USER_FUNC(evt_offscreen_set_type, 2)
 EVT_DECLARE_USER_FUNC(check_guards, 3)
 EVT_DECLARE_USER_FUNC(mario_get_hitbox_width, 1)
+EVT_DECLARE_USER_FUNC(getCurrentCombatStatus, 1)
 EVT_DECLARE_USER_FUNC(addNpcToItemEvent, 1)
 EVT_DECLARE_USER_FUNC(check_for_boss_fight, 1)
+EVT_DECLARE_USER_FUNC(check_slim, 1)
+EVT_DECLARE_USER_FUNC(slim_off_on, 1)
+EVT_DECLARE_USER_FUNC(cam_3d_off_on, 1)
 EVT_DECLARE_USER_FUNC(check_stylish, 2)
 EVT_DECLARE_USER_FUNC(npc_get_bounding_box, 5)
+EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
 
 EVT_DECLARE(evt_memcard_save)
 

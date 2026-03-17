@@ -47,6 +47,7 @@
 80032f84:msgWindow_Add
 //data
 80405bd8:msgdrv_msgIcon
+805adf18:msgdrv_msgw
 // more
 
 // offscreendrv.c 
@@ -131,6 +132,8 @@
 8005af04:dispEntry
 // more
 
+800b3014:effHappyFlower
+
 // effdrv.c
 800616e4:effEntryType
 800618b0:effMain
@@ -151,8 +154,14 @@
 805ae7e4:effsub_wp
 
 // fadedrv.c
+80065d60:fadeEntry
 800677f8:fadeIsFinish
+800678d0:fadeGetMapChangeInTransition
+800678dc:fadeGetMapChangeOutTransition
 800678e8:fadeSetMapChangeTransition
+800678fc:fadeGetFadeOutLength
+80067908:fadeGetFadeInLength
+80067914:fadeSetTransitionLengths
 // more
 805ae828:fadedrv_wp
 
@@ -192,7 +201,10 @@
 
 // itemdrv.c
 80077660:itemGetWork
+80077CD8:itemMain
 80078b3c:itemEntry
+800793e4:itemNameToPtr
+8007a758:itemCollectPouchItem
 8007bccc:itemTypeNameToId
 8007d8b4:itemCheckForId
 // more
@@ -376,6 +388,7 @@
 800e57bc:evt_eff
 800e6148:evt_eff_softdelete
 800E6250:evt_eff_exclamation_question
+1,1,ce3c:evt_eff_sundale_support
 // more
 
 // evt_env.c
@@ -429,6 +442,7 @@
 
 // evt_guide.c
 800ea87c:evt_guide_flag2_onoff
+800ea908:evt_guide_flag0_onoff
 800ea984:evt_guide_check_flag0
 800eaa88:evt_guide_get_can_search
 // more
@@ -643,7 +657,7 @@
 80224804:func_80224804
 80224874:func_80224874
 80225380:func_80225380
-80c6a8e0:evt_npc_sammer_display_count
+1,1,24fe4:evt_npc_sammer_display_count
 // more
 
 // not sure where you want this
@@ -715,6 +729,7 @@
 801266e4:marioChgPose
 80126940:marioChgPaper
 80126aac:marioPaperOn
+80126b88:marioPaperOff
 80126d48:marioGetScreenPos
 8012823c:marioEffectFlagOn
 80128360:marioEffectFlagOff
@@ -744,8 +759,6 @@
 // more
 
 // mario_pouch.c
-8014ef98:pouchGetCharInfo
-8014f080:pouchGetPixlInfo
 // text
 8014c088:pouchGetPtr
 8014d1bc:pouchSetLevel
@@ -768,6 +781,10 @@
 8014dbf4:pouchCheckHaveItem
 8014df4c:pouchRemoveItem
 8014eb68:pouchRemoveShopItem
+8014ef98:pouchGetCharInfo
+8014f080:pouchGetPixlInfo
+8014F018:pouchMakeCharNotSelectable
+8014F154:pouchMakePixlNotSelectable
 8014f31c:pouchGetCurPixl
 8014f7c8:pouchGetCardCount
 8014f978:pouchSetEnemiesDefeated
@@ -834,7 +851,7 @@
 
 // seq_title.c
 8017b250:seq_titleMain
-8017bc4c:getNextDanMapName
+8017bc4c:getDanMapName
 // more
 
 // seq_game.c
@@ -852,7 +869,7 @@
 
 //seq_load_sub.c
 // text
-8017d1ac:loadMain
+8017d1ac:seq_load_sub_loadMain
 // data
 805ae0d0:seq_load_sub_wp
 
@@ -1256,6 +1273,7 @@
 8027a7e8:PSMTXTransApply
 8027a834:PSMTXScale
 8027a85c:PSMTXScaleApply
+8027aec0:C_MTXPerspective
 8027afac:C_MTXOrtho
 8027b4fc:PSVECSquareDistance
 // more
@@ -1413,14 +1431,14 @@
 
 // he1_01.c
 // data
-1,5,3aa88:tippi_tutorial_evt
+1,5,3aa88:he1_01_tippi_tutorial_evt
 // more
 
 // mi4.c
 1,1,cac4:mi4MimiHolographicEffect
 
 // ta3_02.c
-1,5,85b00:tree_block_trigger
+1,5,85b00:ta3_02_tree_block_trigger
 // more
 
 // ta4_01.c
@@ -1438,8 +1456,8 @@
 
 // bos_01.c 
 // data
-80c7e598:evt_bos_01_pure_heart_set_pos
-80c7e644:evt_bos_01_pure_heart_get_pos
+1,1,38c9c:evt_bos_01_pure_heart_set_pos
+1,1,38d48:evt_bos_01_pure_heart_get_pos
 
 // sp4_13.c
 // text

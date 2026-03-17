@@ -43,9 +43,17 @@
 using namespace spm::npcdrv;
 using namespace spm::evtmgr;
 
-#define NPC_TABLE_MAX 16
+#define NPC_TABLE_MAX 20
 
 namespace mod {
+
+typedef struct
+{
+ u8 type;
+ u8 defense;
+ u16 flags;
+ u32 max;
+} NPC_RPG_Defense;
 
 typedef struct
 {
@@ -57,6 +65,7 @@ typedef struct
   const EvtScriptCode* deathScript;
   const EvtScriptCode* onSpawnScript = nullptr;
   const EvtScriptCode* onThrowScript = nullptr;
+  NPC_RPG_Defense * defense = nullptr;
 } npc_rpg_data;
 
 extern NPCTribeAnimDef animsKuribo[];
@@ -81,7 +90,10 @@ EVT_DECLARE(doopliss_death)
 EVT_DECLARE(superguard_stylish)
 EVT_DECLARE(increase_stylish)
 EVT_DECLARE(npc_charge)
+EVT_DECLARE(make_npc_transparent)
+EVT_DECLARE(make_npc_not_transparent)
 
+NPC_RPG_Defense * getNpcDefense(s32 tribeId);
 void npc_rpgdrv_main();
 
 }

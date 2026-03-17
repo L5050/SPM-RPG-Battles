@@ -75,7 +75,7 @@ namespace mod::tplpatch
   // These patches are meant to allocate the custom TPL to memory, make it accessible at any time, and help make the custom icons display properly.
   void (*iconMainReal)();
   void (*iconEntryReal)(const char *name, s32 iconId);
-  void (*iconGXReal)(wii::mtx::Mtx34 *mtx, icondrv::IconEntry *icon);
+  void (*iconGXReal)(wii::mtx::Mtx34 mtx, icondrv::IconEntry *icon);
   static void iconFuncPatch()
   {
     iconMainReal = patch::hookFunction(icondrv::iconMain,
@@ -114,7 +114,7 @@ namespace mod::tplpatch
                                         });
 
     iconGXReal = patch::hookFunction(icondrv::iconGX,
-                                     [](wii::mtx::Mtx34 *mtx, icondrv::IconEntry *icon)
+                                     [](wii::mtx::Mtx34 mtx, icondrv::IconEntry *icon)
                                      {
                                        if (icon->iconId >= TPLPATCH_ICON_REDIRECT)
                                        {

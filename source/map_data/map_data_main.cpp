@@ -5,8 +5,9 @@
 #include "mod.h"
 #include "patch.h"
 #include "evtpatch.h"
-#include "map_data/mi1_08.h"
 #include "map_data/map_data_main.h"
+#include "map_data/mi1_08.h"
+#include "map_data/mi4_14.h"
 #include "npc_rpgdrv.h"
 
 #include <patch.h>
@@ -21,6 +22,7 @@ namespace mod {
 void map_data_main()
 {
   mi1_08_main();
+  mi4_14_main();
 }
 
 }

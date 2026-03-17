@@ -36,7 +36,7 @@ public:
     }
 
     T pop() {
-        assert(!isEmpty(), "ERROR: Tried to pop an empty stack !");
+        SPM_ASSERT(!isEmpty(), "ERROR: Tried to pop an empty stack !");
         StackNode<T>* curHead = mHead;
         T elem = mHead->mElement;
         mHead = mHead->mPrev;
@@ -47,7 +47,7 @@ public:
     T peek(s32 level = 0) {
         StackNode<T>* node = mHead;
         for (s32 i = 0; i < level; i++) {
-            assert(!isEmpty(), "ERROR: Tried to peek at an empty stack !");
+            SPM_ASSERT(!isEmpty(), "ERROR: Tried to peek at an empty stack !");
             node = node->mPrev;
         }
         return node->mElement;

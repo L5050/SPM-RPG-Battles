@@ -308,7 +308,7 @@
 80111708:evt_shop_set_defs
 8014CF5C:pouchAddItem
 8014D558:pouchCheckHaveItem
-8017B40C:getNextDanMapName
+8017B40C:getDanMapName
 80184398:pausewinEntry
 80184808:pausewinMoveTo
 80184858:pausewinAppear
@@ -687,7 +687,6 @@
 80109770:oChunksNpcDispCb
 8014F2DC:pouchSetEnemiesDefeated
 803C8DB8:acdrv_acDefs
-80C3C988:evt_bos_01_pure_heart_set_pos
 80072AD0:iconDelete
 80072B64:iconDisp
 8007469C:iconFlagOn
@@ -717,6 +716,19 @@
 800E90A0:evt_frame_evt_entry
 800E9180:evt_frame_set_rotation
 8003535C:offscreenSetEntryType
+800B31B0:effHappyFlower
+800E7640:evt_fairy_set_pos
+800E8978:evt_frame_delete
+8010cadc:evt_seq_mapchange
+800E7360:evt_set_transition
+80126314:marioChgPaper
+8012671C:marioGetScreenPos
+8012655C:marioPaperOff
+80126480:marioPaperOn
+80109450:peachNpcDispCb
+1,1,cb58:evt_eff_sundale_support
+1,1,24c58:evt_npc_sammer_display_count
+1,1,3896c:evt_bos_01_pure_heart_set_pos
 
 // new to rld3 v1
 8025C950:strcat
@@ -772,7 +784,6 @@
 804A4700:evt_memcard_save
 800F00D0:evt_mario_face_npc
 8012A9EC:marioSetInvincibility
-80C28C74:evt_npc_sammer_display_count
 800FBF90:evt_msg_select
 80105374:evt_npc_get_axis_movement_unit
 800D48A8:evt_sub_get_mapname
@@ -964,4 +975,21 @@
 8056CAD0:seq_load_sub_wp
 8056CBB0:nandmgr_wp
 8023950C:spsndSFXOn
-8017C96C:loadMain
+8017C96C:seq_load_sub_loadMain
+
+// 2025-09-27
+80067758:fadeGetMapChangeInTransition
+80067764:fadeGetMapChangeOutTransition
+80067784:fadeGetFadeOutLength
+80067790:fadeGetFadeInLength
+8006779C:fadeSetTransitionLengths
+8056D228:fadedrv_wp
+
+// New to SPM door rando 
+8014EAB8:pouchMakePixlNotSelectable
+8014E97C:pouchMakeCharNotSelectable
+800EAA5C:evt_guide_flag0_onoff
+8056C918:msgdrv_msgw
+8007926C:itemNameToPtr
+8007A5E0:itemCollectPouchItem
+80077B60:itemMain

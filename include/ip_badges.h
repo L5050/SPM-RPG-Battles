@@ -14,7 +14,7 @@ namespace ip {
 
 extern wii::tpl::TPLHeader* badgeIconTpl;
   
-#define NUM_BADGES 3
+#define NUM_BADGES 4
 
 enum BadgeId : s8
 {

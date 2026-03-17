@@ -26,5 +26,6 @@ using namespace spm::evtmgr;
 namespace mod {
 
 EVT_DECLARE(sinno_attack)
+void sinno_main();
 
 }

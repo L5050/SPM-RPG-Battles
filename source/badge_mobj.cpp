@@ -59,7 +59,7 @@ using namespace spm;
 namespace mod {
 
   // Patch agb async, maybe this does something
-  const char *customModels[] = {"MOBJ_w_sui",
+  const char *customModels[] = {"MOBJ_w_sui", "MOBJ_L_sui",
                                 "terminator"};
   u32 (*animGroupBaseAsyncReal)(const char *animPoseName, s32 param_2, void *readDoneCb);
   static void agbAsyncPatch()
@@ -96,7 +96,7 @@ namespace mod {
         "MOBJ_p_b_sui",
         "MOBJ_p_r_sui",
         "MOBJ_w_sui",
-        "MOBJ_01_sui",
+        "MOBJ_L_sui",
         "MOBJ_02_sui",
         "MOBJ_03_sui",
         "MOBJ_04_sui",
@@ -247,8 +247,6 @@ s32 evt_mobj_sui_new(evtmgr::EvtEntry *evtEntry, bool isFirstCall)
             mobjdrv::mobjDelete(name);
         return 2;
     }
-
-EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
 
   const char * sleepy_stomp_text = "<system><p>\n"
   "You got Sleepy Stomp!\n"

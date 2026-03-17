@@ -13,7 +13,11 @@
 #include "met.h"
 #include "oChunks.h"
 #include "cherbil.h"
+#include "barabara.h"
 #include "fracktail.h"
+#include "teresa.h"
+#include "mimi.h"
+#include "kamek.h"
 
 #include <spm/rel/an.h>
 #include <spm/animdrv.h>
@@ -100,6 +104,10 @@ NPCTribeAnimDef animsParaKuribo[] = {
     {-1, nullptr}
   };
 
+  NPC_RPG_Defense sinnoDefense = {0, 2, 0x0, 0};
+  NPC_RPG_Defense metDefense[] = {{0, 1, 0x0, 0}, {8, 99, 0x0, 0}};
+  NPC_RPG_Defense mimiDefense = {2, 1, 0x0, 0};
+
   NPCTribeAnimDef animsOcta2[] = {
     {0, "S_1"},
     {1, "W_1"},
@@ -128,6 +136,34 @@ NPCTribeAnimDef animsParaKuribo[] = {
     {-1, nullptr}
   };
 
+  NPCTribeAnimDef animsBarabara[] = {
+    {0, "S_1"},
+    {1, "W_1"},
+    {2, "R_1"},
+    {3, "T_1"},
+    {4, "D_1"},
+    {5, "A_1"},
+    {6, "A_2"},
+    {7, "W_1a"},
+    {10, "Z_1"},
+    {14, "N_1"},
+    {-1, nullptr}
+  };
+
+  NPCTribeAnimDef animsTeresa[] = {
+    {0, "S_1"},
+    {1, "W_1"},
+    {2, "R_1"},
+    {3, "T_1"},
+    {4, "D_1"},
+    {5, "A_1"},
+    {6, "A_2"},
+    {7, "W_1a"},
+    {10, "Z_1"},
+    {14, "N_1"},
+    {-1, nullptr}
+  };
+
   NPCTribeAnimDef animsTecti[] = {
     {0, "S_1"},
     {1, "J_1"},
@@ -148,6 +184,22 @@ NPCTribeAnimDef animsParaKuribo[] = {
     {-1, nullptr}
   };
 
+  NPCTribeAnimDef _animsKMK[] = {
+  {0, "KMK_S_1"},
+  {1, "KMK_W_1"},
+  {2, "KMK_R_1"},
+  {3, "KMK_T_1"},
+  {4, "KMK_D_1"},
+  {5, "KMK_S_3"},
+  {6, "KMK_A_1A"},
+  {7, "KMK_A_1B"},
+  {8, "KMK_A_1C"},
+  {9, "KMK_A_1D"},
+  {10, "KMK_A_1E"},
+  {14, "KMK_N_1"},
+  {-1, nullptr}
+};
+
   NPCTribeAnimDef animsCharge[] = {
     {0, "Z_1"},
     {1, "S_1"},
@@ -164,6 +216,18 @@ NPCTribeAnimDef animsParaKuribo[] = {
     }
     wii::os::OSReport("Invalid TribeId Loaded, loading goomba instead\n");
     return 0;
+  }
+
+  NPC_RPG_Defense * getNpcDefense(s32 tribeId)
+  {
+    for (s32 i = 0; i < NPC_TABLE_MAX; i++)
+    {
+      if (npcDataTable[i].tribeId == tribeId) {
+        return npcDataTable[i].defense;
+      }
+    }
+    wii::os::OSReport("Invalid TribeId Loaded, loading 0 defense instead\n");
+    return nullptr;
   }
 
 s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
@@ -271,6 +335,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       return 2;
     }
     s32 index = getDataTableIndex(tribeId);
+    spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].flags = 0;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)npcDataTable[index].animDefs);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], (s32)npcTribes[tribeId].animPoseName);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[3], (s32)npcDataTable[index].onSpawnScript);
@@ -299,6 +364,13 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 tribeId = getRpgTribeID(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
     
+    if (tribeId == 529)
+    {
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], 0);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 0);
+    return 2;
+    }
+
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::npcdrv::npcTribes[tribeId].catchCardItemId);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], spm::mario_pouch::pouchGetCardCount(spm::npcdrv::npcTribes[tribeId].catchCardItemId));
     if (firstRun == false) {}
@@ -468,6 +540,16 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
       return 2;
     }
+    comparison = "mi1_09";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -156.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
     comparison = "mi1_10";
     result = msl::string::strstr(mapName, comparison);
     if (result != 0)
@@ -477,6 +559,55 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       {
         x = 375.0;
       }
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi2_06";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi2_09";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -190.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi2_10";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -178.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi3_03";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = 110.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "mi4_14";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -100.0;
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
@@ -498,6 +629,32 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     return 2;
   }
 
+  EVT_BEGIN(make_npc_transparent)
+    USER_FUNC(spm::evt_sub::evt_sub_intpl_msec_init, 11, 255, 0, LW(8))
+    DO(0)
+      USER_FUNC(spm::evt_sub::evt_sub_intpl_msec_get_value)
+      USER_FUNC(spm::evt_npc::evt_npc_set_color, LW(9), 255, 255, 255, LW(0))
+      WAIT_FRM(1)
+      IF_EQUAL(LW(1), 0)
+        DO_BREAK()
+      END_IF()
+    WHILE()
+    RETURN()
+  EVT_END()
+
+  EVT_BEGIN(make_npc_not_transparent)
+    USER_FUNC(spm::evt_sub::evt_sub_intpl_msec_init, 11, 0, 255, LW(8))
+    DO(0)
+      USER_FUNC(spm::evt_sub::evt_sub_intpl_msec_get_value)
+      USER_FUNC(spm::evt_npc::evt_npc_set_color, LW(9), 255, 255, 255, LW(0))
+      WAIT_FRM(1)
+      IF_EQUAL(LW(1), 0)
+        DO_BREAK()
+      END_IF()
+    WHILE()
+    RETURN()
+  EVT_END()
+
   EVT_BEGIN(increase_stylish)
     IF_SMALL(UW(6), 4)
       ADD(UW(6), 1)
@@ -507,36 +664,19 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
 
   EVT_BEGIN(superguard_stylish)
   USER_FUNC(ac_success_reset)
-  INLINE_EVT()
-    SET(LW(10), 0)
-    USER_FUNC(enable_disable_stylish, 1)
-    LBL(1)
-        USER_FUNC(check_pressed_a_ac, LW(11))
-        IF_EQUAL(LW(11), 1)
-          USER_FUNC(ac_success_toggle)
-          GOTO(2)
-        END_IF()
-      WAIT_FRM(1)
-      ADD(LW(10), 1)
-      IF_EQUAL(LW(10), 10)
-        GOTO(2)
-      END_IF()
-    GOTO(1)
-    LBL(2)
-  USER_FUNC(enable_disable_stylish, 0)
-  END_INLINE()
+  USER_FUNC(enable_disable_stylish, 1)
   WAIT_FRM(10)
   INLINE_EVT()
     USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, UW(1), EVT_NULLPTR, UW(3), UW(1), EVT_NULLPTR, 200, 180, 11)
   END_INLINE()
-  USER_FUNC(check_ac_success, LW(11))
+  USER_FUNC(check_stylish, 10, LW(11))
   IF_EQUAL(LW(11), 1)
       USER_FUNC(spm::evt_sub::evt_sub_random, 100, LW(5))
       ADD(LW(5), 50)
       USER_FUNC(spm::an2_08::evt_rpg_add_xp, LW(5))
       USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
       USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_ACROBAT_RENZOKU1"))
-      USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("nice"), UW(6), -250, 0, 0, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0)  //@TODO Figure out good hardcoded 2D offsets
+      USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("nice"), UW(6), -250, 0, 0, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0)
       RUN_CHILD_EVT(increase_stylish)
       INLINE_EVT()
           SET(LW(11), 0)
@@ -555,29 +695,12 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
         WAIT_FRM(4)
         USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("AC_3"), 500)
       END_INLINE()
-      USER_FUNC(ac_success_reset)
       INLINE_EVT()
-          SET(LW(10), 0)
-          LBL(1)
-          IF_LARGE(LW(10), 20)
-              USER_FUNC(enable_disable_stylish, 1)
-              USER_FUNC(check_pressed_a_ac, LW(11))
-              IF_EQUAL(LW(11), 1)
-                  USER_FUNC(ac_success_toggle)
-                  GOTO(2)
-              END_IF()
-          END_IF()
-          WAIT_FRM(1)
-          ADD(LW(10), 1)
-          IF_EQUAL(LW(10), 40)
-          GOTO(2)
-          END_IF()
-          GOTO(1)
-          LBL(2)
-          USER_FUNC(enable_disable_stylish, 0)
+        WAIT_FRM(22)
+        USER_FUNC(enable_disable_stylish, 1)
       END_INLINE()
       USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 60, 700)
-      USER_FUNC(check_ac_success, LW(11))
+      USER_FUNC(check_stylish, 20, LW(11))
       IF_EQUAL(LW(11), 1)
           USER_FUNC(spm::evt_sub::evt_sub_random, 100, LW(5))
           ADD(LW(5), 50)
@@ -649,31 +772,58 @@ EVT_END()
 
   void npc_rpgdrv_main()
   {
-    npcDataTable[0] = {0, animsKuribo, 10, kuribo_attack, nullptr, nullptr};
     kuribo_main();
-    npcDataTable[1] = {125, animsOcta2, 10, octa_attack, nullptr, nullptr};
+    npcDataTable[0] = {0, animsKuribo, 10, kuribo_attack, nullptr, nullptr};
+
     doopliss_main();
-    npcDataTable[2] = {529, getDooplissAnims(), 0, doopliss_attack, nullptr, doopliss_death}; // Doopliss
+    npcDataTable[1] = {125, animsOcta2, 10, octa_attack, nullptr, nullptr};
+
     koopa_main();
+    npcDataTable[2] = {529, getDooplissAnims(), 0, doopliss_attack, nullptr, doopliss_death}; // Doopliss
+
     npcDataTable[3] = {11, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Green Koopa Troopa
+
     sproing_main();
     npcDataTable[4] = {134, animsTecti, 50, sproing_oing_attack, nullptr, nullptr}; // Sproing-Oing
+
     npcDataTable[5] = {126, animsOctar, 10, octar_attack, nullptr, nullptr}; // Squig
+
     npcDataTable[6] = {20, getParaKoopaAnims(), 10, para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
+
     npcDataTable[7] = {14, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Red Koopa Troopa
+
     npcDataTable[8] = {22, getParaKoopaAnims(), 10, para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
-    npcDataTable[9] = {99, animsSinno, 10, sinno_attack, nullptr, nullptr}; // Bald Cleft
+
+    sinno_main();
+    npcDataTable[9] = {99, animsSinno, 10, sinno_attack, nullptr, nullptr, nullptr, nullptr, &sinnoDefense}; // Bald Cleft 
+
     chunks_main();
     npcDataTable[10] = {270, getChunksAnims(), 0, chunks_attack, chunks_onhit, getChunksDeath(), chunks_on_spawn}; // O'Chunks
-    //npcDataTable[11] = {440, getCherbilAnims(), cherbil_attack, nullptr, nullptr, nullptr}; // Cherbil
-    npcDataTable[11] = {25, getMetAnims(), 20, met_attack, met_onhit, nullptr, met_onspawn}; // Buzzy Beetle
+    
     met_main();
+    npcDataTable[11] = {25, getMetAnims(), 20, met_attack, met_onhit, nullptr, met_onspawn, nullptr, metDefense}; // Buzzy Beetle
+
     fracktail_main();
     npcDataTable[12] = {313, getFracktailAnims(), 0, fracktail_attack, fracktail_onhit, fracktail_death, fracktail_on_spawn, fracktail_throw_script}; // Fracktail
+
     npcDataTable[13] = {450, animsFrackle, 50, frackle_attack, nullptr, nullptr, nullptr, frackle_throw_script}; // Frackle
-    npcDataTable[14] = {89, getPukuAnims(), 25, pukupuku_attack, nullptr, nullptr, pukupuku_onspawn, nullptr}; // Cheep Cheep
+
     pukupuku_main();
+    npcDataTable[14] = {89, getPukuAnims(), 25, pukupuku_attack, nullptr, nullptr, pukupuku_onspawn, nullptr}; // Cheep Cheep
+
     npcDataTable[15] = {7, animsParaKuribo, 25, para_koopa_attack, nullptr, nullptr, nullptr, nullptr}; // Paragoomba
+
+    kamek_main();
+    npcDataTable[16] = {63, _animsKMK, 0, kamek_attack, nullptr, kamek_death, kamek_onspawn, nullptr}; // Kamek
+
+    barabara_main();
+    npcDataTable[17] = {108, animsBarabara, 10, barabara_attack, nullptr, nullptr, nullptr, nullptr}; // Swooper
+
+    teresa_main();
+    npcDataTable[18] = {84, animsTeresa, 0, teresa_attack, nullptr, nullptr, teresa_onspawn, nullptr}; // Boo
+
+    mimi_main();
+    npcDataTable[19] = {280, getMimiAnims(), 0, mimi_attack, mimi_onhit, mimi_ondeath, mimi_onspawn, mimi_throw_script, &mimiDefense}; // Mimi
   }
 
 }

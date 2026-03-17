@@ -95,7 +95,7 @@ inline s32 getInstructionSize(spm::evtmgr::EvtScriptCode* instruction) {
 /// @param instruction A pointer to the instruction
 /// @return The pointer to the instruction's args
 inline spm::evtmgr::EvtScriptCode* getInstructionArgv(spm::evtmgr::EvtScriptCode* instruction) {
-    assert(isStartOfInstruction(instruction), "Cannot hook on non-instruction, what are you doing :sob:");
+    SPM_ASSERT(isStartOfInstruction(instruction), "Cannot hook on non-instruction, what are you doing :sob:");
     return instruction + 1;
 }
 
@@ -104,7 +104,7 @@ inline spm::evtmgr::EvtScriptCode* getInstructionArgv(spm::evtmgr::EvtScriptCode
 /// @param line The line number
 /// @return A pointer to the instruction
 inline spm::evtmgr::EvtScriptCode* getEvtInstruction(spm::evtmgr::EvtScriptCode* script, s32 line) {
-    assert(isStartOfInstruction(script), "Cannot hook on non-instruction, what are you doing :sob:"); // Cannot hook on non-instruction, what are you doing :sob:
+    SPM_ASSERT(isStartOfInstruction(script), "Cannot hook on non-instruction, what are you doing :sob:"); // Cannot hook on non-instruction, what are you doing :sob:
     return script + getLineOffset(script, line);
 }
 

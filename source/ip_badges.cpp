@@ -40,6 +40,14 @@ BadgeDef badgeDefs[NUM_BADGES] = {
         0,
         nullptr
     },
+    // Lucky Start
+    {
+        "n_luckystart",
+        "d_luckystart",
+        3,
+        4,
+        nullptr
+    },
 };
 
 const spm::evtmgr::EvtScriptCode* getBadgeScriptById(s32 id)

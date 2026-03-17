@@ -34,9 +34,13 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(ac_success_reset, 0)
   EVT_DECLARE_USER_FUNC(displayDamage, 4)
   EVT_DECLARE_USER_FUNC(rpg_get_technique_index, 1)
+  EVT_DECLARE_USER_FUNC(evt_rpg_add_player_effect, 3)
   EVT_DECLARE_USER_FUNC(mario_rotate_x, 1)
   EVT_DECLARE_USER_FUNC(mario_rotate_z, 1)
   EVT_DECLARE_USER_FUNC(patchSleepyStompTex, 0)
+  EVT_DECLARE_USER_FUNC(mario_paper_on, 1)
+  EVT_DECLARE_USER_FUNC(mario_chg_paper, 1)
+  EVT_DECLARE_USER_FUNC(npc_change_name, 2)
 
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)

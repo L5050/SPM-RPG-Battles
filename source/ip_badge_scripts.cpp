@@ -11,6 +11,7 @@
 #include "tplpatch.h"
 #include "oChunks.h"
 #include "fracktail.h"
+#include "mimi.h"
 
 #include <spm/system.h>
 #include <spm/acdrv.h>
@@ -55,7 +56,7 @@ using namespace mod;
 
 namespace ip {
 
-#define PB_OVERRIDE_COUNT 2
+#define PB_OVERRIDE_COUNT 3
 
 struct PowerBounceOverride
 {
@@ -71,6 +72,10 @@ PowerBounceOverride pbOverrides[PB_OVERRIDE_COUNT] = {
   {
     313,
     fracktail_pj_override
+  },
+  {
+    280,
+    power_jump_mimi
   }
 };
 
@@ -127,6 +132,7 @@ EVT_BEGIN(power_bounce_stylish)
     USER_FUNC(spm::an2_08::evt_rpg_add_xp, LW(5))
     USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_ACROBAT_RENZOKU1"))
+    RUN_CHILD_EVT(increase_stylish)
     USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("nice"), UW(6), -250, 0, 0, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0)
     RUN_CHILD_EVT(increase_stylish)
     SET(LW(5), UW(4))

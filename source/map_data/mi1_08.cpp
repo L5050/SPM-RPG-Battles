@@ -24,12 +24,12 @@ using namespace spm::evt_npc;
 
 namespace mod {
 
-const char * kamek = "kamek";
-const char * peach = "peach";
-const char * tippi = "__guide__";
-const char * pixl = "__fairy__";
+static const char * kamek = "kamek";
+static const char * peach = "peach";
+static const char * tippi = "__guide__";
+static const char * pixl = "__fairy__";
 
-NPCTribeAnimDef animsKMK[] = {
+static NPCTribeAnimDef animsKMK[] = {
   {0, "KMK_S_1"},
   {1, "KMK_W_1"},
   {2, "KMK_R_1"},
@@ -45,7 +45,7 @@ NPCTribeAnimDef animsKMK[] = {
   {-1, nullptr}
 };
 
-NPCTribeAnimDef animsPeach_KMK[] = {
+static NPCTribeAnimDef animsPeach_KMK[] = {
   {0, "S_1B"},
   {1, "W_1"},
   {2, "R_1"},
@@ -59,13 +59,13 @@ NPCTribeAnimDef animsPeach_KMK[] = {
   {-1, nullptr}
 };
 
-const char * tippi_wait = "<p><fairy>\n"
+static const char * tippi_wait = "<p><fairy>\n"
 "Something isn't right.\n"
 "There must be something\n"
 "or someone hidden here.\n"
 "<k>\n";
 
-const char * kamek_1 = "<p>\n"
+static const char * kamek_1 = "<p>\n"
 "Ah, Mario! Peach!<wait 250> \n"
 "Fancy meeting you here!<wait 250> \n"
 "King Bowser sends his regards. \n"
@@ -80,32 +80,30 @@ const char * kamek_1 = "<p>\n"
 "would love to see you again...\n"
 "<k>\n";
 
-const char * peach_1 = "<p>\n"
+static const char * peach_1 = "<p>\n"
 "If Bowser is alive... I wonder\n"
 "if he knows where Luigi is.\n"
 "<k>\n";
 
-const char * peach_2 = "<p>\n"
+static const char * peach_2 = "<p>\n"
 "Please, take us to him!\n"
 "<k>\n";
 
-const char * kamek_2 = "<p>\n"
+static const char * kamek_2 = "<p>\n"
 "Of course...\n"
 "<k>\n";
-
-const char * kamek_3 = "<p>\n"
+static const char * kamek_3 = "<p>\n"
 "Very well. We can do this\n"
 "the hard way.\n"
 "<k>\n"
 "<p>\n"
 "<scale 1.4>ALL<wait 250> HAIL<wait 250> COUNT<wait 250> BLECK!\n"
-"<k>\n"
-"<p>\n start battle here\n";
+"<k>\n";
 
-const char * throw_silence = "<p><small>\n"
+static const char * throw_silence = "<p><small>\n"
 "... <wait 750> \n";
 
-const char * throw_2 = "<p>\n"
+static const char * throw_2 = "<p>\n"
 "Pardon me, Princess, but this\n"
 "wizard is not to be trusted.\n"
 "<k>\n";
@@ -118,6 +116,8 @@ EVT_BEGIN(kamek_evt)
   USER_FUNC(spm::evt_sub::evt_sub_get_entername, LW(0))
   IF_STR_EQUAL(LW(0), PTR(kamek))
     WAIT_FRM(1)
+    USER_FUNC(spm::evt_pouch::evt_pouch_set_pixl_selected, 221)
+    USER_FUNC(spm::evt_fairy::evt_fairy_reset)
     USER_FUNC(spm::evt_mario::evt_mario_set_character, 0)
     USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
     USER_FUNC(spm::evt_mario::evt_mario_set_pos, -69, 0, 0)
@@ -183,7 +183,14 @@ EVT_BEGIN(kamek_evt)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(throw_2), 0, PTR(pixl))
     USER_FUNC(spm::evt_fairy::evt_fairy_all_enter_run_mode2)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(kamek_3), 0, PTR(kamek))
+    USER_FUNC(spm::evt_snd::evt_snd_bgmon, 0, PTR("BGM_EVT_KAMEK_BTL"))
+    USER_FUNC(spm::evt_mario::evt_mario_key_on)
+    USER_FUNC(start_boss_fight, 63)
   ELSE()
+    IF_EQUAL(GSWF(1803), 1)
+      RETURN()
+    END_IF()
+    SET(GSWF(1803), 1)
     WAIT_FRM(1)
     USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
     WAIT_MSEC(2000)
@@ -222,6 +229,26 @@ EVT_BEGIN(mi1_09_patch)
   RUN_EVT(kamek_evt)
 RETURN_FROM_CALL()
 
+EVT_BEGIN(mi_spike_damage)
+  WAIT_MSEC(25000)
+  USER_FUNC(getCurrentCombatStatus, LW(0))
+  IF_EQUAL(LW(0), 1)
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon_character, PTR("SFX_P_V_MARIO_DAMEGE1"), PTR("SFX_P_V_PEACH_DAMEGE1"), PTR("SFX_P_V_KOOPA_DAMEGE1"), PTR("SFX_P_V_LUIGI_DAMEGE1"))
+    USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(0), LW(1), LW(2))
+    USER_FUNC(displayDamage, LW(0), LW(1), LW(2), 99)
+    WAIT_MSEC(1000)
+    USER_FUNC(spm::evt_seq::evt_seq_set_seq, 4, 0, 0)
+  END_IF()
+RETURN()
+EVT_END()
+
+EVT_BEGIN(mi_spike_patch)
+  USER_FUNC(spm::evt_mario::evt_mario_key_on)
+  USER_FUNC(start_boss_fight, 99)
+  USER_FUNC(spm::evt_snd::evt_snd_bgmon, 0, PTR("BGM_EVT_STG7_RPG1"))
+  RUN_EVT(mi_spike_damage)
+RETURN_FROM_CALL()
+
 void mi1_08_main()
 {
   spm::map_data::MapData * mi1_08_md = spm::map_data::mapDataPtr("mi1_08");
@@ -230,6 +257,11 @@ void mi1_08_main()
   spm::map_data::MapData * mi1_09_md = spm::map_data::mapDataPtr("mi1_09");
   spm::evtmgr::EvtScriptCode* mi1_09_init_evt = mi1_09_md->initScript;
   evtpatch::hookEvtReplace(mi1_09_init_evt, 19, (spm::evtmgr::EvtScriptCode*)mi1_09_patch);
+  spm::map_data::MapData * mi2_06_md = spm::map_data::mapDataPtr("mi2_06");
+  spm::evtmgr::EvtScriptCode* mi2_06_init_evt = mi2_06_md->initScript;
+  spm::evtmgr::EvtScriptCode* mi2_06_spike = getInstructionEvtArg(mi2_06_init_evt, 11, 5);
+  evtpatch::hookEvtReplaceBlock(mi2_06_spike, 81, (spm::evtmgr::EvtScriptCode*)mi_spike_patch, 85);
+  return;
 }
 
 }
