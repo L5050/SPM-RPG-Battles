@@ -2268,24 +2268,15 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
     rpgHandleMenu = patch::hookFunction(spm::an2_08::rpgHandleMenu, patchTechniquesChars);
     writeBranchLink( & spm::an2_08::evt_rpg_npctribe_handle, 0x94, returnTribe);
-    //writeBranchLink( & spm::an2_08::rpg_screen_draw, 0x2D8, setTextureIndex);
-    //writeBranchLink( & spm::acdrv::acMain, 0x49C, setNewFloat);
     writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
-    //writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x780, msgSearchPatch_1);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C0C0003);
     writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x1324, 0x2c000057);
     
-    //writeWord(  spm::acdrv::acdrv_acDefs[3].mainFunc, 0x54, 0x38030002);
-    //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C000001);
-    //writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0xA0, 0x3B9C0004);
-    //writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0x8C, 0x3BA00018);
     writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0x2BC, 0x60000000);
     writeWord(& spm::mario::marioCalcDamageToEnemy, 0x16C, 0x57FF003E);
     deleteUnderchompTextures();
     turnBasedCombatOverrideInit();
-    //writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0x2BC, 0x60000000);
-    //writeWord( & spm::acdrv::acMain, 0x49C, 0x60000000);
   }
 
   /*
