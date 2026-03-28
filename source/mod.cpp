@@ -4,6 +4,7 @@
 #include "npc_rpgdrv.h"
 #include "hpwindow.h"
 #include "main_scripting.h"
+#include "map_patch.h"
 #include "ip_messages.h"
 #include "ip.h"
 #include "ip_badges.h"
@@ -2480,15 +2481,19 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     return 2;
   }
 
-  s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    char name[11];
-    msl::stdio::sprintf(name,"item_%08x", itemMax);
-    itemMax++;
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 0);
-    spm::evt_item::evt_item_entry(evtEntry, firstRun);
-    return 2;
-  }
+char item_name[11];
+
+s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  msl::stdio::sprintf(item_name, "i_%d", itemMax);
+  itemMax++;
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)item_name);
+  spm::evt_item::evt_item_entry(evtEntry, firstRun);
+
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)spm::itemdrv::itemNameToPtr(item_name)->name);
+  return 2;
+}
 
   s32 rpg_off(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::camdrv::camPtrTbl[5]->isOrthoToggle = 1;
@@ -2757,5 +2762,6 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     tplpatch::iconPatch(modTplName);
     power_refresh_main();
     map_data_main();
+    map_patch::map_patch_main();
   }
 }
