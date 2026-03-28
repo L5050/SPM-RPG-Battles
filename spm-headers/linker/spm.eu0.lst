@@ -234,6 +234,7 @@
 80090680:mapObjSetColor
 80090a80:mapGrpSetColor
 8008181c:mapLoad
+80081618:mapUnload
 // more
 
 // somewhere
