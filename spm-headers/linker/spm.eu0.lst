@@ -73,9 +73,19 @@
 // more
 
 // winmgr.c
+8003b2c8:winMgrDisp
 8003bc78:winMgrSelectEntry
 8003c8a8:winMgrSelect
+8003c9d0:winMgrSelectGetIndex
 8003c90c:winMgrSelectDelete
+8003bc2c:winMgrSetSize
+8003c9d8:select_main
+8003d2ac:select_disp
+8003e5e0:select_disp2
+// data
+80326400:select_disp_arrow_move
+80406e98:winmgr_select_desc_tbl
+805adf48:winmgr_wp
 
 // acdrv.c
 8003eb4c:acInit
@@ -120,8 +130,10 @@
 80055b38:camGetCurPtr
 80056a60:cam3dMain
 80058294:getScreenPoint
+800586c8:func_800586c8
 // bss
 8050b580:camPtrTbl
+800559ac:camLoadRoadNoRead
 // more
 
 // casedrv.c
@@ -189,6 +201,7 @@
 80072ea8:iconDispGxAlpha
 80073980:iconGX
 800731b0:iconDispGx
+800731b8:iconDispGx2
 800721f4:iconMain
 80072710:iconEntry
 80072cdc:iconDisp
@@ -876,6 +889,7 @@
 
 // pausewin.c
 // text
+80183fb0:pausewinGetEntry
 80184c18:pausewinEntry
 80185088:pausewinMoveTo
 801850d8:pausewinAppear
@@ -883,6 +897,7 @@
 80185148:pausewinDelete
 801853cc:pausewinPauseGame
 80185510:pausewinUnpauseGame
+8018824c:pausewinMsgBoxDisp
 80188508:pausewinSetMessage
 80188628:pausewinSetMessageCard
 80188a64:pluswinKeyItemMain
@@ -1269,11 +1284,15 @@
 
 // mtx.a
 // mtx.c
+8027a2d0:PSMTXConcat
 8027a270:PSMTXIdentity
+8027a29c:PSMTXCopy
+8027a55c:PSMTXRotRad
 8027a7b4:PSMTXTrans
 8027a7e8:PSMTXTransApply
 8027a834:PSMTXScale
 8027a85c:PSMTXScaleApply
+8027acf0:PSMTXMultVec
 8027aec0:C_MTXPerspective
 8027afac:C_MTXOrtho
 8027b4fc:PSVECSquareDistance
@@ -1324,17 +1343,25 @@
 802915a0:GXInitTexObj
 802917f4:GXInitTexObjLOD
 802929d4:GXSetTevOp
+80292ae8:GXSetTevColorOp
+80292b98:GXSetTevColor
+80292d58:GXSetTevSwapMode
+80292a68:GXSetTevColorIn
 80292e10:GXSetAlphaCompare
 80292ed4:GXSetTevOrder
 80293030:GXSetNumTevStages
 80293054:GXSetFog
 802933a4:GXSetBlendMode
+802933f4:GXSetColorUpdate
+80293420:GXSetAlphaUpdate
 8029344c:GXSetZMode
 80293480:GXSetZCompLoc
 80294214:GXSetProjection
 80294304:GXLoadPosMtxImm
 802943ac:GXSetCurrentMtx
-// more
+80294598:GXSetZScaleOffset
+802945c8:GXSetScissor
+80294630:GXGetScissor
 
 // mem.a
 // mem_heapCommon.c

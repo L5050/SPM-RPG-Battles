@@ -5,6 +5,7 @@
 #include <spm/memory.h>
 #include <spm/system.h>
 #include <spm/mapdrv.h>
+#include <spm/camdrv.h>
 #include <wii/os.h>
 
 namespace mod::map_patch {
@@ -15,6 +16,16 @@ static mapdrv::MapWork * mapdrv_wp;
 
 static void( * mapUnload)();
 static int ( * mapLoad)(const char * name);
+static void ( * camLoadRoadNoRead)(void * file);
+
+static void new_camLoadRoadNoRead(void * file)
+{
+  if (mapdrv_wp->activeGroup == 1)
+  {
+    return;
+  }
+  return camLoadRoadNoRead(file);
+}
 
 static void new_mapUnload()
 {
@@ -47,9 +58,9 @@ void map_patch_main()
   mapdrv_wp = (mapdrv::MapWork *)mapdrv::mapGetWork();
   mapUnload = patch::hookFunction(mapdrv::mapUnload, new_mapUnload);
   mapLoad = patch::hookFunction(mapdrv::mapLoad, new_mapLoad); 
+  camLoadRoadNoRead = patch::hookFunction(camdrv::camLoadRoadNoRead, new_camLoadRoadNoRead); 
   writeWord(mapdrv::mapUnload, 0x20, NOP);
   writeWord(mapdrv::mapLoad, 0x8c, NOP);
-  writeWord(0x800559f4, 0x0, NOP);
 }
 
 }

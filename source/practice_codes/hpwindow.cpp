@@ -273,7 +273,6 @@ void enemyDisp()
             spm::camdrv::getScreenPoint(&npcPos, &pos);
             // Adjust x for the left of the bar
             pos.x -= BAR_WIDTH / 2.0f;
-
             // Draw the black outline
             Window::drawBoxGX(&colours::black, pos.x, pos.y, BAR_WIDTH, BAR_HEIGHT);
 

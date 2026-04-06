@@ -3,6 +3,8 @@
 #include "patch.h"
 #include "main_scripting.h"
 #include "npc_rpgdrv.h"
+#include "ring_menu.h"
+#include "customwin.h"
 #include "ip_badgepouch.h"
 
 #include <spm/rel/an.h>
@@ -52,6 +54,8 @@
 #include <patch.h>
 #include <string>
 namespace mod {
+
+char * mainText = nullptr;
 
 const char * tippi_fail = "<p>\n"
 "This enemy cannot be\n"
@@ -274,6 +278,13 @@ s32 evt_rpg_add_player_effect(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     spm::an2_08::rpgdrv_wp->statusEffectsTimer[staintus] = spm::evtmgr_cmd::evtGetValue(evtEntry, args[2]);
     return 2;
 }
+
+  s32 rpg_set_dialogue(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    char * dialogue = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    mainText = dialogue;
+    return 2;
+  }
 
 /*s32 rpg_check_for_bounding_box(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -1128,8 +1139,6 @@ EVT_END()
 
 EVT_BEGIN(attack)
     SET(UW(0), LW(2))
-    USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
-    USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_004"), LW(10))
     USER_FUNC(enable_disable_rpg_menu, 0)
     USER_FUNC(spm::evt_msg::evt_msg_continue)
     USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
@@ -3342,8 +3351,41 @@ IF_EQUAL(LW(6), 1)
     WAIT_MSEC(1250)
   END_IF()
 END_IF()
+/*
+USER_FUNC(customwin::EvtCWSelectEntry, PTR("Example"), customwin::CWSELECT_DEFAULT, PTR("My Menu"), PTR("Something!!!"), 0, 0)
+USER_FUNC(customwin::EvtCWSelectAddListing, PTR("Example"), PTR("Free Candy"), PTR("Just for you!"), 0xFD, 0, 0, 0)
+USER_FUNC(customwin::EvtCWSelectAddListing, PTR("Example"), PTR("Expensive Candy"), PTR("It's also for you... for the\nright price!"), 0xFD, 9999, 0, 0)
+USER_FUNC(customwin::EvtCWSelectAddItem, PTR("Example"), 0xA0, 0, 0)
+USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("Example"), 0, LW(0))
+USER_FUNC(customwin::EvtCWSelectGetSelectionName, LW(0), LW(1))
+USER_FUNC(customwin::EvtCWSelectReset)
+*/
 USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+SET(LW(2), 0)
+SET(LW(6), 0)
 USER_FUNC(enable_disable_rpg_menu, 1)
+USER_FUNC(ring_init_battle)
+DO(0)
+  USER_FUNC(ring_battle_main, LW(0), LW(1), LW(2), LW(3), LW(4), LW(6))
+  USER_FUNC(ring_display_battle)
+  WAIT_FRM(1)
+  IF_EQUAL(LW(6), 1)
+    DO_BREAK()
+  END_IF()
+WHILE()
+RUN_CHILD_EVT(mod::attack)
+RUN_CHILD_EVT(mod::runEnemyTurn)
+SET(LW(2), 0)
+SET(LW(6), 0)
+USER_FUNC(ring_init_battle)
+DO(0)
+  USER_FUNC(ring_battle_main, LW(0), LW(1), LW(2), LW(3), LW(4), LW(6))
+  USER_FUNC(ring_display_battle)
+  WAIT_FRM(1)
+  IF_EQUAL(LW(6), 1)
+    DO_BREAK()
+  END_IF()
+WHILE()
 SET(UW(5), 0)
 SET(LF(1), 0)
 DO(0)
@@ -3486,6 +3528,7 @@ EVT_END()
 EVT_BEGIN(parentOfBeginRPG)
   USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
   USER_FUNC(spm::evt_cam::evt_cam_look_at_door, 1, 0)
+  USER_FUNC(rpg_set_dialogue, PTR(stg7_2_133_2_002))
   SET(GW(5), 0)
   SET(LW(2), 0)
   IF_EQUAL(LW(0), 1)

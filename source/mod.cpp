@@ -11,6 +11,8 @@
 #include "ip_badgepouch.h"
 #include "power_refresh.h"
 #include "tplpatch.h"
+#include "msgpatch.h"
+#include "customwin.h"
 #include "map_data/map_data_main.h"
 
 #include <spm/system.h>
@@ -248,7 +250,6 @@ namespace mod {
   s32 *bp = nullptr;
   s32 *maxBp = nullptr;
   wii::tpl::TPLHeader *myTplHeader = nullptr;
-  char * mainText = nullptr;
   char modTplName[] = "mod/mod";
   s32 itemMax = 0;
   spm::icondrv::IconEntry * flower = nullptr;
@@ -1306,411 +1307,6 @@ bool IsNpcActive(s32 index) {
     peach_special
   };
 
-  const char * newMsgSearch(const char * msgName) {
-    const char * ipChar = ip::messagePatch(msgName);
-    if (ipChar != nullptr) return ipChar;
-    //wii::os::OSReport("%s\n", msgName);
-    if (msl::string::strcmp(msgName, "stg7_2_133_2_001") == 0)
-      //Override intro
-      return rpgStart;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_002") == 0)
-      //Replace message
-      if (mainText == nullptr)
-      {
-        return stg7_2_133_2_002;
-      } else {
-        return mainText;
-      }
-    else if (msl::string::strcmp(msgName, "peach_heal") == 0)
-        //Replace message
-      return peach_heal;
-    else if (msl::string::strcmp(msgName, "peach_heal_success") == 0)
-          //Replace message
-      return peach_heal_success;
-    else if (msl::string::strcmp(msgName, "anna_ehelp_241") == 0)
-          //Replace message
-      return chunks_tattle;
-    else if (msl::string::strcmp(msgName, "wang_cmd_1") == 0)
-      //Replace message
-      return wang_cmd_1;
-    else if (msl::string::strcmp(msgName, "wang_cmd_2") == 0)
-      //Replace message
-      return wang_cmd_2;
-    else if (msl::string::strcmp(msgName, "wang_cmd_3") == 0)
-      //Replace message
-      return wang_cmd_3;
-    else if (msl::string::strcmp(msgName, "wang_cmd_4") == 0)
-      //Replace message
-      return wang_cmd_4;
-    else if (msl::string::strcmp(msgName, "wang_cmd_5") == 0)
-      //Replace message
-      return wang_cmd_5;
-    else if (msl::string::strcmp(msgName, "wang_cmd_6") == 0)
-      //Replace message
-      return wang_cmd_6;
-    else if (msl::string::strcmp(msgName, "wang_special_1") == 0)
-      //Replace message
-      return wang_special_1;
-    else if (msl::string::strcmp(msgName, "wang_special_2") == 0)
-      //Replace message
-      return wang_special_2;
-    else if (msl::string::strcmp(msgName, "wang_special_3") == 0)
-      //Replace message
-      return wang_special_3;
-    else if (msl::string::strcmp(msgName, "peach_special") == 0)
-        //Replace message
-      return peach_special;
-    else if (msl::string::strcmp(msgName, "wang_level") == 0)
-      //Replace message
-      return wang_level;
-    else if (msl::string::strcmp(msgName, "wang_hp") == 0)
-      //Replace message
-      return wang_hp;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_008") == 0)
-      //Replace message
-      return stg7_2_133_2_008;
-    else if (msl::string::strcmp(msgName, "wang_wang_r") == 0)
-      //Replace message
-      return getNpcName(rpgTribeID[0]);
-    else if (msl::string::strcmp(msgName, "wang_wang_b") == 0)
-      //Replace message
-      return getNpcName(rpgTribeID[1]);
-    else if (msl::string::strcmp(msgName, "wang_wang_y") == 0)
-      //Replace message
-      return getNpcName(rpgTribeID[2]);
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_003") == 0)
-      //Replace message
-      return stg7_2_133_2_003;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_004") == 0)
-      //Replace message
-      return stg7_2_133_2_004;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_005") == 0)
-      //Replace message
-      return stg7_2_133_2_005;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_006") == 0)
-      //Replace message
-      return stg7_2_133_2_006;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_007") == 0)
-      //Replace message
-      return stg7_2_133_2_007;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_009") == 0)
-      //Replace message
-      return stg7_2_133_2_009;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_009_01") == 0)
-      return stg7_2_133_2_009_01;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_009_02") == 0)
-      return stg7_2_133_2_009_02;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_010") == 0)
-      return stg7_2_133_2_010;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_011") == 0)
-      return stg7_2_133_2_011;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_012") == 0)
-      return stg7_2_133_2_012;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_013") == 0)
-      return stg7_2_133_2_013;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_014") == 0)
-      return stg7_2_133_2_014;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_015") == 0)
-      return stg7_2_133_2_015;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_016") == 0)
-      return stg7_2_133_2_016;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_017") == 0)
-      return stg7_2_133_2_017;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_018") == 0)
-      return stg7_2_133_2_018;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_019") == 0)
-      return stg7_2_133_2_019;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_020") == 0)
-      return stg7_2_133_2_020;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_021") == 0)
-      return stg7_2_133_2_021;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_022") == 0)
-      return stg7_2_133_2_022;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_023") == 0)
-      return stg7_2_133_2_023;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_024") == 0)
-      return stg7_2_133_2_024;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_025") == 0)
-      return stg7_2_133_2_025;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_026") == 0)
-      return stg7_2_133_2_026;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_027") == 0)
-      return stg7_2_133_2_027;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_028") == 0)
-      return stg7_2_133_2_028;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_029") == 0)
-      return stg7_2_133_2_029;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_031") == 0)
-      return stg7_2_133_2_031;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_032") == 0)
-      return stg7_2_133_2_032;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_033") == 0)
-      return stg7_2_133_2_033;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_034") == 0)
-      return stg7_2_133_2_034;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_035") == 0)
-      return stg7_2_133_2_035;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_036") == 0)
-      return stg7_2_133_2_036;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_037") == 0)
-      return stg7_2_133_2_037;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_038") == 0)
-      return stg7_2_133_2_038;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_039") == 0)
-      return stg7_2_133_2_039;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_040") == 0)
-      return stg7_2_133_2_040;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_042") == 0)
-      return stg7_2_133_2_042;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_043") == 0)
-      return stg7_2_133_2_043;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_044") == 0)
-      return stg7_2_133_2_044;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_045") == 0)
-      return stg7_2_133_2_045;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_046") == 0)
-      return stg7_2_133_2_046;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_047") == 0)
-      return stg7_2_133_2_047;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_048") == 0)
-      return stg7_2_133_2_048;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_050") == 0)
-      return stg7_2_133_2_050;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_051") == 0)
-      return stg7_2_133_2_051;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_052") == 0)
-      return stg7_2_133_2_052;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_053") == 0)
-      return stg7_2_133_2_053;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_054") == 0)
-      return stg7_2_133_2_054;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_055") == 0)
-      return stg7_2_133_2_055;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_056") == 0)
-      return stg7_2_133_2_056;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_056_01") == 0)
-      return stg7_2_133_2_056_01;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_056_02") == 0)
-      return stg7_2_133_2_056_02;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_057") == 0)
-      return stg7_2_133_2_057;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_058") == 0)
-      return stg7_2_133_2_058;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_059") == 0)
-      return stg7_2_133_2_059;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_060") == 0)
-      return stg7_2_133_2_060;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_061") == 0)
-      return stg7_2_133_2_061;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_062") == 0)
-      return stg7_2_133_2_062;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_063") == 0)
-      return stg7_2_133_2_063;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_064") == 0)
-      return stg7_2_133_2_064;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_065") == 0)
-      return stg7_2_133_2_065;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_066") == 0)
-      return stg7_2_133_2_066;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_067") == 0)
-      return stg7_2_133_2_067;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_068") == 0)
-      return stg7_2_133_2_068;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_069") == 0)
-      return stg7_2_133_2_069;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_070") == 0)
-      return stg7_2_133_2_070;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_071") == 0)
-      return stg7_2_133_2_071;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_072") == 0)
-      return stg7_2_133_2_072;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_073") == 0)
-      return stg7_2_133_2_073;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_074") == 0)
-      return stg7_2_133_2_074;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_075") == 0)
-      return stg7_2_133_2_075;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_076") == 0)
-      return stg7_2_133_2_076;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_077") == 0)
-      return stg7_2_133_2_077;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_078") == 0)
-      return stg7_2_133_2_078;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_079") == 0)
-      return stg7_2_133_2_079;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_080") == 0)
-      return stg7_2_133_2_080;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_081") == 0)
-      return stg7_2_133_2_081;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_082") == 0)
-      return stg7_2_133_2_082;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_083") == 0)
-      return stg7_2_133_2_083;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_084") == 0)
-      return stg7_2_133_2_084;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085") == 0)
-      return stg7_2_133_2_085;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_01") == 0)
-      return stg7_2_133_2_085_01;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_02") == 0)
-      return stg7_2_133_2_085_02;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_03") == 0)
-      return stg7_2_133_2_085_03;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_04") == 0)
-      return stg7_2_133_2_085_04;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_05") == 0)
-      return stg7_2_133_2_085_05;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_06") == 0)
-      return stg7_2_133_2_085_06;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_086") == 0)
-      return stg7_2_133_2_086;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_087") == 0)
-      return stg7_2_133_2_087;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_088") == 0)
-      return stg7_2_133_2_088;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_089") == 0)
-      return stg7_2_133_2_089;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_090") == 0)
-      return stg7_2_133_2_090;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_092") == 0)
-      return stg7_2_133_2_092;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_093") == 0)
-      return stg7_2_133_2_093;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_094") == 0)
-      return stg7_2_133_2_094;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_095") == 0)
-      return stg7_2_133_2_095;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_096") == 0)
-      return stg7_2_133_2_096;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_097") == 0)
-      return stg7_2_133_2_097;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_098") == 0)
-      return stg7_2_133_2_098;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_099") == 0)
-      return stg7_2_133_2_099;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_100") == 0)
-      return stg7_2_133_2_100;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_101") == 0)
-      return stg7_2_133_2_101;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_102") == 0)
-      return stg7_2_133_2_102;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_103") == 0)
-      return stg7_2_133_2_103;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_104") == 0)
-      return stg7_2_133_2_104;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_105") == 0)
-      return stg7_2_133_2_105;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_106") == 0)
-      return stg7_2_133_2_106;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_107") == 0)
-      return stg7_2_133_2_107;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_108") == 0)
-      return stg7_2_133_2_108;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_109") == 0)
-      return stg7_2_133_2_109;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_110") == 0)
-      return stg7_2_133_2_110;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_111") == 0)
-      return stg7_2_133_2_111;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_112") == 0)
-      return stg7_2_133_2_112;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_113") == 0)
-      return stg7_2_133_2_113;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_114") == 0)
-      return stg7_2_133_2_114;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_115") == 0)
-      return stg7_2_133_2_115;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_116") == 0)
-      return stg7_2_133_2_116;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_117") == 0)
-      return stg7_2_133_2_117;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_118") == 0)
-      return stg7_2_133_2_118;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_119") == 0)
-      return stg7_2_133_2_119;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_120") == 0)
-      return stg7_2_133_2_120;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_121") == 0)
-      return stg7_2_133_2_121;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_122") == 0)
-      return stg7_2_133_2_122;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_123") == 0)
-      return stg7_2_133_2_123;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124") == 0)
-      return stg7_2_133_2_124;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_01") == 0)
-      return stg7_2_133_2_124_01;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_02") == 0)
-      return stg7_2_133_2_124_02;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_03") == 0)
-      return stg7_2_133_2_124_03;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_04") == 0)
-      return stg7_2_133_2_124_04;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_05") == 0)
-      return stg7_2_133_2_124_05;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_06") == 0)
-      return stg7_2_133_2_124_06;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_125") == 0)
-      return stg7_2_133_2_125;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_126") == 0)
-      return stg7_2_133_2_126;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_127") == 0)
-      return stg7_2_133_2_127;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_091") == 0)
-      return stg7_2_133_2_091;
-    else if (msl::string::strcmp(msgName, "no_fp") == 0)
-      return no_fp;
-    else
-    //wii::os::OSReport("%s\n", msgName);
-      return msgSearch(msgName);
-
-  }
-
   s32 compareStrings(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   {
     spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
@@ -2114,16 +1710,18 @@ bool IsNpcActive(s32 index) {
     return;
   }
 
+/*
 void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, f32 far)
 {
   return wii::mtx::C_MTXPerspective(dest, fovY, aspect, near, 5000.0f);
 }
-  
+*/
+
   void new_rpg_screen_draw()
   {
     if (screenOn)
     {
-      rpg_screen_draw();
+      //rpg_screen_draw();
       drawStuff();
       enemyDisp();
     }
@@ -2263,7 +1861,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
 
     //spsndSFXOn = patch::hookFunction(spm::spmario_snd::spsndSFXOn, new_spsndSFXOn);
 
-    msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
+    //msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
 
     writeWord( & spm::pausewin::levelUpWindowMain, 0x0, 0x4e800020);
     writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
@@ -2700,13 +2298,6 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     return 2;
   }
 
-  s32 rpg_set_dialogue(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    char * dialogue = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-    mainText = dialogue;
-    return 2;
-  }
-
     s32 evt_offscreen_set_type(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     char * name = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
@@ -2741,6 +2332,10 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     wii::os::OSReport("SPM Rel Loader: the mod has ran!\n");
     titleScreenCustomTextPatch();
     evtpatch::evtmgrExtensionInit();
+    msgpatch::msgpatchMain();
+    msgpatch::msgpatchAddEntry("anna_ehelp_241", chunks_tattle, true);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_001", rpgStart, true);
+    customwin::CustomWinMain();
     hookEvent();
     npc_rpgdrv_main();
     patchXP();

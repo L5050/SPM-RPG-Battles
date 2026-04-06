@@ -45,8 +45,6 @@ Vec3 iconPositions[9] = {
 
 enum Direction { LEFT = 0, UP = 1, RIGHT = 2, DOWN = 3 };
 
-const char * msgName = "";
-
 void iconGlideTo(spm::icondrv::IconEntry * icon, u32 frames, f32 destX, f32 destY, f32 destZ)
 {
   f32 absV = fabs(destX - icon->position.x);
