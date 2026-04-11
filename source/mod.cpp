@@ -13,6 +13,7 @@
 #include "tplpatch.h"
 #include "msgpatch.h"
 #include "customwin.h"
+#include "ring_menu.h"
 #include "map_data/map_data_main.h"
 
 #include <spm/system.h>
@@ -97,9 +98,9 @@ extern "C" {
     false
   };
 
-  static void drawStuff() {
+  static void drawFlower(){
     // Flower disp
-    const Vec3 fpVec = {-100.0, -202.0, 0.0};
+    const Vec3 fpVec = {-350.0, -30.0, 0.0};
     spm::icondrv::iconDispGx(0.7, &fpVec, 4, 1600);
     // FP number disp
     wii::gx::GXColor white = {
@@ -110,7 +111,7 @@ extern "C" {
     };
     f32 scale = 1.0;
     char buffer [50];
-    sprintf(buffer, "%d", *mod::fp);
+    sprintf(buffer, "%d/%d", *mod::fp, *mod::maxFp);
     const char * msg = buffer;
     spm::fontmgr::FontDrawStart();
     spm::fontmgr::FontDrawEdge();
@@ -119,7 +120,37 @@ extern "C" {
     spm::fontmgr::FontDrawNoiseOff();
     spm::fontmgr::FontDrawRainbowColorOff();
     f32 x = -((spm::fontmgr::FontGetMessageWidth(msg) * scale) / 2);
-    spm::fontmgr::FontDrawString(x+-70, -172.0, msg);
+    spm::fontmgr::FontDrawString(x+-280, 0.0, msg);
+    return;
+  }
+
+  static void drawHP(){
+    const Vec3 fpVec = {-350.0, 20.0, 0.0};
+    spm::icondrv::iconDispGx(0.7, &fpVec, 4, 1601);
+    wii::gx::GXColor white = {
+      255,
+      255,
+      255,
+      255
+    };
+    f32 scale = 1.0;
+    char buffer [50];
+    sprintf(buffer, "%d/%d", spm::mario_pouch::pouchGetPtr()->hp, spm::mario_pouch::pouchGetPtr()->maxHp);
+    const char * msg = buffer;
+    spm::fontmgr::FontDrawStart();
+    spm::fontmgr::FontDrawEdge();
+    spm::fontmgr::FontDrawColor( & white);
+    spm::fontmgr::FontDrawScale(scale);
+    spm::fontmgr::FontDrawNoiseOff();
+    spm::fontmgr::FontDrawRainbowColorOff();
+    f32 x = -((spm::fontmgr::FontGetMessageWidth(msg) * scale) / 2);
+    spm::fontmgr::FontDrawString(x+-280, 50.0, msg);
+    return;
+  }
+
+  static void drawStuff() {
+    drawFlower();
+    drawHP();
     return;
   }
 
@@ -162,29 +193,6 @@ extern "C" {
     return spm::msgdrv::msgSearch(msgName);
   }
 
-  s32 patchTechniquesMario(s32 type, spm::an2_08::RpgMenuOption* options)
-  {
-    options->name = spm::msgdrv::msgSearch("wang_special_1");
-    options->index = 0;
-
-    s32 numOptions = 1;
-
-    s32 badgeCount = ip::pouchCountBadges();
-    for (s32 i = 0; i < badgeCount; i++)
-    {
-      ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(i);
-      if (badgeInfo->equipped && mod::checkBadgeTechnique(badgeInfo->id))
-      {
-        ip::BadgeDef *badgeDef = ip::pouchGetBadgeDef(i);
-        const char *name = spm::msgdrv::msgSearch(badgeDef->nameMsg);
-        options[numOptions].name = name;
-        options[numOptions].index = badgeInfo->id;
-        numOptions++;
-      }
-    }
-    return numOptions;
-  }
-
   s32 patchTechniquesPeach(s32 type, spm::an2_08::RpgMenuOption* options)
   {
     options->name = "Appeal";
@@ -214,7 +222,7 @@ extern "C" {
     spm::mario::MarioWork *mwpp = spm::mario::marioGetPtr();
     if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_MARIO)
     {
-      return patchTechniquesMario(type, options);
+      //return patchTechniquesMario(type, options);
     }
     if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_PEACH)
     {
@@ -432,15 +440,15 @@ static const char * getNpcName(s32 tribeId) {
   }
 }
 
-bool checkBadgeTechnique(BadgeId id)
+s32 checkBadgeTechnique(BadgeId id)
 {
   switch (id) {
     case BadgeId::BADGEID_POWER_BOUNCE:
-      return true;
+      return 2;
     default:
-      return false;
+      return -1;
   }
-  return false;
+  return -1;
 }
 
 s32 getRpgTribeID(s32 index) {
@@ -497,24 +505,6 @@ bool IsNpcActive(s32 index) {
 
   const char * stg7_2_133_2_010 = "<p>\n"
   "Choose a technique.\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_011 = "<p>\n"
-  "Mario flips!\n"
-  "<dkey><wait 250></dkey>\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_012 = "<dkey><wait 250></dkey>\n"
-  "<p>\n"
-  "...You found 2 FP!\n"
-  "<k>\n"
-  "<o>\n";
-
-  const char * no_fp = "<dkey><wait 250></dkey>\n"
-  "<p>\n"
-  "no FP?\n"
-  "*Megamind gif*"
-  "<k>\n"
   "<o>\n";
 
   const char * stg7_2_133_2_013 = "<p>\n"
@@ -587,15 +577,14 @@ bool IsNpcActive(s32 index) {
   "<k>\n"
   "<o>\n";
 
-  const char * stg7_2_133_2_028 = "<p>\n"
-  "%s uses Slim!\n"
-  "<dkey><wait 250></dkey>\n"
-  "<o>\n";
-
   const char * stg7_2_133_2_029 = "<dkey><wait 250></dkey>\n"
   "<p>\n"
-  "%s turns sideways\n"
-  "and is hard to see!\n"
+  "Slim will turn %s\n"
+  "into a tube, making it\n"
+  "easier to dodge attacks!\n"
+  "<k>\n"
+  "<col cffffff>Press <icon PAD_2 0.67 0 0 2><col cffffff> to jump away\n"
+  "from the attack!!"
   "<k>\n"
   "<o>\n";
 
@@ -1812,6 +1801,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
 
     // Yme is a good bunny
     EVT_BEGIN(determine_quickstart)
+    SET(GSW(1820), -1)
     USER_FUNC(evt_msg::evt_msg_print, 1, PTR(quickie_1), 0, 0)
     USER_FUNC(evt_msg::evt_msg_print, 1, PTR(quickstartText), 0, 0)
     USER_FUNC(evt_msg::evt_msg_select, 1, PTR(quickstartOptions))
@@ -2332,9 +2322,22 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     wii::os::OSReport("SPM Rel Loader: the mod has ran!\n");
     titleScreenCustomTextPatch();
     evtpatch::evtmgrExtensionInit();
-    msgpatch::msgpatchMain();
-    msgpatch::msgpatchAddEntry("anna_ehelp_241", chunks_tattle, true);
-    msgpatch::msgpatchAddEntry("stg7_2_133_2_001", rpgStart, true);
+    msgpatch::msgpatchMain(); 
+    msgpatch::msgpatchAddEntry("anna_ehelp_241", chunks_tattle, false); 
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_090", stg7_2_133_2_090, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_091", stg7_2_133_2_091, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_092", stg7_2_133_2_092, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_008", stg7_2_133_2_008, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_009", stg7_2_133_2_009, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_009_01", stg7_2_133_2_009_01, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_009_02", stg7_2_133_2_009_02, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_010", stg7_2_133_2_010, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_020", stg7_2_133_2_020, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_029", stg7_2_133_2_029, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_110", stg7_2_133_2_110, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_111", stg7_2_133_2_111, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_001", rpgStart, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_002", stg7_2_133_2_003, true);
     customwin::CustomWinMain();
     hookEvent();
     npc_rpgdrv_main();
@@ -2358,5 +2361,6 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     power_refresh_main();
     map_data_main();
     map_patch::map_patch_main();
+    ring_menu_main();
   }
 }

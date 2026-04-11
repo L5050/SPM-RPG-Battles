@@ -31,7 +31,7 @@ extern bool superGuard;
 s32 getRpgTribeID(s32 index);
 bool IsNpcActive(s32 index);
 extern s32( * rpgHandleMenu)(s32, spm::an2_08::RpgMenuOption*);
-bool checkBadgeTechnique(ip::BadgeId id);
+s32 checkBadgeTechnique(ip::BadgeId id);
 spm::evtmgr::EvtScriptCode* getInstructionEvtArg(spm::evtmgr::EvtScriptCode* script, s32 line, int instruction);
 void mobj_main();
 s32 _getFP();

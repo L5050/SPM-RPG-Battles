@@ -76,9 +76,12 @@ typedef struct
     bool isSelectFree;
 } RingMenu;
 
-EVT_DECLARE_USER_FUNC(ring_init_battle, 0) 
-EVT_DECLARE_USER_FUNC(ring_display_battle, 0)
+EVT_DECLARE_USER_FUNC(ring_init_battle, 0)
 EVT_DECLARE_USER_FUNC(ring_battle_main, 6)
+EVT_DECLARE_USER_FUNC(ring_delete_battle, 0)
+EVT_DECLARE_USER_FUNC(ring_display_battle, 0)
+EVT_DECLARE_USER_FUNC(ring_init_battle_pixl, 1)
+EVT_DECLARE_USER_FUNC(ring_battle_pixl_main, 6)
 
 void ring_menu_main();
 

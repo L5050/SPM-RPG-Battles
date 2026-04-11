@@ -8,6 +8,7 @@
 #include "ip.h"
 #include "ip_badges.h"
 #include "ip_badgepouch.h"
+#include "ring_menu.h"
 #include "tplpatch.h"
 #include "oChunks.h"
 #include "fracktail.h"
@@ -154,13 +155,43 @@ EVT_BEGIN(power_bounce_stylish)
   RETURN()
 EVT_END()
 
+EVT_BEGIN(power_jump_ac)
+            USER_FUNC(ring_init_battle_pixl, 1605)
+            SET(LW(0), 0)
+            SET(LW(2), 0)
+            SET(LW(6), 0)
+            DO(0)
+              USER_FUNC(ring_battle_pixl_main, LW(0), LW(1), LW(2), LW(3), LW(4), LW(6))
+              USER_FUNC(ring_display_battle)
+              WAIT_FRM(1)
+              IF_EQUAL(LW(6), 1)
+                DO_BREAK()
+              END_IF()
+            WHILE()
+            USER_FUNC(ring_delete_battle)
+            IF_EQUAL(LW(0), -1)
+              SET(LF(2), 1)
+              SET(LF(1), 1)
+              RETURN()
+            END_IF()
+            SET(UW(0), LW(2))
+RETURN()
+EVT_END()
+
 EVT_BEGIN(power_bounce)
+    RUN_CHILD_EVT(power_jump_ac)
+    IF_EQUAL(LF(2), 1)
+      SET(LF(2), 0)
+      SET(LF(1), 1)
+      RETURN()
+    END_IF()
     USER_FUNC(getFP, LW(14))
     IF_SMALL(LW(14), 2)
       USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(no_fp), 0, 0)
       SET(LF(1), 1)
       RETURN()
     END_IF()
+    WAIT_MSEC(200)
     USER_FUNC(get_pb_override, UW(0), LW(14))
     IF_NOT_EQUAL(LW(14), 0)
       SWITCH(UW(0))

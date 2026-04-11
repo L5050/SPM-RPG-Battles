@@ -92,18 +92,22 @@ namespace mod::msgpatch
         // In the event of duplicate entries, if allowed, the most recent (highest-numbered) slot takes priority in msgpatchSearch and msgpatchDelEntry.
         SPM_ASSERT(newText != nullptr, "Msg ID\"%s\" provides a null pointer to newText", msgName);
         s32 i = 0;
+        if (allowDuplicate)
+        {
+          msgpatchDelEntry(msgName);
+        }
         while (i < MSGPATCH_ENTRY_MAX)
         {
             if (!allowDuplicate)
             {
-                if (msgpatchEntries[i].identifier != nullptr)
+              if (msgpatchEntries[i].identifier != nullptr)
+              {
+                if (msl::string::strcmp(msgpatchEntries[i].identifier, msgName) == 0)
                 {
-                    if (msl::string::strcmp(msgpatchEntries[i].identifier, msgName) == 0)
-                    {
-                        // wii::os::OSReport("MsgPatch: AddEntry call failed; duplicate identifier \"%s\" detected.\n", msgName);
-                        return;
-                    }
+                  // wii::os::OSReport("MsgPatch: AddEntry call failed; duplicate identifier \"%s\" detected.\n", msgName);
+                  return;
                 }
+              }
             }
             if (msgpatchEntries[i].identifier == nullptr)
             {
@@ -238,6 +242,8 @@ namespace mod::msgpatch
 
     const char *msgSearchNew(const char *msgName)
     {
+        const char * ipChar = ip::messagePatch(msgName);
+        if (ipChar != nullptr) return ipChar;
         const char *patchedMsg = msgpatchSearch(msgName, 0, false);
         if (patchedMsg != nullptr)
             return patchedMsg;

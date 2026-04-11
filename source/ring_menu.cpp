@@ -215,6 +215,11 @@ void ringMenuClear(RingMenu* menu)
     if (!menu)
         return;
 
+    for (s32 i = 0; i < menu->iconCount; i++)
+    {
+      spm::icondrv::iconDelete(menu->icons[i]->name);
+    }
+    
     menu->iconCount = 0;
     menu->selectedIndex = 0;
     menu->ringAngle = 0.0f;
@@ -443,15 +448,50 @@ void ringMenuSnapToCurrentState(RingMenu* menu)
     }
 }
 
+s32 ring_delete_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+{
+  ringMenuClear(&battle_menu);
+  return 2;
+}
+
 s32 ring_init_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
 {
   spm::mario::MarioWork * mario = spm::mario::marioGetPtr();
   ringMenuInit(&battle_menu, -115.0f, -30.0f, 0.0f, 31.0f, 34.0f);
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1605)); // Attack
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x31)); // Special Moves
-  //ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x8C)); // Pixls
+
+  u32 pixlCount = 0;
+  for (u32 i = 0; i < 16; i++)
+  {
+    spm::mario_pouch::PouchCharOrPixlInfo * pixls = spm::mario_pouch::pouchGetPixlInfo(i);
+    if (pixls != nullptr && pixls->selectable)
+    {
+      pixlCount += 1;
+    }
+  }
+  if(pixlCount > 1)
+  {
+    ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x8C)); // Pixls
+  }
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x7C)); // Items
+
+  u32 charCount = 0;
+  for (u32 i = 0; i < 4; i++)
+  {
+    spm::mario_pouch::PouchCharOrPixlInfo * characters = spm::mario_pouch::pouchGetCharInfo(i);
+    if (characters != nullptr && characters->selectable)
+    {
+      charCount += 1;
+    }
+  }
+  if(charCount > 1)
+  {
+    ringMenuAddIcon(&battle_menu, iconEntryAutoname(1607)); // Swap Characters
+  }
+
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1606)); // Run Away
+
   ringMenuFinalize(&battle_menu);
   //ringMenuSnapToCurrentState(&battle_menu);
   return 2;
@@ -480,7 +520,6 @@ void battle_select(s32 i)
 
       if (npc != nullptr)
       {
-      wii::os::OSReport("turtle1 %d\n", i);
         // Get screen position
         wii::mtx::Vec3 pos;
         wii::mtx::Vec3 npcPos = npc->position;
@@ -501,6 +540,111 @@ void battle_select(s32 i)
       }
       return;
     }
+    return;
+  }
+
+  static s32 validateIndex(s32 index)
+  {
+    spm::npcdrv::NPCEntry *npc = nullptr;
+    // Check NPC is not dead, reset to correct index if it is
+    bool indexFiller[3];
+    for (s32 i = 0; i < 3; i++)
+    {
+      if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].flags & 0x8000) == 0)
+      {
+        indexFiller[i] = true;
+      } else {
+        indexFiller[i] = false;
+      }
+    }
+    if (!indexFiller[index])
+    {
+      index = -1;
+      for (s32 i = 0; i < 3; i++)
+      {
+        if (indexFiller[i] && i != index)
+        {
+          index = i;
+          break;
+        }
+      }
+    }
+    return index;
+  }
+
+  static s32 jumpAction(spm::evtmgr::EvtEntry *evtEntry, bool firstRun, u32 pressed)
+  {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, args[2]);
+    s32 indexTest = validateIndex(id);
+    if (indexTest > 0 && indexTest != id)
+    {
+      id = indexTest;
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], id);
+    }
+    battle_select(id);
+    if (pressed & 0x8)
+    {
+      spm::spmario_snd::spsndSFXOn("SFX_SYS_MENU_CURSOR_MOVE2");
+      id -= 1;
+      if (id < 0)
+      {
+        id = 2;
+      }
+      if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[id].flags & 0x8000) != 0)
+      {
+        do
+        {
+          id -= 1;
+          if (id < 0)
+          {
+            id = 2;
+          }
+        } while ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[id].flags & 0x8000) != 0);
+      }
+      jumpFrames = 15;
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], id);
+      return 2;
+    }
+    if (pressed & 0x4)
+    {
+      spm::spmario_snd::spsndSFXOn("SFX_SYS_MENU_CURSOR_MOVE2");
+      id += 1;
+      if (id > 2)
+      {
+        id = 0;
+      }
+      if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[id].flags & 0x8000) != 0)
+      {
+        do
+        {
+          id += 1;
+          if (id > 2)
+          {
+            id = 0;
+          }
+        } while ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[id].flags & 0x8000) != 0);
+      }
+      jumpFrames = 15;
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], id);
+      return 2;
+    }
+    if (pressed & 0x100)
+    {
+      spm::spmario_snd::spsndSFXOn("SFX_SYS_MENU_DESIDE1");
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 0);
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], id);
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
+      return 2;
+    }
+    if (pressed & 0x200)
+    {
+      battle_menu.isSelectFree = false;
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 0);
+      spm::spmario_snd::spsndSFXOn("SFX_SYS_MENU_CANCEL1");
+      return 2;
+    }
+    return 2;
   }
 
 s32 ring_battle_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
@@ -517,44 +661,7 @@ s32 ring_battle_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     switch (battle_menu.icons[battle_menu.selectedIndex]->iconId)
     {
     case 1605:
-      s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, args[2]);
-      wii::os::OSReport("turtle %d\n", id);
-      battle_select(id);
-      if (pressed & 0x8) {
-        spm::spmario_snd::spsndSFXOn("SFX_SYS_MENU_CURSOR_MOVE2");
-        id -= 1;
-        if (id < 0)
-        {
-          id = 2;
-        }
-        jumpFrames = 15;
-        spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], id);
-        return 2;
-      }
-      if (pressed & 0x4) {
-        spm::spmario_snd::spsndSFXOn("SFX_SYS_MENU_CURSOR_MOVE2");
-        id += 1;
-        if (id > 2)
-        {
-          id = 0;
-        }
-        jumpFrames = 15;
-        spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], id);
-        return 2;
-      }
-      if (pressed & 0x100) {
-        spm::spmario_snd::spsndSFXOn("SFX_SYS_MENU_DESIDE1");
-        spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 0);
-        spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], id);
-        spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
-        return 2;
-      }
-      if (pressed & 0x200) {
-        battle_menu.isSelectFree = false;
-        spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 0);
-        spm::spmario_snd::spsndSFXOn("SFX_SYS_MENU_CANCEL1");
-        return 2;
-      }
+      return jumpAction(evtEntry, firstRun, pressed);
       break;
     }
     return 2;
@@ -566,7 +673,54 @@ s32 ring_battle_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 1605)
     {
       jumpFrames = 15;
-      spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], 0);
+      u8 npcIndex = 0;
+      for (u8 i = 0; i < 3; i++)
+      {
+        spm::npcdrv::NPCEntry *npc = nullptr;
+        switch (i)
+        {
+        case 0:
+          npc = spm::npcdrv::npcNameToPtr_NoAssert("npc1");
+          break;
+        case 1:
+          npc = spm::npcdrv::npcNameToPtr_NoAssert("npc2");
+          break;
+        case 2:
+          npc = spm::npcdrv::npcNameToPtr_NoAssert("npc3");
+          break;
+        }
+        if (npc)
+        {
+          npcIndex = i;
+          break;
+        }
+      }
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], npcIndex);  
+    }
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 0x31)
+    {
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 1);
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
+    }
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 0x8C)
+    {
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 2);
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
+    }
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 0x7C)
+    {
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 3);
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
+    }
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 1607)
+    {
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 4);
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
+    }
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 1606)
+    {
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 5);
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
     }
     return 2;
   }
@@ -584,6 +738,62 @@ s32 ring_battle_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   return 2;
 }
 
+s32 ring_battle_pixl_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  u32 pressed = spm::wpadmgr::wpadGetButtonsPressed(0);
+
+  if (battle_menu.isSelectFree)
+  {
+    return jumpAction(evtEntry, firstRun, pressed);
+  } else {
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], -1);
+      spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
+  }
+  return 2;
+}
+
+s32 ring_init_battle_pixl(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  s32 id = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+
+  spm::mario::MarioWork * mario = spm::mario::marioGetPtr();
+  ringMenuInit(&battle_menu, -115.0f, -30.0f, 0.0f, 31.0f, 34.0f);
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(id));
+
+  ringMenuFinalize(&battle_menu);
+
+  battle_menu.isSelectFree = true;
+
+  jumpFrames = 15;
+  u8 npcIndex = 0;
+  for (u8 i = 0; i < 3; i++)
+  {
+    spm::npcdrv::NPCEntry *npc = nullptr;
+    switch (i)
+    {
+    case 0:
+      npc = spm::npcdrv::npcNameToPtr_NoAssert("npc1");
+      break;
+    case 1:
+      npc = spm::npcdrv::npcNameToPtr_NoAssert("npc2");
+      break;
+    case 2:
+      npc = spm::npcdrv::npcNameToPtr_NoAssert("npc3");
+      break;
+    }
+    if (npc)
+    {
+      npcIndex = i;
+      break;
+    }
+  }
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], npcIndex);
+
+  return 2;
+}
+
 void battle_menu_display(s32 camid, RingMenu * menu)
 {
   return ringMenuDisplay(&battle_menu);
@@ -598,7 +808,7 @@ s32 ring_display_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
 
 void ring_menu_main()
 {
-
+  spm::acdrv::acdrv_acDefs[3].msgName = spm::acdrv::acdrv_acDefs[2].msgName;
 }
 
 }
