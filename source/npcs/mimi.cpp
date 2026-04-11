@@ -211,7 +211,7 @@ NPCTribeAnimDef animsMimi2[] = {
     IF_EQUAL(LW(11), 1)
       USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
       USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-      SUB(LW(10), 2)
+      SUB(LW(10), 1)
       IF_SMALL(LW(10), 0)
         SET(LW(10), 0)
       END_IF()
@@ -342,7 +342,7 @@ NPCTribeAnimDef animsMimi2[] = {
           IF_EQUAL(LW(11), 1)
               USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
               USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-              SUB(LW(10), 2)
+              SUB(LW(10), 1)
               IF_SMALL(LW(10), 0)
                 SET(LW(10), 0)
               END_IF()
@@ -626,7 +626,7 @@ EVT_END()
   void mimi_main()
   {
     npcTribes[280].killXp *= 2;
-    npcTribes[280].attackStrength = 4;
+    npcTribes[280].attackStrength = 3;
     npcTribes[280].maxHp = 57;
     #ifdef SPM_EU0
     evtpatch::hookEvt(boss, 152, mimi_cam_reset);

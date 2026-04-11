@@ -120,7 +120,7 @@ namespace mod {
           IF_EQUAL(LW(11), 1)
             SET(LW(11), 1)
             USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-            SUB(LW(10), 2)
+            SUB(LW(10), 1)
             IF_SMALL(LW(10), 0)
               SET(LW(10), 0)
             END_IF()

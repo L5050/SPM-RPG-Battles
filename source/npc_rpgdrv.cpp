@@ -784,7 +784,7 @@ EVT_END()
     npcDataTable[3] = {11, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Green Koopa Troopa
 
     sproing_main();
-    npcDataTable[4] = {134, animsTecti, 50, sproing_oing_attack, nullptr, nullptr}; // Sproing-Oing
+    npcDataTable[4] = {134, animsTecti, 10, sproing_oing_attack, nullptr, nullptr}; // Sproing-Oing
 
     npcDataTable[5] = {126, animsOctar, 10, octar_attack, nullptr, nullptr}; // Squig
 
