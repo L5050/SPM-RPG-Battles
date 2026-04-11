@@ -760,6 +760,7 @@
 80125C88:marioChgPose
 801832C4:pausewinGetEntry
 80187560:pausewinMsgBoxDisp
+8019CE10:intplGetValue
 
 // new to rld3 v1
 8025C1B0:strcat
