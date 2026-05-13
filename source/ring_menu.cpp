@@ -304,7 +304,7 @@ void ringMenuScrollLeft(RingMenu* menu)
 }
 
 // ============================================================
-// Internal update
+// Internal updates
 // ============================================================
 
 static void ringMenuUpdateRotation(RingMenu* menu)
@@ -347,22 +347,13 @@ static void ringMenuUpdateIcons(RingMenu* menu)
         f32 targetX = menu->centerX + (cosA * menu->radiusX);
         f32 targetY = menu->centerY + (sinA * menu->radiusY);
         f32 targetZ = menu->centerZ;
-
-        // --------------------------------------------------------
-        // Front/back amount
-        // 0.0 = back, 1.0 = front
-        // --------------------------------------------------------
+        
         f32 depthT = (sinA + 1.0f) * 0.5f;
-
-        // --------------------------------------------------------
-        // Visual tuning
-        // --------------------------------------------------------
+        
         f32 targetScale = ringMenuLerp(0.70f, 1.10f, depthT);
         u8 targetAlpha = (u8)(ringMenuLerp(110.0f, 255.0f, depthT));
 
-        // --------------------------------------------------------
-        // Selected/front icon emphasis
-        // --------------------------------------------------------
+        // Selected/top icon emphasis
         if (i == menu->selectedIndex)
         {
             f32 pulse = sinf((f32)menu->frameCounter * 0.18f) * 0.03f;
@@ -371,10 +362,7 @@ static void ringMenuUpdateIcons(RingMenu* menu)
         } else {
           targetAlpha /= 2;
         }
-
-        // --------------------------------------------------------
-        // Animate toward targets
-        // --------------------------------------------------------
+        
         iconZoomTo(icon, menu->iconMoveFrames, targetScale);
         iconFadeTo(icon, menu->iconMoveFrames, targetAlpha);
         spm::icondrv::iconDisp(11, icon);
