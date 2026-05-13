@@ -583,6 +583,7 @@ bool IsNpcActive(s32 index) {
   "into a tube, making it\n"
   "easier to dodge attacks!\n"
   "<k>\n"
+  "<p>\n"
   "<col cffffff>Press <icon PAD_2 0.67 0 0 2><col cffffff> to jump away\n"
   "from the attack!!"
   "<k>\n"

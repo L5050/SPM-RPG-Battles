@@ -142,6 +142,8 @@ NPCTribeAnimDef animsMimi2[] = {
       WAIT_MSEC(200)
     WHILE()
     USER_FUNC(evt_npc_delete, LW(15))
+    USER_FUNC(rpg_off)
+    USER_FUNC(spm::evt_pouch::evt_pouch_remove_item, 220)
     #ifdef SPM_EU0
     CALL(boss + evtpatch::getLineOffset(boss, 135))
     #else
@@ -358,6 +360,7 @@ NPCTribeAnimDef animsMimi2[] = {
       USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, UW(1), EVT_NULLPTR, UW(3), UW(1), EVT_NULLPTR, 200, 1000, 11)
     END_INLINE() 
     USER_FUNC(ac_success_reset)
+    WAIT_MSEC(500)
     LBL(5)
     CHK_EVT(LW(4), LW(0))
     IF_EQUAL(LW(0), 0)

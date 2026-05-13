@@ -106,7 +106,7 @@ NPCTribeAnimDef animsParaKuribo[] = {
 
   NPC_RPG_Defense sinnoDefense = {0, 2, 0x0, 0};
   NPC_RPG_Defense metDefense[] = {{0, 1, 0x0, 0}, {8, 99, 0x0, 0}};
-  NPC_RPG_Defense mimiDefense = {2, 1, 0x0, 0};
+  NPC_RPG_Defense mimiDefense = {2, 2, 0x0, 0};
 
   NPCTribeAnimDef animsOcta2[] = {
     {0, "S_1"},
