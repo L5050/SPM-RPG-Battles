@@ -111,16 +111,9 @@ s32 new_evt_read_setup_file(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   return evt_read_setup_file(evtEntry, firstRun);
 }
 
-s32 reduce_game_speed(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
-{
-  spm::mario::marioGetPtr()->statusFlags = 0x800;
-  return 2;
-}
-
 EVT_DECLARE_USER_FUNC(restore_fp, 0)
 EVT_DECLARE_USER_FUNC(genocide_check, 1)
 EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
-EVT_DECLARE_USER_FUNC(reduce_game_speed, 0)
 
   EVT_BEGIN(genocide_check_evt)
     USER_FUNC(genocide_check_2, LW(15))

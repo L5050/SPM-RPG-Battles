@@ -41,6 +41,7 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(mario_paper_on, 1)
   EVT_DECLARE_USER_FUNC(mario_chg_paper, 1)
   EVT_DECLARE_USER_FUNC(npc_change_name, 2)
+  EVT_DECLARE_USER_FUNC(spawn_robo_eff, 0)
 
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)

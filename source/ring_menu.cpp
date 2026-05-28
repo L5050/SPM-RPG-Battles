@@ -442,9 +442,8 @@ s32 ring_delete_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   return 2;
 }
 
-s32 ring_init_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+static void notBowserBattleInit()
 {
-  spm::mario::MarioWork * mario = spm::mario::marioGetPtr();
   ringMenuInit(&battle_menu, -115.0f, -30.0f, 0.0f, 31.0f, 34.0f);
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1605)); // Attack
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x31)); // Special Moves
@@ -452,13 +451,13 @@ s32 ring_init_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   u32 pixlCount = 0;
   for (u32 i = 0; i < 16; i++)
   {
-    spm::mario_pouch::PouchCharOrPixlInfo * pixls = spm::mario_pouch::pouchGetPixlInfo(i);
+    spm::mario_pouch::PouchCharOrPixlInfo *pixls = spm::mario_pouch::pouchGetPixlInfo(i);
     if (pixls != nullptr && pixls->selectable)
     {
       pixlCount += 1;
     }
   }
-  if(pixlCount > 1)
+  if (pixlCount > 1)
   {
     ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x8C)); // Pixls
   }
@@ -467,13 +466,13 @@ s32 ring_init_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   u32 charCount = 0;
   for (u32 i = 0; i < 4; i++)
   {
-    spm::mario_pouch::PouchCharOrPixlInfo * characters = spm::mario_pouch::pouchGetCharInfo(i);
+    spm::mario_pouch::PouchCharOrPixlInfo *characters = spm::mario_pouch::pouchGetCharInfo(i);
     if (characters != nullptr && characters->selectable)
     {
       charCount += 1;
     }
   }
-  if(charCount > 1)
+  if (charCount > 1)
   {
     ringMenuAddIcon(&battle_menu, iconEntryAutoname(1607)); // Swap Characters
   }
@@ -481,7 +480,47 @@ s32 ring_init_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1606)); // Run Away
 
   ringMenuFinalize(&battle_menu);
-  //ringMenuSnapToCurrentState(&battle_menu);
+}
+
+static void bowserBattleInit()
+{
+  ringMenuInit(&battle_menu, -115.0f, -30.0f, 0.0f, 31.0f, 34.0f);
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(1611)); // Attack
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(1612)); // Vacuum
+  //ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x31)); // Special Moves
+  
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x7C)); // Items
+
+  u32 charCount = 0;
+  for (u32 i = 0; i < 4; i++)
+  {
+    spm::mario_pouch::PouchCharOrPixlInfo *characters = spm::mario_pouch::pouchGetCharInfo(i);
+    if (characters != nullptr && characters->selectable)
+    {
+      charCount += 1;
+    }
+  }
+  if (charCount > 1)
+  {
+    ringMenuAddIcon(&battle_menu, iconEntryAutoname(1607)); // Swap Characters
+  }
+
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(1606)); // Run Away
+
+  ringMenuFinalize(&battle_menu);
+}
+
+s32 ring_init_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+{
+  spm::mario::MarioWork *mario = spm::mario::marioGetPtr();
+  if (mario->character != 2)
+  {
+    notBowserBattleInit();
+  }
+  else
+  {
+    bowserBattleInit();
+  }
   return 2;
 }
 
@@ -649,6 +688,7 @@ s32 ring_battle_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     switch (battle_menu.icons[battle_menu.selectedIndex]->iconId)
     {
     case 1605:
+    case 1611:
       return jumpAction(evtEntry, firstRun, pressed);
       break;
     }
@@ -658,7 +698,7 @@ s32 ring_battle_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   if (pressed & 0x100) {
     spm::spmario_snd::spsndSFXOn("SFX_SYS_MENU_DESIDE1");
     battle_menu.isSelectFree = true;
-    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 1605)
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 1605 || battle_menu.icons[battle_menu.selectedIndex]->iconId == 1611)
     {
       jumpFrames = 15;
       u8 npcIndex = 0;
@@ -685,7 +725,7 @@ s32 ring_battle_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       }
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], npcIndex);  
     }
-    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 0x31)
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 0x31 || battle_menu.icons[battle_menu.selectedIndex]->iconId == 1612)
     {
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 1);
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);

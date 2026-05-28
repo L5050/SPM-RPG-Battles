@@ -43,7 +43,8 @@
 using namespace spm::npcdrv;
 using namespace spm::evtmgr;
 
-#define NPC_TABLE_MAX 20
+#define NPC_TABLE_MAX 21
+#define NPC_HEALTH_OVERRIDE_MAX 1
 
 namespace mod {
 
@@ -67,6 +68,12 @@ typedef struct
   const EvtScriptCode* onThrowScript = nullptr;
   NPC_RPG_Defense * defense = nullptr;
 } npc_rpg_data;
+
+typedef struct
+{
+  s32 tribeId;
+  s32 health;
+} npc_rpg_health_override;
 
 extern NPCTribeAnimDef animsKuribo[];
 

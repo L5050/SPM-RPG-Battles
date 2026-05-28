@@ -140,7 +140,7 @@ namespace mod {
 
   void teresa_main()
   {
-    npcTribes[84].attackStrength = 5;
+    npcTribes[84].attackStrength = 4;
   }
 
 }

@@ -61,6 +61,8 @@ EVT_DECLARE_USER_FUNC(cam_3d_off_on, 1)
 EVT_DECLARE_USER_FUNC(check_stylish, 2)
 EVT_DECLARE_USER_FUNC(npc_get_bounding_box, 5)
 EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
+EVT_DECLARE_USER_FUNC(reduce_game_speed, 0)
+EVT_DECLARE_USER_FUNC(increase_game_speed, 0)
 
 EVT_DECLARE(evt_memcard_save)
 

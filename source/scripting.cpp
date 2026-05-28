@@ -24,6 +24,7 @@
 #include <spm/eff/eff_happy_flower.h>
 #include <spm/evt_fairy.h>
 #include <spm/evt_snd.h>
+#include <spm/spmario.h>
 #include <spm/evt_cam.h>
 #include <spm/evt_sub.h>
 #include <spm/evt_npc.h>
@@ -188,7 +189,7 @@ customwin::CWSelectItemDesc usablePixls[16];
 
 customwin::CWSelectItemDesc usableMarioTechs[10];
 customwin::CWSelectItemDesc usablePeachTechs[10];
-customwin::CWSelectItemDesc usableBowserTechs[3];
+customwin::CWSelectItemDesc usableBowserTechs[2];
 
   s32 patchTechniquesMario(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   {
@@ -243,10 +244,41 @@ customwin::CWSelectItemDesc usableBowserTechs[3];
     usablePeachTechs[2].iconId = -1;
     usablePeachTechs[2].page = 0;
     s32 numOptions = 3;
-
+    if (spm::spmario::gp->gsw0 >= 96)
+    {
+      msl::string::strcpy(usablePeachTechs[3].nameTxt, "Purification");
+      msl::string::strcpy(usablePeachTechs[3].descTxt, "Does 10 damage against enemies with a status effect\nRemoves statuses from all enemies.");
+      usablePeachTechs[3].cost = 1;
+      usablePeachTechs[3].iconId = -1;
+      usablePeachTechs[3].page = 0;
+      numOptions += 1;
+    }
     
     
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)&usablePeachTechs[0]);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], numOptions);
+
+    return 2;
+  }
+
+  s32 patchTechniquesBowser(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    msl::string::strcpy(usableBowserTechs[0].nameTxt, "Fire");
+    msl::string::strcpy(usableBowserTechs[0].descTxt, "Breathe fire against all enemies!\nUses all FP.");
+    usableBowserTechs[0].cost = _getFP();
+    usableBowserTechs[0].iconId = -1;
+    usableBowserTechs[0].page = 0;
+    msl::string::strcpy(usableBowserTechs[1].nameTxt, "Vacuum");
+    msl::string::strcpy(usableBowserTechs[1].descTxt, "Generates panels to heal HP and FP!\nDon't click the poison shrooms!");
+    usableBowserTechs[1].cost = 0;
+    usableBowserTechs[1].iconId = -1;
+    usableBowserTechs[1].page = 0;
+    s32 numOptions = 2;
+
+    
+    
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)&usableBowserTechs[0]);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], numOptions);
 
     return 2;
@@ -283,6 +315,10 @@ s32 rpg_populate_techniques(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_PEACH)
     {
       return patchTechniquesPeach(evtEntry, firstRun);
+    }
+    if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_BOWSER)
+    {
+      return patchTechniquesBowser(evtEntry, firstRun);
     }
     return 2;
 }
@@ -769,6 +805,35 @@ EVT_BEGIN(soul_stopper_kill)
     END_IF()
   END_IF()
 RETURN()
+EVT_END()
+
+EVT_BEGIN(get_rpg_npc_name)
+    IF_EQUAL(UW(0), 0)
+      SET(LW(15), PTR("npc1"))
+    END_IF()
+    IF_EQUAL(UW(0), 1)
+      SET(LW(15), PTR("npc2"))
+    END_IF()
+    IF_EQUAL(UW(0), 2)
+      SET(LW(15), PTR("npc3"))
+    END_IF()
+  RETURN()
+EVT_END()
+
+EVT_BEGIN(purify_evt)
+  RUN_CHILD_EVT(get_rpg_npc_name)
+  USER_FUNC(spm::an2_08::evt_rpg_enemy_death_check, UW(0), LW(10))
+  IF_FLAG(LW(10), 0x3)
+    USER_FUNC(spm::evt_npc::evt_npc_set_animpose_disp_callback, LW(15), 0, 0)
+    USER_FUNC(spm::an2_08::evt_rpg_status_remove, 1, UW(0), 0x3)
+    USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 10, 0, LW(0))
+    USER_FUNC(spm::evt_npc::evt_npc_get_position, LW(15), LW(5), LW(6), LW(7))
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_SMASH1"))
+    RUN_EVT(damageAnims)
+    USER_FUNC(displayDamage, LW(5), LW(6), LW(7), 10)
+    RUN_CHILD_EVT(runEnemyDeath)
+  END_IF()
+  RETURN()
 EVT_END()
 
 EVT_BEGIN(levelUpScript)
@@ -1340,10 +1405,93 @@ EVT_BEGIN(rpg_jump)
   RETURN()
 EVT_END()
 
+EVT_BEGIN(bowser_attack) 
+  USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("AC_7"), 0)
+  BROTHER_EVT_ID(LW(2))
+    SET(LW(11), 0)
+    SETF(LW(10), FLOAT(0.0))
+    DO(0)
+      USER_FUNC(mario_rotate, LW(10))
+      ADD(LW(11), 1)
+      ADDF(LW(10), FLOAT(25.0))
+      WAIT_FRM(1)
+    WHILE()
+  END_BROTHER()
+  WAIT_FRM(20)
+  USER_FUNC(spm::evt_ac::evt_ac_entry, PTR("ac"), 12)
+  USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("ac"), LW(8))
+  USER_FUNC(spm::evt_ac::evt_ac_delete, PTR("ac"))
+  IF_EQUAL(LW(8), 7)
+    SWITCH(UW(0))
+      CASE_EQUAL(0)
+        USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc1"), LW(5), LW(6), LW(7))
+      CASE_EQUAL(1)
+        USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc2"), LW(5), LW(6), LW(7))
+      CASE_EQUAL(2)
+        USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc3"), LW(5), LW(6), LW(7))
+    END_SWITCH()
+    INLINE_EVT()
+      WAIT_FRM(1)
+      USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("AC_7"), 0)
+    END_INLINE()
+    USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 50, 400)
+    USER_FUNC(spm::an2_08::evt_rpg_calc_damage_to_enemy, UW(0), 0, LW(10))
+    MUL(LW(10), 2)
+    ADD(LW(10), 1)
+    USER_FUNC(displayDamage, LW(5), LW(6), LW(7), LW(10))
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon_character, PTR("SFX_P_V_MARIO_ATTACK1"), PTR("SFX_P_V_PEACH_ATTACK1"), PTR("SFX_P_V_KOOPA_ATTACK1"), PTR("SFX_P_V_LUIGI_ATTACK1"))
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_SMASH1"))
+    DELETE_EVT(LW(2))
+    USER_FUNC(mario_rotate, FLOAT(0.0))
+    USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(10), 0, LW(0))
+    BROTHER_EVT_ID(LW(2))
+      RUN_CHILD_EVT(runEnemyDeath)
+    END_BROTHER()
+    RUN_EVT(damageAnims)
+    INLINE_EVT()
+      WAIT_FRM(31)
+      USER_FUNC(enable_disable_stylish, 1)
+      WAIT_FRM(9)
+      USER_FUNC(check_stylish, 9, LW(11))
+      IF_EQUAL(LW(11), 1)
+        USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("AC_5"), 0)
+        USER_FUNC(spm::evt_sub::evt_sub_random, 50, LW(11))
+        ADD(LW(11), 50)
+        USER_FUNC(spm::an2_08::evt_rpg_add_xp, LW(11))
+        USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_ACROBAT_RENZOKU1"))
+        USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("nice"), UW(6), 150, 0, 0, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0) 
+        RUN_EVT(increase_stylish)
+      END_IF()
+    END_INLINE()
+    SUB(LW(5), FLOAT(50.0))
+    USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 50, 500)
+    SET(LW(5), UW(4))
+    USER_FUNC(spm::evt_mario::evt_mario_pos_change, LW(5), LW(7), FLOAT(180.0))
+    USER_FUNC(spm::evt_mario::evt_mario_set_pos, LW(5), FLOAT(0.0), LW(7))
+    USER_FUNC(spm::evt_mario::evt_mario_direction_face, 90, 200)
+    DO(0)
+      CHK_EVT(LW(2), LW(0))
+      IF_EQUAL(LW(0), 0)
+        DO_BREAK()
+      END_IF()
+      WAIT_FRM(1)
+    WHILE()
+  ELSE()
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_HELWANWAN_MISS1"))
+    WAIT_MSEC(1000)
+  END_IF()
+  RETURN()
+EVT_END()
+
 EVT_BEGIN(attack)
     SET(UW(0), LW(2))
     USER_FUNC(enable_disable_rpg_menu, 0)
     USER_FUNC(spm::evt_msg::evt_msg_continue)
+    USER_FUNC(spm::evt_mario::evt_mario_get_character, LW(5))
+    IF_EQUAL(LW(5), 2)
+      RUN_CHILD_EVT(bowser_attack)
+      RETURN()
+    END_IF()
     USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
     SET(LW(5), UW(4))
     ADD(LW(5), 150)
@@ -1419,14 +1567,6 @@ EVT_BEGIN(attack)
     RUN_CHILD_EVT(runEnemyDeath)
     USER_FUNC(ac_success_reset)
     USER_FUNC(enable_disable_rpg_menu, 0)
-    /*
-    DO(0)
-      CHK_EVT(LW(8), LW(0))
-      IF_EQUAL(LW(0), 0)
-        DO_BREAK()
-      END_IF()
-      WAIT_FRM(1)
-    WHILE()*/
     SET(LF(2), 0)
     RETURN()
 EVT_END()
@@ -1666,6 +1806,39 @@ SWITCH(LW(10))
               USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
               USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(stylish_fail))
               SET(LF(1), 1)
+            END_IF()
+          CASE_EQUAL(3)
+            IF_EQUAL(UW(6), 4)
+              SET(UW(6), 0)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("M_1A"), 0) 
+              INLINE_EVT()
+                USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
+                USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("M_1B"), 0) 
+              END_INLINE()
+              USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_ITEM_USE1"))
+              USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+              ADDF(LW(6), FLOAT(90.0))
+              USER_FUNC(spm::evt_eff::evt_eff, PTR("hearts"), PTR("pure_heart"), 2, LW(5), LW(6), LW(7), 0, 0, 0, 0, 0, 0, 0, 0)
+              USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_PUREHEART1"))
+              WAIT_FRM(60)
+              DO(30)
+                ADDF(LW(6), FLOAT(10.0))
+                USER_FUNC(spm::bos_01::evt_bos_01_pure_heart_set_pos, PTR("hearts"), LW(5), LW(6), LW(7))
+                WAIT_FRM(1)
+              WHILE()
+              USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(0))
+              USER_FUNC(spm::evt_snd::evt_snd_sfx_fadeout, LW(0), 500)
+              USER_FUNC(spm::evt_eff::evt_eff_softdelete, PTR("hearts"))
+              WAIT_MSEC(200)
+              USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+              USER_FUNC(spm::evt_eff::evt_eff_sundale_support, LW(5), LW(6), LW(7))
+              WAIT_MSEC(1500)
+              SET(UW(0), 0)
+              RUN_CHILD_EVT(purify_evt)
+              SET(UW(0), 1)
+              RUN_CHILD_EVT(purify_evt)
+              SET(UW(0), 2)
+              RUN_CHILD_EVT(purify_evt)
             END_IF()
         END_SWITCH()
     CASE_EQUAL(2) //Bowser
@@ -3649,6 +3822,7 @@ DO(0)
   SET(LW(6), 0)
   USER_FUNC(enable_disable_rpg_menu, 1)
   RUN_EVT_ID(handleLowHealthNoise, LW(5))
+  USER_FUNC(spawn_robo_eff)
   USER_FUNC(ring_init_battle)
   DO(0)
     USER_FUNC(ring_battle_main, LW(0), LW(1), LW(2), LW(3), LW(4), LW(6))

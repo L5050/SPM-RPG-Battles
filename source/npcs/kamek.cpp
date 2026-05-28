@@ -216,8 +216,12 @@ namespace mod {
   EVT_END()
 
   EVT_BEGIN(kamek_onspawn)
-    USER_FUNC(evt_npc_delete, PTR("peach"))
-    USER_FUNC(evt_npc_delete, PTR("kamek"))
+    USER_FUNC(getCurMap, LW(4))
+    USER_FUNC(compareStrings, LW(4), PTR("mi1_08"), LW(1))
+    IF_EQUAL(LW(1), 1)
+      USER_FUNC(evt_npc_delete, PTR("peach"))
+      USER_FUNC(evt_npc_delete, PTR("kamek"))
+    END_IF()
   RETURN()
   EVT_END()
 
@@ -326,7 +330,7 @@ namespace mod {
   void kamek_main()
   {
     npcTribes[63].maxHp = 55;
-    npcTribes[63].attackStrength = 4;
+    npcTribes[63].attackStrength = 3;
   }
 
 }

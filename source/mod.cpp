@@ -1445,6 +1445,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 0;
       break;
+      case 3: // Gloomba
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 3;
+        rpgTribeID[1] = 3;
+        rpgTribeID[2] = 3;
+      break;
       case 7: // Paragoomba
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
@@ -1633,7 +1641,6 @@ bool IsNpcActive(s32 index) {
       //spm::npcdrv::npcTakeDamage(npcPart->owner, npcPart, 1, 5, 0, 4);
       //return 4;
     //}
-    wii::os::OSReport("%d\n", power);
     if (power == 0) return 4;
     if (npcPart->owner->moveMode == 5 && tribeId != 440) return 4;
     spm::mario::MarioWork * mpp = spm::mario::marioGetPtr();
@@ -1672,6 +1679,9 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[67].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[70].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[110].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[80].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[235].unkDefinitionTable = turnBasedCombatOverride;
+    return;
   }
 
   static void deleteUnderchompTextures() {
@@ -1834,7 +1844,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
 
   static void hookEvent() {
     evt_cam3d_evt_zoom_in = patch::hookFunction(spm::evt_cam::evt_cam3d_evt_zoom_in, new_evt_cam3d_evt_zoom_in);
-    evt_seq_set_seq = patch::hookFunction(spm::evt_seq::evt_seq_set_seq, new_evt_seq_set_seq);
+    //evt_seq_set_seq = patch::hookFunction(spm::evt_seq::evt_seq_set_seq, new_evt_seq_set_seq);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage); 
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
@@ -1842,9 +1852,9 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     //writeBranchLink(0x80057c50, 0x0, new_C_MTXPerspective);
     //evt_rpg_choice_handler = patch::hookFunction(spm::an2_08::evt_rpg_choice_handler, new_evt_rpg_choice_handler);
     evt_mario_get_height = patch::hookFunction(spm::evt_mario::evt_mario_get_height, new_evt_mario_get_height);
-    patchWangSpecial();
+    //patchWangSpecial();
 
-    pouchSetEnemiesDefeated = patch::hookFunction(spm::mario_pouch::pouchSetEnemiesDefeated, new_pouchSetEnemiesDefeated);
+    //pouchSetEnemiesDefeated = patch::hookFunction(spm::mario_pouch::pouchSetEnemiesDefeated, new_pouchSetEnemiesDefeated);
 
     //marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
 
@@ -1855,17 +1865,17 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     //msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
 
     writeWord( & spm::pausewin::levelUpWindowMain, 0x0, 0x4e800020);
-    writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
-    rpgHandleMenu = patch::hookFunction(spm::an2_08::rpgHandleMenu, patchTechniquesChars);
+    //writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
+    //rpgHandleMenu = patch::hookFunction(spm::an2_08::rpgHandleMenu, patchTechniquesChars);
     writeBranchLink( & spm::an2_08::evt_rpg_npctribe_handle, 0x94, returnTribe);
-    writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
-    writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
-    writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C0C0003);
-    writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x1324, 0x2c000057);
+    //writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
+    //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
+    //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C0C0003);
+    //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x1324, 0x2c000057);
     
     writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0x2BC, 0x60000000);
     writeWord(& spm::mario::marioCalcDamageToEnemy, 0x16C, 0x57FF003E);
-    deleteUnderchompTextures();
+    //deleteUnderchompTextures();
     turnBasedCombatOverrideInit();
   }
 
@@ -2070,6 +2080,24 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     return 2;
   }
 
+  s32 reduce_game_speed(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::mario::marioGetPtr()->statusFlags = 0x800;
+    return 2;
+  }
+
+  s32 increase_game_speed(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::mario::marioGetPtr()->statusFlags = 0x400;
+    return 2;
+  }
+
+  s32 normalize_game_speed(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::mario::marioGetPtr()->statusFlags = 0;
+    return 2;
+  }
+
 char item_name[11];
 
 s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
@@ -2091,8 +2119,6 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     bossFight = false;
     isFrog = false;
     is3dCam = false;
-    if (firstRun == false) {}
-    if (evtEntry->flags == 0) {}
     return 2;
   }
 

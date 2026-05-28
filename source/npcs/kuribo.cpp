@@ -127,6 +127,8 @@ namespace mod {
 
   void kuribo_main()
   {
+    npcTribes[3].maxHp *= 2;
+    npcTribes[3].attackStrength *= 2;
     npcTribes[7].maxHp *= 4;
     npcTribes[7].killXp *= 4;
   }

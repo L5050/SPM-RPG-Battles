@@ -613,6 +613,16 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
       return 2;
     }
+    comparison = "ta1_01";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -250.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.16);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
     return 2;
   }
 
@@ -824,6 +834,34 @@ EVT_END()
 
     mimi_main();
     npcDataTable[19] = {280, getMimiAnims(), 0, mimi_attack, mimi_onhit, mimi_ondeath, mimi_onspawn, mimi_throw_script, &mimiDefense}; // Mimi
+    
+    npcDataTable[20] = {3, animsKuribo, 20, kuribo_attack, nullptr, nullptr};
   }
+
+/*
+
+     .-""""--.
+      /         )
+     /      --"`
+    /       _`:---.
+   |     .-'       `\
+    \   /    .----'./
+     \  : ,-' ~(.).)\
+      \_| \      ._) |
+       /   |  \.__, /
+  _.--'    )`///-,-'
+ /        / _| (_\\
+|        (____/____)
+ \     ___/       | _
+  `---(            ` )
+       `-,          .'
+        (__.'._/'._/
+             |`| |
+          __/ / /
+         //   | `--.
+        ||    /_____)
+
+*/
+
 
 }
