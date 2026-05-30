@@ -171,6 +171,7 @@ NPCTribeAnimDef animsMimi2[] = {
       USER_FUNC(spm::evt_npc::evt_npc_set_animpose_disp_callback, LW(15), PTR(spm::mi4::mi4MimiHolographicEffect), 0)
       USER_FUNC(spm::an2_08::evt_rpg_status_remove, 1, UW(0), 0x3)
     ELSE()
+      USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 10, 0, EVT_NULLPTR)
       RUN_EVT(mimi_decharge)
     END_IF()
     ADD(LW(1), 70)

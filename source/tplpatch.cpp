@@ -2,13 +2,10 @@
 #include "tplpatch.h"
 
 #include <common.h>
-#include <evt_cmd.h>
-#include <spm/evtmgr.h>
-#include <spm/evtmgr_cmd.h>
 #include <spm/filemgr.h>
 #include <spm/icondrv.h>
-#include <spm/item_data.h>
 #include <spm/memory.h>
+#include <spm/spmario.h>
 #include <spm/system.h>
 #include <wii/tpl.h>
 #include <msl/string.h>
@@ -16,9 +13,9 @@
 namespace mod::tplpatch
 {
   /*
-  patchTpl and TextureWork were created by L5050.
-  The iconpatch framework was created by Yme.
-  Reach out to the respective authors if you need help with using any part of this library!
+    patchTpl and TextureWork were created by L5050.
+    The iconpatch framework was created by Yme.
+    Reach out to the respective authors if you need help with using any part of this library!
   */
 
   using namespace spm;
@@ -30,12 +27,11 @@ namespace mod::tplpatch
     // Loads the tpl if not already loaded by the stated filePath
     if (textureWork->srcTpl == nullptr)
     {
-      spm::filemgr::FileEntry *srcFile = spm::filemgr::fileAllocf(0, textureWork->filePath);
+      spm::filemgr::FileEntry *srcFile = spm::filemgr::fileAllocf(4, textureWork->filePath);
       s32 tplSize = srcFile->length;
       textureWork->srcTpl = (wii::tpl::TPLHeader *)spm::memory::__memAlloc(textureWork->heapType, tplSize);
       msl::string::memcpy(textureWork->srcTpl, srcFile->sp->data, tplSize);
       spm::filemgr::fileFree(srcFile);
-      wii::tpl::TPLBind(textureWork->srcTpl);
     }
 
     // Patches the destination tpl with the one given by the mod.rel
@@ -49,7 +45,7 @@ namespace mod::tplpatch
     return;
   }
 
-  void patchTpl2(u32 destId, u32 srcId, wii::tpl::TPLHeader * destTpl, wii::tpl::TPLHeader * srcTpl, const char * filePath, bool free, s32 heapType)
+  void patchTpl2(u32 destId, u32 srcId, wii::tpl::TPLHeader *destTpl, wii::tpl::TPLHeader *srcTpl, const char *filePath, bool free, s32 heapType)
   {
     TextureWork tw = {destId, srcId, destTpl, srcTpl, filePath, free, heapType};
     patchTpl(&tw);
@@ -68,35 +64,62 @@ namespace mod::tplpatch
   Have fun!!!!
   */
 
-  char *TPLPatchIconTPLName = nullptr;           // This corresponds to the name of your custom TPL! i.e.
-  filemgr::FileEntry *TPLPatchIconTPL = nullptr; // Initializes the custom TPL pointer
+  const char *TPLPatchIconTPLName = nullptr;            // This corresponds to the filename of your custom TPL!
+  wii::tpl::TPLHeader *TPLPatchIconTPLHeader = nullptr; // Initializes the custom TPL pointer
+
+  // Debug function to verify that the TPL isn't deallocated from memory for any reason
+  void iconPatchVerifyTpl()
+  {
+    if (TPLPatchIconTPLHeader == nullptr)
+      return;
+    else
+      SPM_ASSERT(TPLPatchIconTPLHeader->version == 0x20af30, "TPLPatch: Icon TPL has been deallocated!");
+    return;
+  }
 
   // These hook into vanilla icondrv functions right before they run.
   // These patches are meant to allocate the custom TPL to memory, make it accessible at any time, and help make the custom icons display properly.
   void (*iconMainReal)();
   void (*iconEntryReal)(const char *name, s32 iconId);
   void (*iconGXReal)(wii::mtx::Mtx34 mtx, icondrv::IconEntry *icon);
+  void (*iconGetWidthHeightReal)(s16 *width, s16 *height, s32 iconId);
   static void iconFuncPatch()
   {
     iconMainReal = patch::hookFunction(icondrv::iconMain,
                                        []()
                                        {
-                                         if (TPLPatchIconTPL == 0 || TPLPatchIconTPL == nullptr)
+                                         // Allocates the custom tpl to ingame memory on game start
+                                         if (TPLPatchIconTPLHeader == nullptr)
                                          {
-                                           const char *root = system::getSpmarioDVDRoot();
-                                           filemgr::FileEntry *file = filemgr::fileAsyncf(4, 0, "%s/%s.tpl", root, TPLPatchIconTPLName);
-                                           if (file != (filemgr::FileEntry *)0x0)
+                                           filemgr::FileEntry *file = filemgr::fileAsyncf(0, 0, "./%s.tpl", TPLPatchIconTPLName);
+                                           if (file != nullptr)
                                            {
-                                             file = filemgr::fileAllocf(4, "%s/%s.tpl", root, TPLPatchIconTPLName); // Allocates the custom tpl to ingame memory on game start
-                                             TPLPatchIconTPL = file;                                                // Yippee!!!!!!!!
+                                             file = filemgr::fileAllocf(0, "./%s.tpl", TPLPatchIconTPLName);
+                                             memory::Heap heapId = memory::HEAP_MEM1_UNUSED;
+                                             u32 heapSize = ((u32)memory::memory_wp->heapEnd[heapId] - (u32)memory::memory_wp->heapStart[heapId]);
+                                             if (heapSize < file->length)
+                                             {
+                                              heapId = memory::HEAP_EFFECT;
+                                              heapSize = ((u32)memory::memory_wp->heapEnd[heapId] - (u32)memory::memory_wp->heapStart[heapId]);
+                                             }
+                                             SPM_ASSERT(heapSize > file->length, "TPLPatch: Insufficient space in heaps 2 or 4.");
+                                             wii::tpl::TPLHeader *tpl = (wii::tpl::TPLHeader *)memory::__memAlloc(heapId, file->length);
+                                             TPLPatchIconTPLHeader = tpl;
+                                             msl::string::memcpy((void *)tpl, file->sp->data, file->length);
+                                             filemgr::fileFree(file);
+                                             wii::tpl::TPLBind(TPLPatchIconTPLHeader);
+                                             wii::os::OSReport("%s: TPLPatchIconTPLHeader has been allocated at %p in heap %d\n", __FILE_NAME__, TPLPatchIconTPLHeader, heapId);
                                            }
                                          }
+                                         else
+                                           iconPatchVerifyTpl();
                                          iconMainReal();
                                        });
 
     iconEntryReal = patch::hookFunction(icondrv::iconEntry,
                                         [](const char *name, s32 iconId)
                                         {
+                                          iconPatchVerifyTpl();
                                           iconEntryReal(name, iconId); // Calls iconEntry first so that the following runs at the end
                                           icondrv::IconEntry *icon = icondrv::icondrv_wp->entries;
                                           s32 max = icondrv::icondrv_wp->num;
@@ -116,6 +139,7 @@ namespace mod::tplpatch
     iconGXReal = patch::hookFunction(icondrv::iconGX,
                                      [](wii::mtx::Mtx34 mtx, icondrv::IconEntry *icon)
                                      {
+                                       iconPatchVerifyTpl();
                                        if (icon->iconId >= TPLPATCH_ICON_REDIRECT)
                                        {
                                          (icon->curStage).texId = icon->iconId;
@@ -124,56 +148,69 @@ namespace mod::tplpatch
                                        iconGXReal(mtx, icon);
                                        return;
                                      });
+
+    iconGetWidthHeightReal = patch::hookFunction(icondrv::iconGetWidthHeight,
+                                                 [](s16 *width, s16 *height, s32 iconId)
+                                                 {
+                                                   iconPatchVerifyTpl();
+                                                   if (iconId >= TPLPATCH_ICON_REDIRECT)
+                                                   {
+                                                     wii::tpl::ImageTableEntry *img = wii::tpl::TPLGet(TPLPatchIconTPLHeader, iconId);
+                                                     *width = img->image->width;
+                                                     *height = img->image->height;
+                                                   }
+                                                   else
+                                                     iconGetWidthHeightReal(width, height, iconId);
+                                                   return;
+                                                 });
   }
 
   // This function rewrites TPLGetGXTexObjFromPalette to override wicon.tpl if it's called and get an image from the custom tpl instead.
   void TPLGetGXTexObjFromPaletteNew(wii::tpl::TPLHeader *palette, wii::gx::GXTexObj *dest, u32 id)
   {
+    iconPatchVerifyTpl();
     wii::tpl::ImageTableEntry *imgTbl = palette->imageTable;
     s32 idx = 0;
-    if (palette->imageCount > 400 && imgTbl[0].image->height == 40 && imgTbl[0].image->width == 96 && id >= TPLPATCH_ICON_REDIRECT) // If wicon.tpl & id > TPLPATCH_ICON_REDIRECT
+    if (palette == TPLPatchIconTPLHeader && id >= TPLPATCH_ICON_REDIRECT)
+      idx = id % TPLPATCH_ICON_REDIRECT;
+    else if (palette->imageCount > 400 && imgTbl[0].image->height == 40 && imgTbl[0].image->width == 96 && id >= TPLPATCH_ICON_REDIRECT) // If wicon.tpl & id > TPLPATCH_ICON_REDIRECT
     {
-      palette = (wii::tpl::TPLHeader *)TPLPatchIconTPL->sp->data;
+      palette = TPLPatchIconTPLHeader;
       imgTbl = palette->imageTable;
       idx = id % TPLPATCH_ICON_REDIRECT;
     }
     else
-    {
       idx = id % palette->imageCount;
-    }
     wii::tpl::ImageHeader *img = imgTbl[idx].image;
+    SPM_ASSERT(img != nullptr, "Attempted to pull an invalid image at index %d (imgTbl = %p)", idx, imgTbl);
     wii::gx::GXInitTexObj(dest, img->data, img->width, img->height, img->format, img->wrapS, img->wrapT, (((u32)img->maxLOD - (u32)img->minLOD) | ((u32)img->minLOD - (u32)img->maxLOD)) >> 0x1f);
     img = imgTbl[idx].image;
     wii::gx::GXInitTexObjLOD(img->minLOD, img->maxLOD, img->LODBias, dest, img->minFilter, img->magFilter, 0, (u32)img->edgeLODEnable, 0);
     return;
   }
 
-  s32 evt_tplpatch_set_item_icon_id(evtmgr::EvtEntry *evtEntry, bool firstRun)
+  wii::tpl::ImageTableEntry *TPLGetNew(wii::tpl::TPLHeader *palette, u32 id)
   {
-    (void)firstRun;
-    evtmgr::EvtVar *args = (evtmgr::EvtVar *)evtEntry->pCurData;
-    s32 itemId = evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-    s32 iconId = evtmgr_cmd::evtGetValue(evtEntry, args[1]);
-    u8 useCustomTpl = evtmgr_cmd::evtGetValue(evtEntry, args[2]);
-    if (useCustomTpl == 1)
+    iconPatchVerifyTpl();
+    if (palette == TPLPatchIconTPLHeader && id >= TPLPATCH_ICON_REDIRECT)
+      id %= TPLPATCH_ICON_REDIRECT;
+    else if (palette->imageCount > 400 && palette->imageTable[0].image->height == 40 && palette->imageTable[0].image->width == 96 && id >= TPLPATCH_ICON_REDIRECT) // If wicon.tpl & id > TPLPATCH_ICON_REDIRECT
     {
-      item_data::itemDataTable[itemId].iconId = iconId + TPLPATCH_ICON_REDIRECT;
+      palette = TPLPatchIconTPLHeader;
+      id %= TPLPATCH_ICON_REDIRECT;
     }
-    else
-    {
-      item_data::itemDataTable[itemId].iconId = iconId;
-    }
-    return 2;
+    return palette->imageTable + (id - (id / palette->imageCount) * palette->imageCount);
   }
 
-  void iconPatch(char *iconFileName)
+  void iconPatch(const char *iconFileName)
   {
     TPLPatchIconTPLName = iconFileName;
 
     // Mods/libraries that hook into iconMain, iconEntry, or iconGX will likely conflict with this library. Please reach out to Yme if this is an issue for you.
     iconFuncPatch();
 
-    // Mods/libraries that modify TPLGetGXTexObjFromPalette may conflict with this library. You're free to use/modify our rewritten function however you'd like for personal use, though!
+    // Mods/libraries that modify these functions may conflict with this library. You're free to use/modify our rewritten functions however you'd like for personal use, though!
     patch::hookFunction(wii::tpl::TPLGetGXTexObjFromPalette, TPLGetGXTexObjFromPaletteNew);
+    patch::hookFunction(wii::tpl::TPLGet, TPLGetNew);
   }
 }

@@ -22,8 +22,10 @@
 #include "mod_ui_base/colours.h"
 #include "mod_ui_base/menuwindow.h"
 #include "mod.h"
+#include "npc_rpgdrv.h"
 #include "nandsettings.h"
 #include "hpwindow.h"
+#include "tplpatch.h"
 #include "patch.h"
 #include "util.h"
 
@@ -306,10 +308,41 @@ void enemyDisp()
             msl::stdio::sprintf(str, "%d", spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].maxHp);
             Window::drawString(str, pos.x + 50.0f, pos.y, &colours::white, 1.0f, true);
             }
-
-          }
+            NPC_RPG_Defense * defense = getNpcDefense(tribe);
+            if (defense)
+            {
+              if (defense->max > 1)
+              {
+                for (u32 i = 0; i < defense->max; i++)
+                {
+                  switch (defense[i].type)
+                  {
+                  case 0:
+                    Window::drawTexture(tplpatch::TPLPatchIconTPLHeader, 13, pos.x + 45.0f, pos.y + 25.0f, 0.4f, &colours::white);
+                    break;
+                  case 8:
+                    Window::drawTexture(tplpatch::TPLPatchIconTPLHeader, 14, pos.x + 45.0f, pos.y + 50.0f, 0.4f, &colours::white);
+                    break;
+                  }
+                }
+              }
+              else
+              {
+                switch (defense->type)
+                {
+                case 0:
+                  Window::drawTexture(tplpatch::TPLPatchIconTPLHeader, 13, pos.x + 45.0f, pos.y + 25.0f, 0.4f, &colours::white);
+                  break;
+                case 8:
+                  Window::drawTexture(tplpatch::TPLPatchIconTPLHeader, 14, pos.x + 45.0f, pos.y + 50.0f, 0.4f, &colours::white);
+                  break;
+                }
+              }
+            }
+            }
         }
     }
+    return;
 }
 
 void HPWindow::init()

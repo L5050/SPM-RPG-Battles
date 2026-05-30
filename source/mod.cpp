@@ -1349,9 +1349,14 @@ bool IsNpcActive(s32 index) {
     s32 damageType = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
     s32 damage = spm::mario::marioCalcDamageToEnemy(damageType, rpgTribeID[index]);
     NPC_RPG_Defense * defense = getNpcDefense(rpgTribeID[index]);
+    if (damageType == 8)
+    {
+      damage /= 2;
+      damage += _getFP();
+    }
     if (defense != nullptr)
     {
-      if (defense->max > 0)
+      if (defense->max > 1)
       {
         for (s32 i = 0; i < defense->max; i++)
         {

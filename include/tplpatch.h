@@ -2,12 +2,8 @@
 #include "patch.h"
 
 #include <common.h>
-#include <evt_cmd.h>
-#include <spm/evtmgr.h>
-#include <spm/evtmgr_cmd.h>
 #include <spm/filemgr.h>
 #include <spm/icondrv.h>
-#include <spm/item_data.h>
 #include <spm/memory.h>
 #include <spm/system.h>
 #include <wii/tpl.h>
@@ -32,5 +28,10 @@ namespace mod::tplpatch
 
 #define TPLPATCH_ICON_REDIRECT 1600
 
-  void iconPatch(char *iconFileName); // Put this in your mod's void main() to enable iconpatch functionality!
+#define TPLPATCH_ICON(idx) \
+  (idx + TPLPATCH_ICON_REDIRECT)
+
+  void iconPatch(const char * iconFileName); // Put this in your mod's void main() to enable iconpatch functionality!
+
+  extern wii::tpl::TPLHeader *TPLPatchIconTPLHeader;
 }

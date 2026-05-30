@@ -59,6 +59,12 @@ typedef struct
 typedef struct
 {
   s32 tribeId;
+  s32 health;
+} npc_rpg_health_override;
+
+typedef struct
+{
+  s32 tribeId;
   NPCTribeAnimDef* animDefs;
   s32 chargeOdds;
   const EvtScriptCode* attackScript;
@@ -67,13 +73,8 @@ typedef struct
   const EvtScriptCode* onSpawnScript = nullptr;
   const EvtScriptCode* onThrowScript = nullptr;
   NPC_RPG_Defense * defense = nullptr;
+  npc_rpg_health_override healthOverride = {-1, 0};
 } npc_rpg_data;
-
-typedef struct
-{
-  s32 tribeId;
-  s32 health;
-} npc_rpg_health_override;
 
 extern NPCTribeAnimDef animsKuribo[];
 

@@ -104,9 +104,9 @@ NPCTribeAnimDef animsParaKuribo[] = {
     {-1, nullptr}
   };
 
-  NPC_RPG_Defense sinnoDefense = {0, 2, 0x0, 0};
-  NPC_RPG_Defense metDefense[] = {{0, 1, 0x0, 0}, {8, 99, 0x0, 0}};
-  NPC_RPG_Defense mimiDefense = {2, 2, 0x0, 0};
+  NPC_RPG_Defense sinnoDefense[] = {{0, 2, 0x0, 2}, {8, 99, 0x0, 0}};
+  NPC_RPG_Defense metDefense[] = {{0, 1, 0x0, 2}, {8, 99, 0x0, 0}};
+  NPC_RPG_Defense mimiDefense = {2, 2, 0x0, 1};
 
   NPCTribeAnimDef animsOcta2[] = {
     {0, "S_1"},
@@ -805,7 +805,7 @@ EVT_END()
     npcDataTable[8] = {22, getParaKoopaAnims(), 10, para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
 
     sinno_main();
-    npcDataTable[9] = {99, animsSinno, 10, sinno_attack, nullptr, nullptr, nullptr, nullptr, &sinnoDefense}; // Bald Cleft 
+    npcDataTable[9] = {99, animsSinno, 10, sinno_attack, nullptr, nullptr, nullptr, nullptr, sinnoDefense}; // Bald Cleft 
 
     chunks_main();
     npcDataTable[10] = {270, getChunksAnims(), 0, chunks_attack, chunks_onhit, getChunksDeath(), chunks_on_spawn}; // O'Chunks
