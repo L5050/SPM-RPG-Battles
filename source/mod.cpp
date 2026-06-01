@@ -252,6 +252,7 @@ namespace mod {
   bool is3dCam = false;
   u8 guardFrames = 0;
   u8 stylishFrames = 0;
+  s32 vacuumDirection = -1;
   spm::npcdrv::NPCEntryUnkDef turnBasedCombatOverride[2];
   s32 *fp = nullptr;
   s32 *maxFp = nullptr;
@@ -1343,6 +1344,11 @@ bool IsNpcActive(s32 index) {
 
   }
 
+  s32 new_func_800630b8(spm::effdrv::EffTargetUnion * target, s32 param_1, s32 param_2, wii::mtx::Mtx34 matrix)
+  {
+    return spm::effdrv::func_800630b8(target, vacuumDirection, param_2, matrix);
+  }
+
   s32 new_evt_rpg_calc_damage_to_enemy(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
@@ -1854,7 +1860,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage); 
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
     //C_MTXPerspective = patch::hookFunction(wii::mtx::C_MTXPerspective, new_C_MTXPerspective);
-    //writeBranchLink(0x80057c50, 0x0, new_C_MTXPerspective);
+    writeBranchLink(spm::effdrv::effRoboVacuumDisp, 0x50, new_func_800630b8);
     //evt_rpg_choice_handler = patch::hookFunction(spm::an2_08::evt_rpg_choice_handler, new_evt_rpg_choice_handler);
     evt_mario_get_height = patch::hookFunction(spm::evt_mario::evt_mario_get_height, new_evt_mario_get_height);
     //patchWangSpecial();
@@ -1870,6 +1876,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     //msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
 
     writeWord( & spm::pausewin::levelUpWindowMain, 0x0, 0x4e800020);
+    //writeWord( & spm::effdrv::effRoboVacuumMain, 0x1A0, 0x4e800020);
     //writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
     //rpgHandleMenu = patch::hookFunction(spm::an2_08::rpgHandleMenu, patchTechniquesChars);
     writeBranchLink( & spm::an2_08::evt_rpg_npctribe_handle, 0x94, returnTribe);

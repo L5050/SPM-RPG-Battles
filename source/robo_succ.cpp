@@ -48,9 +48,12 @@ namespace mod {
 
  s32 spawn_robo_eff(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
  {
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
   spm::mario::MarioWork * mwpp =  spm::mario::marioGetPtr();
   spm::effdrv::EffEntry * entry = spm::effdrv::eff_robo_vacuum(mwpp->position.x + 70.0, mwpp->position.y, mwpp->position.z);
-  robo_vacuum_set_target(entry, evtEntry->id, "npc2");
+  robo_vacuum_set_target(entry, evtEntry->id, (char*)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
+  const char * effName = (char*)spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+  spm::effdrv::effSetName(entry, effName);
   
   return 2;
  }
