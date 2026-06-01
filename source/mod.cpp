@@ -11,6 +11,7 @@
 #include "ip_badgepouch.h"
 #include "power_refresh.h"
 #include "tplpatch.h"
+#include "acpatch.h"
 #include "msgpatch.h"
 #include "customwin.h"
 #include "ring_menu.h"
@@ -2344,6 +2345,35 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     return 2;
   }
 
+  s32 manage_vacuum(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    for (s32 i = 0; i < 3; i++)
+    {
+      if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].flags & 0x8000) == 0) 
+      {
+        npc_rpg_data * enemy = get_rpg_enemy(i);
+        if (enemy)
+        {
+          u32 vacuumType = enemy->vacuumDef.type;
+          switch (vacuumType)
+          {
+          case 0:
+            if (!enemy->vacuumDef.vacuumScript)
+            {
+              spm::evtmgr::evtEntry(basic_vacuum, 0, 0)->lw[0] = i;
+            }
+            break;
+          
+          default:
+            break;
+          }
+        }
+      }
+    }
+    
+    return 2;
+  }
+
+
   EVT_BEGIN(insertNop)
     SET(LW(0), LW(0))
   RETURN_FROM_CALL()
@@ -2397,9 +2427,10 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     ip::main();
     mobj_main();
     tplpatch::iconPatch(modTplName);
-    power_refresh_main();
     map_data_main();
     map_patch::map_patch_main();
     ring_menu_main();
+    acpatch::acpatchInit();
+    power_refresh_main();
   }
 }
