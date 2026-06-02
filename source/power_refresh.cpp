@@ -230,8 +230,8 @@ void initFunc(spm::acdrv::AcEntry *entry)
   // gp->fps needs to be converted to u32 because all timers need to be compared against gp->frameCounter which is unsigned
   wp->startTimer = 1 * (u32)gp->fps;
   wp->timer = 12 * (u32)gp->fps;
-  wii::os::OSReport("turtle wow %u!\n", wp->startTimer);
-  wii::os::OSReport("turtle wow %u!\n", wp->timer);
+  //wii::os::OSReport("turtle wow %u!\n", wp->startTimer);
+  //wii::os::OSReport("turtle wow %u!\n", wp->timer);
 
   for (s32 i = 0; i < 9; i++)
   {
