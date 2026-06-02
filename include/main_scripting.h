@@ -53,5 +53,6 @@ namespace mod {
   EVT_DECLARE(runEnemyDeath)
   EVT_DECLARE(levelUpScript)
   EVT_DECLARE(get_rpg_npc_name)
+  EVT_DECLARE(get_rpg_mobj_name)
 
 }

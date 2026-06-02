@@ -27,7 +27,7 @@
 #include <spm/evt_mario.h>
 #include <spm/evt_pouch.h>
 #include <spm/evt_fade.h>
-#include <spm/evt_map.h>
+#include <spm/evt_mobj.h>
 #include <spm/evt_paper.h>
 #include <spm/evt_img.h>
 #include <spm/evt_env.h>
@@ -679,10 +679,11 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     ALLOC_USER_WRK(1)
     SET(UW(0), LW(0))
     RUN_CHILD_EVT(get_rpg_npc_name)
+    RUN_CHILD_EVT(get_rpg_mobj_name)
     USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(15), 4, 1)
     USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("vore"), LW(7))
     USER_FUNC(osReportLW, LW(7))
-    IF_NOT_EQUAL(LW(7), 7)
+    IF_SMALL(LW(7), 5)
       USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(15), 0, 1)
       RETURN()
     END_IF()
@@ -710,6 +711,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       USER_FUNC(setFP, LW(1))
       USER_FUNC(flower_effect, 4)
       USER_FUNC(spm::evt_npc::evt_npc_delete, LW(15))
+      USER_FUNC(spm::evt_mobj::evt_mobj_delete, LW(14))
     ELSE()
       MUL(LW(11), -1)
       USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(11), 0, LW(0))
