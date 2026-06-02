@@ -645,6 +645,26 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
       return 2;
     }
+    comparison = "ta1_03";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -1828.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "ta1_04";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = 1949.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
     return 2;
   }
 
@@ -904,6 +924,8 @@ EVT_END()
     npcDataTable[19] = {280, getMimiAnims(), 0, mimi_attack, mimi_onhit, mimi_ondeath, mimi_onspawn, mimi_throw_script, &mimiDefense}; // Mimi
     
     npcDataTable[20] = {3, animsKuribo, 20, kuribo_attack, nullptr, nullptr};
+
+    npcDataTable[21] = {12, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Green Koopa Troopa no glasses
   }
 
 /*

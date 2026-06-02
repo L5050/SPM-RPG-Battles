@@ -419,6 +419,8 @@ namespace mod {
   {
     npcTribes[11].maxHp = 3;
     npcTribes[14].attackStrength = 3;
+    npcTribes[12].attackStrength = 3;
+    npcTribes[12].maxHp = 6;
   }
 
 }

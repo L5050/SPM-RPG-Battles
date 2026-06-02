@@ -1481,6 +1481,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 11;
       break;
+      case 12: // Green Koopa Troopa no glasses
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 12;
+        rpgTribeID[1] = 25;
+        rpgTribeID[2] = 12;
+      break;
       case 14: // Red Koopa Troopa
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
@@ -1693,6 +1701,7 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[110].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[80].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[235].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[237].unkDefinitionTable = turnBasedCombatOverride;
     return;
   }
 
