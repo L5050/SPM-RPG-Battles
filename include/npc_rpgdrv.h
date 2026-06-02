@@ -58,9 +58,16 @@ typedef struct
 
 typedef struct
 {
-  s32 tribeId;
-  s32 health;
+  s32 tribeId = -1;
+  s32 health = 0;
 } npc_rpg_health_override;
+
+typedef struct
+{
+  u32 type = 0;
+  const EvtScriptCode* vacuumScript = nullptr;
+} VacuumDef;
+
 
 typedef struct
 {
@@ -73,7 +80,8 @@ typedef struct
   const EvtScriptCode* onSpawnScript = nullptr;
   const EvtScriptCode* onThrowScript = nullptr;
   NPC_RPG_Defense * defense = nullptr;
-  npc_rpg_health_override healthOverride = {-1, 0};
+  npc_rpg_health_override healthOverride;
+  VacuumDef vacuumDef;
 } npc_rpg_data;
 
 extern NPCTribeAnimDef animsKuribo[];
@@ -100,8 +108,11 @@ EVT_DECLARE(increase_stylish)
 EVT_DECLARE(npc_charge)
 EVT_DECLARE(make_npc_transparent)
 EVT_DECLARE(make_npc_not_transparent)
+EVT_DECLARE(basic_vacuum)
 
+npc_rpg_data * get_rpg_enemy(s32 rpgIndex);
 NPC_RPG_Defense * getNpcDefense(s32 tribeId);
+VacuumDef * get_rpg_enemy_vacuum(s32 rpgIndex);
 void npc_rpgdrv_main();
 
 }

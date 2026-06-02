@@ -1,6 +1,7 @@
 #include <common.h>
 #include "evt_cmd.h"
 #include "mod.h"
+#include "acpatch.h"
 #include "patch.h"
 #include "main_scripting.h"
 #include "power_refresh.h"
@@ -558,11 +559,11 @@ void deleteFunc(spm::acdrv::AcEntry *entry)
 }
 
 void power_refresh_main(){
-  spm::acdrv::acdrv_acDefs[14].initFunc = initFunc;
-  spm::acdrv::acdrv_acDefs[14].mainFunc = mainFunc;
-  spm::acdrv::acdrv_acDefs[14].dispFunc = dispFunc;
-  spm::acdrv::acdrv_acDefs[14].deleteFunc = deleteFunc;
-  spm::acdrv::acdrv_acDefs[14].msgName = nullptr;
+  acpatch::acDefs[21].initFunc = initFunc;
+  acpatch::acDefs[21].mainFunc = mainFunc;
+  acpatch::acDefs[21].dispFunc = dispFunc;
+  acpatch::acDefs[21].deleteFunc = deleteFunc;
+  acpatch::acDefs[21].msgName = nullptr;
 }
 
 }

@@ -349,6 +349,28 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     return 2;
   }
 
+  VacuumDef * get_rpg_enemy_vacuum(s32 rpgIndex)
+  {
+    s32 tribeId = getRpgTribeID(rpgIndex);
+
+    if (!IsNpcActive(rpgIndex)) {
+      return nullptr;
+    }
+    s32 index = getDataTableIndex(tribeId);
+    return &npcDataTable[index].vacuumDef;
+  }
+
+  npc_rpg_data * get_rpg_enemy(s32 rpgIndex)
+  {
+    s32 tribeId = getRpgTribeID(rpgIndex);
+
+    if (!IsNpcActive(rpgIndex)) {
+      return nullptr;
+    }
+    s32 index = getDataTableIndex(tribeId);
+    return &npcDataTable[index];
+  }
+
   s32 get_rpg_enemy_card_id(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
@@ -649,6 +671,50 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
         DO_BREAK()
       END_IF()
     WHILE()
+    RETURN()
+  EVT_END()
+
+  EVT_BEGIN(basic_vacuum)
+    WAIT_FRM(1)
+    ALLOC_USER_WRK(1)
+    SET(UW(0), LW(0))
+    RUN_CHILD_EVT(get_rpg_npc_name)
+    USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(15), 4, 1)
+    USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("vore"), LW(7))
+    USER_FUNC(osReportLW, LW(7))
+    IF_NOT_EQUAL(LW(7), 7)
+      USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(15), 0, 1)
+      RETURN()
+    END_IF()
+    USER_FUNC(spm::an2_08::evt_rpg_calc_damage_to_enemy, UW(0), 0, LW(11))
+    USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(11), 0, LW(0))
+    IF_FLAG(LW(0), 0x8000)
+      WAIT_FRM(30)
+      BROTHER_EVT_ID(LW(10))
+        SET(LW(9), FLOAT(0.0))
+        DO(0)
+          ADDF(LW(9), FLOAT(9.0))
+          USER_FUNC(spm::evt_npc::evt_npc_rotate, LW(15), EVT_NULLPTR, LW(9), EVT_NULLPTR)
+          WAIT_FRM(1)
+        WHILE()
+      END_BROTHER()
+      USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+      ADD(LW(5), 30)
+      ADD(LW(6), 10)
+      USER_FUNC(spm::evt_npc::evt_npc_glide_to, LW(15), LW(5), LW(6), LW(7), 0, FLOAT(150.0), 0, 0, 0, 0)
+      WAIT_FRM(1)
+      DELETE_EVT(LW(10))
+      USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_HAPPYFLOWER1"))
+      USER_FUNC(getFP, LW(1))
+      ADD(LW(1),1)
+      USER_FUNC(setFP, LW(1))
+      USER_FUNC(flower_effect, 4)
+      USER_FUNC(spm::evt_npc::evt_npc_delete, LW(15))
+    ELSE()
+      MUL(LW(11), -1)
+      USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(11), 0, LW(0))
+      USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(15), 0, 1)
+    END_IF()
     RETURN()
   EVT_END()
 

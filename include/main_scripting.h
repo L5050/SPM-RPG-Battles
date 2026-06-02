@@ -42,6 +42,7 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(mario_chg_paper, 1)
   EVT_DECLARE_USER_FUNC(npc_change_name, 2)
   EVT_DECLARE_USER_FUNC(spawn_robo_eff, 2)
+  EVT_DECLARE_USER_FUNC(flower_effect, 1)
 
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)
@@ -51,5 +52,6 @@ namespace mod {
   EVT_DECLARE(insertNop)
   EVT_DECLARE(runEnemyDeath)
   EVT_DECLARE(levelUpScript)
+  EVT_DECLARE(get_rpg_npc_name)
 
 }
