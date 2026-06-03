@@ -64,6 +64,7 @@ EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
 EVT_DECLARE_USER_FUNC(reduce_game_speed, 0)
 EVT_DECLARE_USER_FUNC(increase_game_speed, 0)
 EVT_DECLARE_USER_FUNC(manage_vacuum, 0)
+EVT_DECLARE_USER_FUNC(smurf_da_npc, 1)
 
 EVT_DECLARE(evt_memcard_save)
 

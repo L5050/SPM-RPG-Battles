@@ -189,6 +189,7 @@ customwin::CWSelectItemDesc usableItems[10];
 customwin::CWSelectItemDesc usablePixls[16];
 
 customwin::CWSelectItemDesc usableMarioTechs[10];
+s32 badgeidList[10];
 customwin::CWSelectItemDesc usablePeachTechs[10];
 customwin::CWSelectItemDesc usableBowserTechs[2];
 
@@ -216,6 +217,7 @@ customwin::CWSelectItemDesc usableBowserTechs[2];
         usableMarioTechs[numOptions].page = 0;
         usableMarioTechs[numOptions].cost = badgeFP;
         usableMarioTechs[numOptions].iconId = -1;
+        badgeidList[numOptions] = badgeInfo->id;
         numOptions++;
       }
     }
@@ -225,6 +227,15 @@ customwin::CWSelectItemDesc usableBowserTechs[2];
 
     return 2;
   }
+
+s32 getBadgeIdSelect(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], badgeidList[args[0]]);
+
+  return 2;
+}
+EVT_DECLARE_USER_FUNC(getBadgeIdSelect, 2)
 
   s32 patchTechniquesPeach(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   {

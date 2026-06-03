@@ -52,6 +52,10 @@ static CustomMessage msgs[]
         "n_luckystart",
         "Lucky Start"
     },
+    {
+        "n_smurf",
+        "Smurf Stomp"
+    },
 
     // Badge Descriptions
     {
@@ -71,9 +75,15 @@ static CustomMessage msgs[]
     },
     {
         "d_luckystart",
-        "50 percent chance of fully restoring\n"
-        "HP and FP upon entering a battle!\n"
+        "Partially restores either\n"
+        "HP or FP upon entering a battle!\n"
         "Costs 4 BP to wear."
+    },
+    {
+        "d_smurfstomp",
+        "Smurf Stomp turns an\n"
+        "enemy into a smurf!\n"
+        "Costs 4 BP to wear, 1 FP to use."
     },
 };
 

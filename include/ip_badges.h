@@ -14,14 +14,16 @@ namespace ip {
 
 extern wii::tpl::TPLHeader* badgeIconTpl;
   
-#define NUM_BADGES 4
+#define NUM_BADGES 5
 
 enum BadgeId : s8
 {
     BADGEID_NONE = -1,
     BADGEID_HP_PLUS,
     BADGEID_POWER_BOUNCE,
-    BADGEID_SLEEPY_STOMP
+    BADGEID_SLEEPY_STOMP,
+    BADGEID_LUCKY_START,
+    BADGEID_SMURF_STOMP
 };
 
 struct BadgeDef
@@ -41,6 +43,7 @@ EVT_DECLARE_USER_FUNC(get_badge_script_by_technique, 2)
 
 
 EVT_DECLARE(power_bounce)
+EVT_DECLARE(rpg_jump_smurf)
 EVT_DECLARE(power_bounce_stylish)
 
 }

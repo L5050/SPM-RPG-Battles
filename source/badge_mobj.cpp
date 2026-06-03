@@ -59,7 +59,7 @@ using namespace spm;
 namespace mod {
 
   // Patch agb async, maybe this does something
-  const char *customModels[] = {"MOBJ_w_sui", "MOBJ_L_sui",
+  const char *customModels[] = {"MOBJ_w_sui", "MOBJ_L_sui", "MOBJ_S_sui",
                                 "terminator"};
   u32 (*animGroupBaseAsyncReal)(const char *animPoseName, s32 param_2, void *readDoneCb);
   static void agbAsyncPatch()
@@ -97,6 +97,7 @@ namespace mod {
         "MOBJ_p_r_sui",
         "MOBJ_w_sui",
         "MOBJ_L_sui",
+        "MOBJ_S_sui",
         "MOBJ_02_sui",
         "MOBJ_03_sui",
         "MOBJ_04_sui",
@@ -111,6 +112,7 @@ const char *mobjSuiPerishableNames[] = {
         "MOBJ_big_b_sui",
         "MOBJ_p_b_sui",
         "MOBJ_w_sui",
+        "MOBJ_S_sui",
         "HOBJ_BlueSwitch",
         "MOBJ_STG3_p_b_sui"};
 
@@ -257,6 +259,24 @@ s32 evt_mobj_sui_new(evtmgr::EvtEntry *evtEntry, bool isFirstCall)
   "It costs 0 BP to wear.\n"
   "<k>\n";
 
+  const char * smurf_stomp_text = "<system><p>\n"
+  "You got Smurf Stomp!\n"
+  "Smurf Stomp turns an\n"
+  "enemy into a smurf!\n"
+  "<k>\n"
+  "<p>\n"
+  "It costs 2 BP to wear.\n"
+  "<k>\n";
+
+  EVT_BEGIN(getSmurfStomp)
+    USER_FUNC(evt_mario::evt_mario_key_off, 1)
+    WAIT_MSEC(500)
+    USER_FUNC(evt_msg::evt_msg_print, 1, PTR(smurf_stomp_text), 0, 0)
+    USER_FUNC(ip::evt_pouch_add_badge, 4)
+    USER_FUNC(evt_mario::evt_mario_key_on)
+    RETURN()
+  EVT_END()
+
   EVT_BEGIN(getSleepyStomp)
     USER_FUNC(evt_mario::evt_mario_key_off, 1)
     WAIT_MSEC(500)
@@ -271,6 +291,14 @@ s32 evt_mobj_sui_new(evtmgr::EvtEntry *evtEntry, bool isFirstCall)
     USER_FUNC(ip::evt_pouch_check_for_badge, 2, LW(15))
     IF_EQUAL(LW(15), 0)
       USER_FUNC(evt_mobj_sui_new, 0x8, PTR("sleepyStomp"), FLOAT(100.0), FLOAT(150.0), FLOAT(0.0), (s32)getSleepyStomp, 0, EVT_NULLPTR)
+    END_IF()
+  RETURN_FROM_CALL()
+
+  EVT_BEGIN(addSmurfStomp)
+    USER_FUNC(ip::evt_pouch_init)
+    USER_FUNC(ip::evt_pouch_check_for_badge, 4, LW(15))
+    IF_EQUAL(LW(15), 0)
+      USER_FUNC(evt_mobj_sui_new, 10, PTR("smurfStomp"), FLOAT(1810.0), FLOAT(0.0), FLOAT(0.0), (s32)getSmurfStomp, 0, EVT_NULLPTR)
     END_IF()
   RETURN_FROM_CALL()
 
@@ -296,6 +324,8 @@ s32 evt_mobj_sui_new(evtmgr::EvtEntry *evtEntry, bool isFirstCall)
     agbAsyncPatch();
     spm::map_data::MapData * he1_md = spm::map_data::mapDataPtr("he1_01");
     evtpatch::hookEvt(he1_md->initScript, 32, addSleepyStomp);
+    spm::map_data::MapData * ta1_09 = spm::map_data::mapDataPtr("ta1_09");
+    evtpatch::hookEvt(ta1_09->initScript, 1, addSmurfStomp);
   }
 
 }

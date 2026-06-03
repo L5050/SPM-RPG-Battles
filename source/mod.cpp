@@ -251,6 +251,7 @@ namespace mod {
   bool superGuard = false;
   bool isFrog = false;
   bool is3dCam = false;
+  bool smurfed[3] = {0, 0, 0};
   u8 guardFrames = 0;
   u8 stylishFrames = 0;
   s32 vacuumDirection = -1;
@@ -350,7 +351,8 @@ namespace mod {
   s32( * evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
   s32( * evt_rpg_choice_handler)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   s32 ( * evt_mario_get_height)(spm::evtmgr::EvtEntry * entry, bool firstRun);
-  s32 ( * evt_cam3d_evt_zoom_in)(spm::evtmgr::EvtEntry * entry, bool firstRun);
+  s32 ( * evt_cam3d_evt_zoom_in)(spm::evtmgr::EvtEntry * entry, bool firstRun); 
+  s32 ( * evt_rpg_mario_take_damage)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   s32 ( * evt_seq_set_seq)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   void( * msgUnLoad)(s32 slot);
   void( * rpg_screen_draw)();
@@ -447,6 +449,8 @@ s32 checkBadgeTechnique(BadgeId id)
   switch (id) {
     case BadgeId::BADGEID_POWER_BOUNCE:
       return 2;
+    case BadgeId::BADGEID_SMURF_STOMP:
+      return 1;
     default:
       return -1;
   }
@@ -1350,6 +1354,18 @@ bool IsNpcActive(s32 index) {
     return spm::effdrv::func_800630b8(target, vacuumDirection, param_2, matrix);
   }
 
+  s32 new_evt_rpg_mario_take_damage(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 damage = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+
+    if (smurfed[evtEntry->uw[0]] == 1)
+    {
+      damage -= 1;
+    }
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], damage);
+    return evt_rpg_mario_take_damage(evtEntry, firstRun);
+  }
+
   s32 new_evt_rpg_calc_damage_to_enemy(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
@@ -1436,7 +1452,10 @@ bool IsNpcActive(s32 index) {
     {
       attackStrength = 0;
     }
-
+    if (smurfed[evtEntry->uw[0]] == 1)
+    {
+      attackStrength -= 1;
+    }
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], attackStrength);
     return 2;
   }
@@ -1866,6 +1885,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
   static void hookEvent() {
     evt_cam3d_evt_zoom_in = patch::hookFunction(spm::evt_cam::evt_cam3d_evt_zoom_in, new_evt_cam3d_evt_zoom_in);
     //evt_seq_set_seq = patch::hookFunction(spm::evt_seq::evt_seq_set_seq, new_evt_seq_set_seq);
+    //evt_rpg_mario_take_damage = patch::hookFunction(spm::an2_08::evt_rpg_mario_take_damage, new_evt_rpg_mario_take_damage);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage); 
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
@@ -1975,6 +1995,14 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
   {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)bossFight);
+    return 2;
+  }
+
+  s32 smurf_da_npc(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 smurfIndex = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    smurfed[smurfIndex] = true;
     return 2;
   }
 
@@ -2141,6 +2169,11 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     bossFight = false;
     isFrog = false;
     is3dCam = false;
+    for (u8 i = 0; i < 3; i++)
+    {
+      smurfed[i] = 0;
+    }
+    
     return 2;
   }
 
