@@ -163,7 +163,7 @@ const char * tutorial = "<dq>\n"
 "Use them wisely...\n"
 "<k>\n"
 "<p>\n"
-"<scale 0.5>developers note, not all items are guarunteed to\n"
+"<scale 0.5>developers note, not all items are guaranteed to\n"
 "work as they havent all been tested yet. all healing\n"
 "items should be completely functional though\n"
 "<k>\n"
@@ -1549,7 +1549,7 @@ EVT_BEGIN(attack)
     USER_FUNC(get_rpg_enemy_damage_script, LW(2), LW(14))
     IF_NOT_EQUAL(LW(14), 0)
       SET(UW(0), LW(2))
-      SWITCH(LW(2))
+      SWITCH(UW(0))
         CASE_EQUAL(0)
           SET(LW(15), PTR("npc1"))
         CASE_EQUAL(1)
@@ -1560,7 +1560,7 @@ EVT_BEGIN(attack)
       RUN_CHILD_EVT(LW(14))
     ELSE()
       SET(UW(0), LW(2))
-      SWITCH(LW(2))
+      SWITCH(UW(0))
         CASE_EQUAL(0)
           SET(LW(15), PTR("mobj1"))
         CASE_EQUAL(1)
@@ -4049,7 +4049,7 @@ WHILE()
 USER_FUNC(spm::evt_fade::evt_fade_entry, 4, 1500, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
 IF_EQUAL(LF(0), 1)
-  USER_FUNC(spm::evt_snd::evt_snd_bgmoff_f_d, 0, 1000)
+  //USER_FUNC(spm::evt_snd::evt_snd_bgmoff_f_d, 0, 1000)
   SET(LW(7), 0)
   DO(0)
     SWITCH(LW(7))

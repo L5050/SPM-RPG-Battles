@@ -83,7 +83,7 @@ static CustomMessage msgs[]
         "d_smurfstomp",
         "Smurf Stomp turns an\n"
         "enemy into a smurf!\n"
-        "Costs 4 BP to wear, 1 FP to use."
+        "Costs 2 BP to wear, 1 FP to use."
     },
 };
 

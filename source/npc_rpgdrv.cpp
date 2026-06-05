@@ -17,6 +17,8 @@
 #include "fracktail.h"
 #include "teresa.h"
 #include "mimi.h"
+#include "koopa_striker.h"
+#include "bowser.h"
 #include "kamek.h"
 
 #include <spm/rel/an.h>
@@ -660,6 +662,10 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     if (result != 0)
     {
       f32 x = 1949.0;
+      if (spm::mario::marioGetPtr()->position.x > 3300.0f)
+      {
+        x = 3500.0;
+      }
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
@@ -926,6 +932,12 @@ EVT_END()
     npcDataTable[20] = {3, animsKuribo, 20, kuribo_attack, nullptr, nullptr};
 
     npcDataTable[21] = {12, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Green Koopa Troopa no glasses
+
+    koopa_striker_main();
+    npcDataTable[22] = {69, getKoopaStrikerAnims(), 5, koopa_striker_attack, koopa_striker_onhit, nullptr}; // Koopa Striker
+
+    browser_main();
+    npcDataTable[23] = {315, getAnimsBrowserFirefoxExtension(), 0, browser_edging_attack, browser_chromium_onhit, nullptr, browser_safarshit_onspawn}; // Bowser
   }
 
 /*

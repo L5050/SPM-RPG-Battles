@@ -397,6 +397,9 @@ static const char * getNpcName(s32 tribeId) {
     case 25:
       return "Buzzy Beetle";
     break;
+    case 69:
+      return "Koopa Striker";
+    break;
     case 84:
       return "Boo";
     break;
@@ -1540,6 +1543,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 99;
         rpgTribeID[2] = 25;
       break;
+      case 69: // Koopa Striker
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = false;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 69;
+        rpgTribeID[1] = 69;
+        rpgTribeID[2] = 69;
+      break;
       case 125: // Squiglet
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
@@ -1662,6 +1673,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 450;
         rpgTribeID[2] = 313;
       break;
+      case 315: // Bowser 1
+        rpgIsActive[0] = false;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = false;
+        rpgTribeID[0] = 0;
+        rpgTribeID[1] = 315;
+        rpgTribeID[2] = 0;
+      break;
       case 529: // Doopliss
         rpgIsActive[0] = false;
         rpgIsActive[1] = true;
@@ -1683,6 +1702,10 @@ bool IsNpcActive(s32 index) {
     if (power == 0) return 4;
     if (npcPart->owner->moveMode == 5 && tribeId != 440) return 4;
     spm::mario::MarioWork * mpp = spm::mario::marioGetPtr();
+    if (mpp->keyOff)
+    {
+      return 4;
+    }
     if ((mpp->flags & 0x40000000) == 0) {
       if (!rpgInProgress) {
         rpgInProgress = true;
@@ -1721,6 +1744,8 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[80].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[235].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[237].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[128].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[132].unkDefinitionTable = turnBasedCombatOverride;
     return;
   }
 
