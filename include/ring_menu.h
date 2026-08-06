@@ -37,7 +37,7 @@ typedef struct
     IconEntry* icons[RINGMENU_MAX_ICONS];
     s32 iconCount;
 
-    // center of ring on screen/world
+    // center of ring on screen, 2D cam
     f32 centerX;
     f32 centerY;
     f32 centerZ;
@@ -47,7 +47,7 @@ typedef struct
     f32 radiusY;
     f32 depthRadius;
 
-    // current rotation of ring
+    // current angle of ring
     f32 ringAngle;
 
     // where ring wants to rotate to
@@ -60,7 +60,7 @@ typedef struct
     u32 iconMoveFrames;
     u32 ringRotateFrames;
 
-    // front-facing angle (PI/2 = bottom/front if using sin)
+    // front-facing angle
     f32 frontAngle;
 
     // optional cosmetic frame counter
