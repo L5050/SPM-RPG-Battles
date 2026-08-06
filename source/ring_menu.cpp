@@ -201,8 +201,8 @@ void ringMenuInit(RingMenu* menu, f32 centerX, f32 centerY, f32 centerZ, f32 rad
 
     menu->isScrolling = 0;
 
-    menu->iconMoveFrames = 4;    // icon easing
-    menu->ringRotateFrames = 4;  // ring easing
+    menu->iconMoveFrames = 4;
+    menu->ringRotateFrames = 4;
 
     menu->frontAngle = (f32)M_PI * 0.5f;
 
@@ -446,7 +446,7 @@ static void notBowserBattleInit()
 {
   ringMenuInit(&battle_menu, -115.0f, -30.0f, 0.0f, 31.0f, 34.0f);
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1605)); // Attack
-  ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x31)); // Special Moves
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(49)); // Special Moves
 
   u32 pixlCount = 0;
   for (u32 i = 0; i < 16; i++)
@@ -459,9 +459,9 @@ static void notBowserBattleInit()
   }
   if (pixlCount > 1)
   {
-    ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x8C)); // Pixls
+    ringMenuAddIcon(&battle_menu, iconEntryAutoname(140)); // Pixls
   }
-  ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x7C)); // Items
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(124)); // Items
 
   u32 charCount = 0;
   for (u32 i = 0; i < 4; i++)
@@ -487,9 +487,9 @@ static void bowserBattleInit()
   ringMenuInit(&battle_menu, -115.0f, -30.0f, 0.0f, 31.0f, 34.0f);
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1611)); // Attack
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1612)); // Vacuum
-  //ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x31)); // Special Moves
+  //ringMenuAddIcon(&battle_menu, iconEntryAutoname(49)); // Special Moves
   
-  ringMenuAddIcon(&battle_menu, iconEntryAutoname(0x7C)); // Items
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(124)); // Items
 
   u32 charCount = 0;
   for (u32 i = 0; i < 4; i++)
@@ -725,17 +725,17 @@ s32 ring_battle_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       }
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], npcIndex);  
     }
-    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 0x31 || battle_menu.icons[battle_menu.selectedIndex]->iconId == 1612)
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 49 || battle_menu.icons[battle_menu.selectedIndex]->iconId == 1612)
     {
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 1);
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
     }
-    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 0x8C)
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 140)
     {
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 2);
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
     }
-    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 0x7C)
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 124)
     {
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 3);
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
