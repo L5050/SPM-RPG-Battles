@@ -5,6 +5,7 @@
 #include "main_scripting.h"
 #include "ring_menu.h"
 
+// Needed for  abs, fabsf
 #define __GNU_C__
 
 #include <msl/string.h>
