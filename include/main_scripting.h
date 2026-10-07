@@ -43,6 +43,7 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(npc_change_name, 2)
   EVT_DECLARE_USER_FUNC(spawn_robo_eff, 2)
   EVT_DECLARE_USER_FUNC(flower_effect, 1)
+  EVT_DECLARE_USER_FUNC(rpg_npc_get_xp, 2)
 
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)

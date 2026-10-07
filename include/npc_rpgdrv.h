@@ -68,6 +68,12 @@ typedef struct
   const EvtScriptCode* vacuumScript = nullptr;
 } VacuumDef;
 
+enum BrainwashType
+{
+  TYPE_NONE = 0,
+  TYPE_NASTASIA = 1,
+  TYPE_FLORO = 2
+};
 
 typedef struct
 {
@@ -82,6 +88,7 @@ typedef struct
   NPC_RPG_Defense * defense = nullptr;
   npc_rpg_health_override healthOverride;
   VacuumDef vacuumDef;
+  BrainwashType brainwashType = TYPE_NASTASIA;
 } npc_rpg_data;
 
 extern NPCTribeAnimDef animsKuribo[];

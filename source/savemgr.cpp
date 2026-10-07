@@ -121,6 +121,8 @@ EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
       USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
       USER_FUNC(spm::evt_msg::evt_msg_print_insert, 1, PTR(enemies_left), 0, 0, LW(15))
       USER_FUNC(spm::evt_mario::evt_mario_key_on)
+    ELSE()
+      USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_BS_HANA_FACE_OPEN1"))
     END_IF()
   RETURN()
   EVT_END()
@@ -177,22 +179,29 @@ EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(fp_restore), 0, 0)
   RETURN_FROM_CALL()
 
+  EVT_BEGIN(son_fwd)
+    USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(fp_restore), 0, 0)
+    RETURN()
+  EVT_END()
+
   EVT_BEGIN(he2_03_hook)
     IF_EQUAL(GSWF(1802), 1)
-      USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_2"), 1, 1)
-      USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_1"), 1, 1)
-      USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A3D_hasi_1"), 1, 1)
       USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_1"), 1)
       USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_1_01"), 1)
-      USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_2"), 1)
-      USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_2_01"), 1)
+      IF_EQUAL(GSWF(1805), 1)
+        USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_2"), 1, 1)
+        USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_1"), 1, 1)
+        USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A3D_hasi_1"), 1, 1)
+        USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_2"), 1)
+        USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_2_01"), 1)
+      END_IF()
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mise"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_1"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_2"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_3"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_4"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_5"))
-      USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("son"))
+      USER_FUNC(spm::evt_npc::evt_npc_set_property, PTR("son"), 9, PTR(son_fwd))
       USER_FUNC(reduce_game_speed)
     END_IF()
   RETURN_FROM_CALL()
@@ -221,7 +230,8 @@ void remove_shop_door()
 {
   spm::map_data::MapData * he2_md = spm::map_data::mapDataPtr("he2_03");
   spm::evt_door::DoorDesc* desc = (spm::evt_door::DoorDesc*)getInstructionEvtArg(he2_md->initScript, 93, 1);
-  evtpatch::hookEvt(desc->interactScript, 1, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_shop_hook));
+  desc->initScript = nullptr;
+  evtpatch::hookEvtReplace(desc->interactScript, 1, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_shop_hook));
   return;
 }
 

@@ -15,6 +15,7 @@
 #include "msgpatch.h"
 #include "customwin.h"
 #include "ring_menu.h"
+#include "chainloader.h"
 #include "map_data/map_data_main.h"
 
 #include <spm/system.h>
@@ -1310,11 +1311,11 @@ bool IsNpcActive(s32 index) {
   {
     spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     const char *mapName = reinterpret_cast<const char *>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
-    wii::os::OSReport("%s name\n", mapName);
+    wii::os::OSReport("%s mapName\n", mapName);
     const char *comparison = reinterpret_cast<const char *>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]));
-    wii::os::OSReport("%s name\n", comparison);
+    wii::os::OSReport("%s comparisonName\n", comparison);
     const char *result = msl::string::strstr(mapName, comparison);
-    wii::os::OSReport("%d name\n", result != 0);
+    wii::os::OSReport("%d comparison\n", result != 0);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], result != 0);
     return 2;
   }
@@ -1907,6 +1908,11 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     END_SWITCH()
     RETURN_FROM_CALL()
 
+  bool yesits3dtime()
+  {
+    return rpgInProgress;
+  }
+
   static void hookEvent() {
     evt_cam3d_evt_zoom_in = patch::hookFunction(spm::evt_cam::evt_cam3d_evt_zoom_in, new_evt_cam3d_evt_zoom_in);
     //evt_seq_set_seq = patch::hookFunction(spm::evt_seq::evt_seq_set_seq, new_evt_seq_set_seq);
@@ -1916,6 +1922,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
     //C_MTXPerspective = patch::hookFunction(wii::mtx::C_MTXPerspective, new_C_MTXPerspective);
     writeBranchLink(spm::effdrv::effRoboVacuumDisp, 0x50, new_func_800630b8);
+    //writeBranch(spm::mario::marioCheck3d, 0x0, yesits3dtime);
     //evt_rpg_choice_handler = patch::hookFunction(spm::an2_08::evt_rpg_choice_handler, new_evt_rpg_choice_handler);
     evt_mario_get_height = patch::hookFunction(spm::evt_mario::evt_mario_get_height, new_evt_mario_get_height);
     //patchWangSpecial();
@@ -1983,6 +1990,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
 
   s32 rpg_npc_setup(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::camdrv::camPtrTbl[5] -> isOrthoToggle = 1;
+    spm::camdrv::camPtrTbl[5] -> in3d = 1;
     for (int i = 0; i < 3; i++) {
       if (rpgIsActive[i]) {
         spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].attackStrength = spm::npcdrv::npcTribes[rpgTribeID[i]].attackStrength;
@@ -2004,6 +2012,20 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     ip::badgePouchInit();
     if (firstRun == false) {}
     if (evtEntry -> flags == 0) {}
+    return 2;
+  }
+
+  s32 rpg_npc_invert_xp(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::an2_08::rpgdrv_wp->rpgNpcInfo[args[0]].killXp *= -1;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::an2_08::rpgdrv_wp->rpgNpcInfo[args[0]].killXp);
+    return 2;
+  }
+  
+
+  s32 rpg_npc_get_xp(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::an2_08::rpgdrv_wp->rpgNpcInfo[args[0]].killXp);
     return 2;
   }
 
@@ -2189,6 +2211,7 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
 
   s32 rpg_off(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::camdrv::camPtrTbl[5]->isOrthoToggle = 1;
+    spm::camdrv::camPtrTbl[5] -> in3d = 0;
     rpgInProgress = false;
     succeededActionCommand = false;
     bossFight = false;
@@ -2456,7 +2479,7 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
 
   void main() {
     wii::os::OSReport("SPM Rel Loader: the mod has ran!\n");
-    titleScreenCustomTextPatch();
+    //titleScreenCustomTextPatch();
     evtpatch::evtmgrExtensionInit();
     msgpatch::msgpatchMain(); 
     msgpatch::msgpatchAddEntry("anna_ehelp_241", chunks_tattle, false); 
@@ -2499,5 +2522,6 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     ring_menu_main();
     acpatch::acpatchInit();
     power_refresh_main();
+    tryChainload();
   }
 }

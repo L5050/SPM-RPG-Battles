@@ -38,7 +38,7 @@ namespace mod
 {
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978049951059731732816096318595024459455346908302642522308253344685035261931188171010003137838752886587533208381420617177669147303598253490428755468731159562863882353787593751957781857780532171226806613001927
 #endif
 
 RingMenu battle_menu;
@@ -445,9 +445,9 @@ s32 ring_delete_battle(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
 
 static void notBowserBattleInit()
 {
-  ringMenuInit(&battle_menu, -115.0f, -30.0f, 0.0f, 31.0f, 34.0f);
+  ringMenuInit(&battle_menu, -115.0f, -30.0f, 0.0f, 34.0f, 34.0f);
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1605)); // Attack
-  ringMenuAddIcon(&battle_menu, iconEntryAutoname(49)); // Special Moves
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(1618)); // Special Moves
 
   u32 pixlCount = 0;
   for (u32 i = 0; i < 16; i++)
@@ -460,9 +460,9 @@ static void notBowserBattleInit()
   }
   if (pixlCount > 1)
   {
-    ringMenuAddIcon(&battle_menu, iconEntryAutoname(140)); // Pixls
+    ringMenuAddIcon(&battle_menu, iconEntryAutoname(1619)); // Pixls
   }
-  ringMenuAddIcon(&battle_menu, iconEntryAutoname(124)); // Items
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(1617)); // Items
 
   u32 charCount = 0;
   for (u32 i = 0; i < 4; i++)
@@ -488,9 +488,8 @@ static void bowserBattleInit()
   ringMenuInit(&battle_menu, -115.0f, -30.0f, 0.0f, 31.0f, 34.0f);
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1611)); // Attack
   ringMenuAddIcon(&battle_menu, iconEntryAutoname(1612)); // Vacuum
-  //ringMenuAddIcon(&battle_menu, iconEntryAutoname(49)); // Special Moves
   
-  ringMenuAddIcon(&battle_menu, iconEntryAutoname(124)); // Items
+  ringMenuAddIcon(&battle_menu, iconEntryAutoname(1617)); // Items
 
   u32 charCount = 0;
   for (u32 i = 0; i < 4; i++)
@@ -726,17 +725,17 @@ s32 ring_battle_main(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       }
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], npcIndex);  
     }
-    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 49 || battle_menu.icons[battle_menu.selectedIndex]->iconId == 1612)
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 1618 || battle_menu.icons[battle_menu.selectedIndex]->iconId == 1612)
     {
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 1);
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
     }
-    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 140)
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 1619)
     {
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 2);
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);
     }
-    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 124)
+    if (battle_menu.icons[battle_menu.selectedIndex]->iconId == 1617)
     {
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 3);
       spm::evtmgr_cmd::evtSetValue(evtEntry, args[5], 1);

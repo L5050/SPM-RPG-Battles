@@ -86,7 +86,7 @@ namespace mod {
       SUB(LW(5), 50)
       ADD(LW(6), 50)
       USER_FUNC(displayDamage, LW(5), LW(6), LW(7), LW(10))
-      WAIT_MSEC(1200)
+      WAIT_MSEC(1000)
       INLINE_EVT()
         USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, UW(1), EVT_NULLPTR, UW(3), UW(1), EVT_NULLPTR, 200, 1000, 11)
       END_INLINE()
