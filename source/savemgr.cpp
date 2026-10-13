@@ -60,6 +60,33 @@ namespace mod {
   "%d left.\n"
   "<k>\n";
 
+  const char pixlOptions[] =
+  "<select 0 -1 250 20>\n"
+  "Yes\n"
+  "Nah, I'm good.";
+
+  const char * mura_dia = "Hi! Fancy meeting you\n"
+  "here! It's like a pearl\n"
+  "in an oyster!\n"
+  "<k>\n<p>\n"
+  "Everyone in the village left a\n"
+  "while ago. They wanted to\n"
+  "safekeep their pet squigs.\n"
+  "<k>\n<p>\n"
+  "Someone's been killing all of the\n"
+  "wild Squigs nearby and it sent up\n"
+  "a bit of a scare so they left.\n"
+  "<k>\n<p>\n"
+  "I dunno why they're so scared.\n"
+  "We're NPCs, the player can't\n"
+  "hurt us anyways.\n"
+  "<k>\n<p>\n"
+  "do u wanna buy thoreau lmao\n"
+  "<o>\n";
+  
+  const char * mura_dia_2 = "ok lol\n"
+  "<k>\n";
+
 s32 restore_fp(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
   if (*maxFp == 0)
@@ -179,13 +206,27 @@ EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(fp_restore), 0, 0)
   RETURN_FROM_CALL()
 
-  EVT_BEGIN(son_fwd)
-    USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(fp_restore), 0, 0)
+  EVT_BEGIN(mura_3_fwd)
+    USER_FUNC(spm::evt_mario::evt_mario_key_off, 1)
+    USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(mura_dia), 0, 0)
+    USER_FUNC(spm::evt_msg::evt_msg_select, 1, PTR(pixlOptions))
+    USER_FUNC(spm::evt_msg::evt_msg_continue)
+    IF_EQUAL(LW(0), 0)
+      USER_FUNC(spm::evt_pouch::evt_pouch_set_coins, 0)
+      USER_FUNC(spm::evt_pouch::evt_pouch_add_item, 0x0DD)
+    ELSE()
+      USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(mura_dia_2), 0, 0)
+    END_IF()
+    
+    USER_FUNC(spm::evt_mario::evt_mario_key_on)
     RETURN()
   EVT_END()
 
   EVT_BEGIN(he2_03_hook)
     IF_EQUAL(GSWF(1802), 1)
+      IF_SMALL(GSW(0), 25)
+        SET(GSW(0), 25)
+      END_IF()
       USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_1"), 1)
       USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_1_01"), 1)
       IF_EQUAL(GSWF(1805), 1)
@@ -198,10 +239,10 @@ EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mise"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_1"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_2"))
-      USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_3"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_4"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_5"))
-      USER_FUNC(spm::evt_npc::evt_npc_set_property, PTR("son"), 9, PTR(son_fwd))
+      USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("son"))
+      USER_FUNC(spm::evt_npc::evt_npc_set_property, PTR("mura_3"), 9, PTR(mura_3_fwd))
       USER_FUNC(reduce_game_speed)
     END_IF()
   RETURN_FROM_CALL()

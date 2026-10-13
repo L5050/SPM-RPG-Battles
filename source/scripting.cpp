@@ -236,7 +236,6 @@ s32 make3d(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 
   return 2;
 }
-EVT_DECLARE_USER_FUNC(make3d, 1)
 
 s32 makeNot3d(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -245,7 +244,6 @@ s32 makeNot3d(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 
   return 2;
 }
-EVT_DECLARE_USER_FUNC(makeNot3d, 0)
 
 s32 getBadgeIdSelect(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -4132,7 +4130,7 @@ IF_EQUAL(LF(0), 1)
       DO_BREAK()
     END_IF()
   WHILE()
-  USER_FUNC(spm::evt_fade::evt_fade_entry, 3, 1500, 0, 0, 0, 255)
+  USER_FUNC(spm::evt_fade::evt_fade_entry, 3, 3000, 0, 0, 0, 255)
   USER_FUNC(spm::an2_08::evt_rpg_change_menu_flag)
   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
   USER_FUNC(mod::rpg_off)
@@ -4140,14 +4138,14 @@ IF_EQUAL(LF(0), 1)
   USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
   USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
 ELSE()
-  USER_FUNC(spm::evt_fade::evt_fade_entry, 3, 1500, 0, 0, 0, 255)
+  USER_FUNC(mod::rpg_off)
+  USER_FUNC(spm::evt_fade::evt_fade_entry, 3, 2000, 0, 0, 0, 255)
   USER_FUNC(spm::an2_08::evt_rpg_change_menu_flag)
   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
   USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
-  WAIT_MSEC(500)
-  USER_FUNC(mod::rpg_off)
   USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
-  USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
+  //USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
+  WAIT_MSEC(1600)
 END_IF()
 RUN_CHILD_EVT(playMusic)
 IF_EQUAL(LW(0), 0)

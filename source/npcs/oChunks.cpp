@@ -379,6 +379,7 @@ EVT_BEGIN(chunks_attack)
 
 
   EVT_BEGIN(chunks_throw)
+    USER_FUNC(make3d, 0)
     USER_FUNC(evt_npc_set_unitwork, LW(15), 4, 1)
     BROTHER_EVT_ID(LW(13))
         DO(0)
@@ -741,6 +742,7 @@ EVT_BEGIN(chunks_attack)
     USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 0, LW(0))
     USER_FUNC(evt_npc_set_position, LW(15), LW(0), 0, 0)
     WAIT_FRM(60)
+    USER_FUNC(make3d, 1)
     RETURN()
   EVT_END()
 
