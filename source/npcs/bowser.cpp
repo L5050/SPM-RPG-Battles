@@ -166,14 +166,24 @@ namespace mod {
       RETURN()
   EVT_END()
 
-      NPCTribeAnimDef *getAnimsBrowserFirefoxExtension()
-      {
-        return animsBrowserFirefoxExtension;
-      }
+  NPCTribeAnimDef *getAnimsBrowserFirefoxExtension()
+  {
+    return animsBrowserFirefoxExtension;
+  }
+
+  EVT_BEGIN(browser_patch)
+    USER_FUNC(spm::evt_mario::evt_mario_key_on)
+    USER_FUNC(start_boss_fight, 315)
+    WAIT_FRM(70)
+    USER_FUNC(evt_npc_delete, LW(10))
+  RETURN_FROM_CALL()
 
   void browser_main()
   {
     npcTribes[69].attackStrength = 3;
+    spm::map_data::MapData * ta1_04_md = spm::map_data::mapDataPtr("ta1_04");
+    spm::evtmgr::EvtScriptCode* bowserBoomEvt = getInstructionEvtArg(ta1_04_md->initScript, 34, 5);
+    evtpatch::hookEvtReplace(bowserBoomEvt, 325, browser_patch);
   }
 
 }
