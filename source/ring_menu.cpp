@@ -6,7 +6,6 @@
 #include "ring_menu.h"
 
 #include <msl/string.h>
-#include <cmath>
 #include <msl/math.h>
 #include <spm/rel/an.h>
 #include <spm/acdrv.h>
@@ -37,6 +36,14 @@ namespace mod
 
 RingMenu battle_menu;
 RingMenu partner_menu;
+
+
+static s32 turtabs(s32 num)
+{
+  if (num > 0)
+    return num * -1;
+  return num;
+}
 
 // ============================================================
 // Icon animation functions from power refresh
@@ -95,7 +102,7 @@ static void iconRotateTo(IconEntry* icon, u32 frames, f32 destX, f32 destY, f32 
 
 static void iconFadeTo(spm::icondrv::IconEntry * icon, u32 frames, u8 alpha)
 {
-  s32 absV = abs((s32)alpha - (s32)icon->colour.a);
+  s32 absV = mod::turtabs((s32)alpha - (s32)icon->colour.a);
   if (absV != 0)
   {
     if (alpha > icon->colour.a)
