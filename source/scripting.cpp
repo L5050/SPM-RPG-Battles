@@ -345,7 +345,7 @@ s32 eff_spawn_bowser_fire(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     s32 duration = spm::evtmgr_cmd::evtGetValue(evtEntry, args[5]);
     f32 direction = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[6]);
     const char * name = (const char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[7]);
-    spm::effdrv::EffEntry * entry = spm::eff_gonbaba::effGonbabaEntry(x, y, z, scale, type, duration);
+    spm::effdrv::EffEntry * entry = spm::eff_gonbaba::effGonbabaBreathEntry(x, y, z, scale, type, duration);
     spm::effdrv::effSetName(entry, name);
     spm::eff_gonbaba::EffGonbabaBreath * userWork = (spm::eff_gonbaba::EffGonbabaBreath *)entry->userWork;
     userWork->direction = direction;
