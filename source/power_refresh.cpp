@@ -7,6 +7,8 @@
 #include "power_refresh.h"
 
 #include <msl/string.h>
+#include <cmath>
+#include <msl/math.h>
 #include <spm/rel/an.h>
 #include <spm/acdrv.h>
 #include <spm/evt_ac.h>
@@ -24,10 +26,10 @@
 #include <spm/spmario_snd.h>
 #include <spm/system.h>
 #include <wii/os/OSError.h>
-#include <cmath>
 
 using namespace spm::npcdrv;
 using namespace spm::evtmgr;
+using namespace msl::math;
 
 namespace mod
 {
