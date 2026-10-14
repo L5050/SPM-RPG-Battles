@@ -40,7 +40,7 @@ RingMenu partner_menu;
 
 static s32 turtabs(s32 num)
 {
-  if (num > 0)
+  if (num < 0)
     return num * -1;
   return num;
 }

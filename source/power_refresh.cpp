@@ -7,7 +7,6 @@
 #include "power_refresh.h"
 
 #include <msl/string.h>
-#include <msl/math.h>
 #include <spm/rel/an.h>
 #include <spm/acdrv.h>
 #include <spm/evt_ac.h>
@@ -25,20 +24,13 @@
 #include <spm/spmario_snd.h>
 #include <spm/system.h>
 #include <wii/os/OSError.h>
+#include <cmath>
 
 using namespace spm::npcdrv;
 using namespace spm::evtmgr;
-using namespace msl::math;
 
 namespace mod
 {
-
-static s32 turtabs(s32 num)
-{
-  if (num > 0)
-    return num * -1;
-  return num;
-}
 
 Vec3 iconPositions[9] = {
   {-100.0, 100.0, 0.0},
@@ -54,9 +46,11 @@ Vec3 iconPositions[9] = {
 
 enum Direction { LEFT = 0, UP = 1, RIGHT = 2, DOWN = 3 };
 
+const char * msgName = "";
+
 void iconGlideTo(spm::icondrv::IconEntry * icon, u32 frames, f32 destX, f32 destY, f32 destZ)
 {
-  f32 absV = labs(destX - icon->position.x);
+  f32 absV = fabs(destX - icon->position.x);
   if (absV != 0.0)
   {
     if (destX > icon->position.x)
@@ -68,7 +62,7 @@ void iconGlideTo(spm::icondrv::IconEntry * icon, u32 frames, f32 destX, f32 dest
       icon->position.x -= (absV / frames);
     }
   }
-  absV = labs(destY - icon->position.y);
+  absV = fabs(destY - icon->position.y);
   if (absV != 0.0)
   {
     if (destY > icon->position.y)
@@ -80,7 +74,7 @@ void iconGlideTo(spm::icondrv::IconEntry * icon, u32 frames, f32 destX, f32 dest
       icon->position.y -= (absV / frames);
     }
   }
-  absV = labs(destZ - icon->position.z);
+  absV = fabs(destZ - icon->position.z);
   if (absV != 0.0)
   {
     if (destZ > icon->position.z)
@@ -97,7 +91,7 @@ void iconGlideTo(spm::icondrv::IconEntry * icon, u32 frames, f32 destX, f32 dest
 
 void iconRotateTo(spm::icondrv::IconEntry * icon, u32 frames, f32 destX, f32 destY, f32 destZ)
 {
-  f32 absV = labs(destX - icon->rotation.x);
+  f32 absV = fabs(destX - icon->rotation.x);
   if (absV != 0.0)
   {
     if (destX > icon->rotation.x)
@@ -109,7 +103,7 @@ void iconRotateTo(spm::icondrv::IconEntry * icon, u32 frames, f32 destX, f32 des
       icon->rotation.x -= (absV / frames);
     }
   }
-  absV = labs(destY - icon->rotation.y);
+  absV = fabs(destY - icon->rotation.y);
   if (absV != 0.0)
   {
     if (destY > icon->rotation.y)
@@ -121,7 +115,7 @@ void iconRotateTo(spm::icondrv::IconEntry * icon, u32 frames, f32 destX, f32 des
       icon->rotation.y -= (absV / frames);
     }
   }
-  absV = labs(destZ - icon->rotation.z);
+  absV = fabs(destZ - icon->rotation.z);
   if (absV != 0.0)
   {
     if (destZ > icon->rotation.z)
@@ -139,7 +133,7 @@ void iconRotateTo(spm::icondrv::IconEntry * icon, u32 frames, f32 destX, f32 des
 
 void iconFadeTo(spm::icondrv::IconEntry * icon, u32 frames, u8 alpha)
 {
-  s32 absV = turtabs((s32)alpha - (s32)icon->colour.a);
+  s32 absV = abs((s32)alpha - (s32)icon->colour.a);
   if (absV != 0)
   {
     if (alpha > icon->colour.a)
@@ -156,7 +150,7 @@ void iconFadeTo(spm::icondrv::IconEntry * icon, u32 frames, u8 alpha)
 
 void iconZoomTo(spm::icondrv::IconEntry * icon, u32 frames, f32 scale)
 {
-  s32 absV = labs(scale - icon->scale);
+  s32 absV = fabs(scale - icon->scale);
   if (absV != 0)
   {
     if (scale > icon->scale)
@@ -238,8 +232,8 @@ void initFunc(spm::acdrv::AcEntry *entry)
   // gp->fps needs to be converted to u32 because all timers need to be compared against gp->frameCounter which is unsigned
   wp->startTimer = 1 * (u32)gp->fps;
   wp->timer = 12 * (u32)gp->fps;
-  //wii::os::OSReport("turtle wow %u!\n", wp->startTimer);
-  //wii::os::OSReport("turtle wow %u!\n", wp->timer);
+  wii::os::OSReport("turtle wow %u!\n", wp->startTimer);
+  wii::os::OSReport("turtle wow %u!\n", wp->timer);
 
   for (s32 i = 0; i < 9; i++)
   {
@@ -317,7 +311,7 @@ void mainFunc(spm::acdrv::AcEntry *entry)
   }
   else // Subtract the amount of passed time from the various timers
   {
-    u32 absV = turtabs((s32)gp->frameCounter - (s32)wp->frameCounter);
+    u32 absV = abs((s32)gp->frameCounter - (s32)wp->frameCounter);
 
     wp->frameCounter += 1;
     
