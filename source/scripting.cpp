@@ -351,7 +351,6 @@ s32 eff_spawn_bowser_fire(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     userWork->direction = direction;
     return 2;
 }
-EVT_DECLARE_USER_FUNC(eff_spawn_bowser_fire, 8)
 
 s32 rpg_populate_techniques(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {

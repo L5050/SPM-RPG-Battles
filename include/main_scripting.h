@@ -46,6 +46,7 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(rpg_npc_get_xp, 2)
   EVT_DECLARE_USER_FUNC(makeNot3d, 0)
   EVT_DECLARE_USER_FUNC(make3d, 1)
+  EVT_DECLARE_USER_FUNC(eff_spawn_bowser_fire, 8)
 
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)
