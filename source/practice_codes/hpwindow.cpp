@@ -23,7 +23,6 @@
 #include "mod_ui_base/menuwindow.h"
 #include "mod.h"
 #include "npc_rpgdrv.h"
-#include "nandsettings.h"
 #include "hpwindow.h"
 #include "tplpatch.h"
 #include "patch.h"

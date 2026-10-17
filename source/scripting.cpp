@@ -185,13 +185,15 @@ const char * tutorial = "<dq>\n"
             {{255, 200, 160, 160}, {255, 255, 160, 160}, 80, 0}  // Orange-Yellow
     };
 
-customwin::CWSelectItemDesc usableItems[10];
-customwin::CWSelectItemDesc usablePixls[16];
+  customwin::CWSelectItemDesc usableItems[10];
+  customwin::CWSelectItemDesc usablePixls[16];
 
-customwin::CWSelectItemDesc usableMarioTechs[10];
-s32 badgeidList[10];
-customwin::CWSelectItemDesc usablePeachTechs[10];
-customwin::CWSelectItemDesc usableBowserTechs[2];
+  customwin::CWSelectItemDesc usableMarioTechs[10];
+  s32 badgeidList[10];
+  customwin::CWSelectItemDesc usablePeachTechs[10];
+  customwin::CWSelectItemDesc usableBowserTechs[2];
+
+  spm::evtmgr::EvtEntry * pre_battle_cutscene = nullptr;
 
   s32 patchTechniquesMario(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   {
@@ -227,6 +229,22 @@ customwin::CWSelectItemDesc usableBowserTechs[2];
 
     return 2;
   }
+
+s32 get_pre_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)pre_battle_cutscene);
+
+  return 2;
+}
+
+s32 set_pre_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  pre_battle_cutscene = (spm::evtmgr::EvtEntry *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+
+  return 2;
+}
 
 s32 make3d(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -1067,6 +1085,7 @@ EVT_BEGIN(rpgDeathHandler)
       USER_FUNC(spm::evt_fade::evt_fade_entry, 65538, 1000, 0, 0, 0, 255)
       USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
       USER_FUNC(mod::rpg_off)
+      USER_FUNC(set_pre_battle_cutscene, 0)
       USER_FUNC(spm::evt_seq::evt_seq_set_seq, 4, 0, 0)
   ELSE() //if yes, life shroom revives the party
       USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(0))
@@ -3991,6 +4010,11 @@ USER_FUNC(spm::evt_msg::evt_msg_continue)
 USER_FUNC(enable_disable_rpg_menu, 0)
 USER_FUNC(spm::evt_fade::evt_fade_entry, 1, 300, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
+IF_EQUAL(GSWF(1800), 0)
+  USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+  USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(tutorial))
+  SET(GSWF(1800), 1)
+END_IF()
 USER_FUNC(check_for_boss_fight, LW(6))
 IF_EQUAL(LW(6), 1)
   USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
@@ -3998,11 +4022,6 @@ IF_EQUAL(LW(6), 1)
   WAIT_MSEC(2000)
   USER_FUNC(spm::evt_msg::evt_msg_continue)
   WAIT_MSEC(100)
-END_IF()
-IF_EQUAL(GSWF(1800), 0)
-  USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-  USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(tutorial))
-  SET(GSWF(1800), 1)
 END_IF()
 IF_EQUAL(GSWF(1804), 0)
   USER_FUNC(spm::evt_pouch::evt_pouch_check_have_item, 0xd9, LW(2))
@@ -4012,6 +4031,11 @@ IF_EQUAL(GSWF(1804), 0)
     USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(tutorial_peach))
   END_IF()
 END_IF()
+USER_FUNC(get_pre_battle_cutscene, LW(6))
+IF_NOT_EQUAL(LW(6), 0)
+  RUN_CHILD_EVT(LW(6))
+  USER_FUNC(set_pre_battle_cutscene, 0)
+END_IF()
 USER_FUNC(ip::evt_pouch_check_badge_equipped, 3, LW(6))
 IF_EQUAL(LW(6), 1)
   RUN_EVT(create_lucky)
@@ -4019,12 +4043,13 @@ IF_EQUAL(LW(6), 1)
   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("I_2"), 0) 
   USER_FUNC(spm::evt_sub::evt_sub_random, 1, LW(8))
   IF_EQUAL(LW(8), 1)
-    USER_FUNC(spm::evt_pouch::evt_pouch_get_max_hp, LW(8))
+    SET(LW(8), 5)
     RUN_CHILD_EVT(evt_heal_party)
     WAIT_MSEC(1750)
   ELSE()
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_HAPPYFLOWER1"))
-    USER_FUNC(getMaxFP, LW(1))
+    USER_FUNC(getFP, LW(1))
+    ADD(LW(1), 5)
     USER_FUNC(setFP, LW(1))
     USER_FUNC(flower_effect, 4)
     WAIT_MSEC(1250)
@@ -4133,11 +4158,13 @@ IF_EQUAL(LF(0), 1)
   USER_FUNC(spm::an2_08::evt_rpg_change_menu_flag)
   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
   USER_FUNC(mod::rpg_off)
+  USER_FUNC(set_pre_battle_cutscene, 0)
   USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
   USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
   USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
 ELSE()
   USER_FUNC(mod::rpg_off)
+  USER_FUNC(set_pre_battle_cutscene, 0)
   USER_FUNC(spm::evt_fade::evt_fade_entry, 3, 2000, 0, 0, 0, 255)
   USER_FUNC(spm::an2_08::evt_rpg_change_menu_flag)
   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)

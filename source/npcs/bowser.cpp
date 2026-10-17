@@ -61,12 +61,18 @@ NPCTribeAnimDef animsBrowserFirefoxExtension[] = {
   {-1, nullptr}
 };
 
+  const char * browser_dia = "<dq>Bowser used all of his\n"
+  "FP to muster power into his\n"
+  "fire breath!!\n"
+  "<o>\n";
+
 namespace mod {
 
   EVT_BEGIN(browser_safarshit_onspawn)
     USER_FUNC(evt_npc_set_disp_callback, LW(15), PTR(bowserNpcDispCb))
     USER_FUNC(getMaxFP, LW(5))
     USER_FUNC(setFP, LW(5))
+    USER_FUNC(set_pre_battle_cutscene, PTR(0))
   RETURN()
   EVT_END()
 
@@ -111,6 +117,7 @@ namespace mod {
   EVT_END()
   
   EVT_BEGIN(browserFIREfoxingItAttack)
+    USER_FUNC(rpg_set_dialogue, PTR(browser_dia))
     USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(1), LW(2), LW(3))
     ADD(LW(1), 90)
     USER_FUNC(evt_npc_set_anim, LW(15), 1, 1)
@@ -134,6 +141,7 @@ namespace mod {
     USER_FUNC(spm::evt_snd::evt_snd_sfx_fadeout, LW(14), 1000)
     USER_FUNC(check_guards, 3, 11, LW(11))
     IF_EQUAL(LW(11), 2)
+      USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(1), LW(6), LW(7))
       USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_COUNTER_REBOUND1"))
       USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("J_1B"), 0)
       USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(1), LW(6), LW(7), 20, 300)

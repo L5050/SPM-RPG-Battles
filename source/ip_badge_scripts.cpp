@@ -2,7 +2,6 @@
 #include "patch.h"
 #include "evtpatch.h"
 #include "npc_rpgdrv.h"
-#include "hpwindow.h"
 #include "main_scripting.h"
 #include "ip_messages.h"
 #include "ip.h"

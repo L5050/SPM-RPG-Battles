@@ -12,6 +12,7 @@
 #include "power_refresh.h"
 #include "tplpatch.h"
 #include "acpatch.h"
+#include "savepatch.h"
 #include "msgpatch.h"
 #include "customwin.h"
 #include "ring_menu.h"
@@ -471,9 +472,6 @@ bool IsNpcActive(s32 index) {
 
   const char * rpgStart = "Can't flee from this fight!\n"
   "<o>\n";
-  const char * stg7_2_133_2_003 = "<p>\n"
-  "Attack who?\n"
-  "<o>\n";
   const char * stg7_2_133_2_004 = "<p>\n"
   "%s attacks!\n"
   "<o>\n";
@@ -498,23 +496,6 @@ bool IsNpcActive(s32 index) {
   "<p>\n"
   "%s receives %d points!\n"
   "<k>\n"
-  "<o>\n";
-  const char * stg7_2_133_2_009 = "<p>\n"
-  "You gained a level!\n"
-  "<o>\n";
-  const char * stg7_2_133_2_009_01 = "<p>\n"
-  "Your attack power increased\n"
-  "by %d!\n"
-  "<k>\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_009_02 = "<p>\n"
-  "Your HP increased by %d!\n"
-  "<k>\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_010 = "<p>\n"
-  "Choose a technique.\n"
   "<o>\n";
 
   const char * stg7_2_133_2_013 = "<p>\n"
@@ -551,10 +532,6 @@ bool IsNpcActive(s32 index) {
   "<p>\n"
   "But the attack misses!\n"
   "<k>\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_020 = "<p>\n"
-  "Select a Pixl.\n"
   "<o>\n";
 
   const char * stg7_2_133_2_021 = "<p>\n"
@@ -978,12 +955,6 @@ bool IsNpcActive(s32 index) {
   "<k>\n"
   "<o>\n";
 
-  const char * stg7_2_133_2_093 = "<p>\n"
-  "%s\n"
-  "shoots a missile!\n"
-  "<wait 300>\n"
-  "<o>\n";
-
   const char * stg7_2_133_2_094 = "<p>\n"
   "%s takes %d damage!\n"
   "<k>\n"
@@ -994,12 +965,6 @@ bool IsNpcActive(s32 index) {
   "But you're invincible!\n"
   "<wait 150>\n"
   "The attack is ineffective!\n"
-  "<k>\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_096 = "<dkey><wait 250></dkey>\n"
-  "<p>\n"
-  "%s dodges like a pro!\n"
   "<k>\n"
   "<o>\n";
 
@@ -2487,16 +2452,10 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     msgpatch::msgpatchAddEntry("stg7_2_133_2_091", stg7_2_133_2_091, false);
     msgpatch::msgpatchAddEntry("stg7_2_133_2_092", stg7_2_133_2_092, false);
     msgpatch::msgpatchAddEntry("stg7_2_133_2_008", stg7_2_133_2_008, false);
-    msgpatch::msgpatchAddEntry("stg7_2_133_2_009", stg7_2_133_2_009, false);
-    msgpatch::msgpatchAddEntry("stg7_2_133_2_009_01", stg7_2_133_2_009_01, false);
-    msgpatch::msgpatchAddEntry("stg7_2_133_2_009_02", stg7_2_133_2_009_02, false);
-    msgpatch::msgpatchAddEntry("stg7_2_133_2_010", stg7_2_133_2_010, false);
-    msgpatch::msgpatchAddEntry("stg7_2_133_2_020", stg7_2_133_2_020, false);
     msgpatch::msgpatchAddEntry("stg7_2_133_2_029", stg7_2_133_2_029, false);
     msgpatch::msgpatchAddEntry("stg7_2_133_2_110", stg7_2_133_2_110, false);
     msgpatch::msgpatchAddEntry("stg7_2_133_2_111", stg7_2_133_2_111, false);
     msgpatch::msgpatchAddEntry("stg7_2_133_2_001", rpgStart, false);
-    msgpatch::msgpatchAddEntry("stg7_2_133_2_002", stg7_2_133_2_003, true);
     customwin::CustomWinMain();
     hookEvent();
     npc_rpgdrv_main();
@@ -2522,6 +2481,7 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     ring_menu_main();
     acpatch::acpatchInit();
     power_refresh_main();
+    savepatch::main("SDPM_%02d");
     tryChainload();
   }
 }
