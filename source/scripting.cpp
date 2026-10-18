@@ -10,6 +10,7 @@
 
 #include <spm/rel/an.h>
 #include <spm/rel/bos_01.h>
+#include <spm/animdrv.h>
 #include <spm/evtmgr.h>
 #include <spm/evt_ac.h>
 #include <spm/evt_msg.h>
@@ -625,6 +626,20 @@ s32 npc_change_name(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   NPCEntry * npc = spm::npcdrv::npcNameToPtr(name);
   msl::string::strcpy(npc->name, newName);
   return 2;
+}
+
+s32 evt_animPoseCharge(EvtEntry *entry, bool firstCall)
+{
+  EvtVar *args = (spm::evtmgr::EvtVar *)entry->pCurData;
+  u32 asyncTest = spm::animdrv::animGroupBaseAsync("EFF_batug_tue", 0, 0);
+  if (asyncTest == 0)
+  {
+    return 0;
+  }
+  else
+  {
+    return 2;
+  }
 }
 
 EVT_BEGIN(create_lucky)
@@ -2048,27 +2063,19 @@ SWITCH(LW(10))
           CASE_EQUAL(1)
               USER_FUNC(spm::evt_ac::evt_ac_entry, PTR("vore"), 7)
               WAIT_FRM(5)
-              BROTHER_EVT_ID(LW(0))
-                USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
-                USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 40, 1000)
-              END_BROTHER()
-              WAIT_FRM(30)
-              DELETE_EVT(LW(0))
-              WAIT_FRM(1)
               USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
-              ADD(LW(5), 15)
-              SUB(LW(6), 50)
+              SUB(LW(5), 10)
+              SUB(LW(6), 30)
+              SUB(LW(7), 5)
               USER_FUNC(spm::evt_npc::evt_npc_entry, PTR("vacuum_goomba"), PTR("e_kuribo"), 0)
               USER_FUNC(spm::evt_npc::evt_npc_set_color, PTR("vacuum_goomba"), 255, 255, 255, 0)
               USER_FUNC(spm::evt_npc::evt_npc_set_position, PTR("vacuum_goomba"), LW(5), LW(6), LW(7))
               USER_FUNC(spm::evt_npc::evt_npc_get_axis_movement_unit, PTR("vacuum_goomba"), LW(0))
               MUL(LW(0), -1)
               USER_FUNC(spm::evt_npc::evt_npc_set_axis_movement_unit, PTR("vacuum_goomba"), LW(0))
-              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_a"), 0) 
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("E_8"), 0) 
               USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
-              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_b"), 0) 
-              USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
-              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_c"), 0)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("E_9"), 0)
               USER_FUNC(spawn_robo_eff, PTR("vacuum_goomba"), PTR("b_p_vacuum"))
               USER_FUNC(manage_vacuum)
               USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_EVT_VACUUM"))
@@ -2083,9 +2090,6 @@ SWITCH(LW(10))
               END_IF()
               USER_FUNC(spm::evt_eff::evt_eff_softdelete, PTR("b_p_vacuum"))
               USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("vacuum_goomba"))
-              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_d"), 0)
-              USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
-              USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 40, 300)
             
         END_SWITCH()
     CASE_EQUAL(3) //Luigi
@@ -3840,7 +3844,7 @@ EVT_BEGIN(rpg_check_win_or_continue_evt)
         WAIT_FRM(1)
       ELSE()
         USER_FUNC(get_post_battle_cutscene, LW(1))
-        IF_NOT_EQUAL(LW(1), 0)
+        IF_EQUAL(LW(1), 0)
           USER_FUNC(spm::evt_snd::evt_snd_bgmoff, 0)
           USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_EVT_STG7_RPG_FF1"))
         END_IF()
@@ -4082,6 +4086,10 @@ IF_EQUAL(LW(6), 1)
     USER_FUNC(getFP, LW(1))
     ADD(LW(1), 5)
     USER_FUNC(setFP, LW(1))
+    USER_FUNC(getMaxFP, LW(8))
+    IF_LARGE(LW(8), LW(1))
+     USER_FUNC(setFP, LW(8))
+    END_IF()
     USER_FUNC(flower_effect, 4)
     WAIT_MSEC(1250)
   END_IF()
@@ -4095,7 +4103,6 @@ DO(0)
   SET(LW(6), 0)
   USER_FUNC(enable_disable_rpg_menu, 1)
   RUN_EVT_ID(handleLowHealthNoise, LW(5))
-  //USER_FUNC(spawn_robo_eff)
   USER_FUNC(ring_init_battle)
   DO(0)
     USER_FUNC(ring_battle_main, LW(0), LW(1), LW(2), LW(3), LW(4), LW(6))
@@ -4246,6 +4253,7 @@ EVT_BEGIN(parentOfBeginRPG)
   USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
   INLINE_EVT()
     USER_FUNC(spm::evt_env::evt_env_blur_on, 0, 500)
+    USER_FUNC(evt_animPoseCharge)
   END_INLINE()
   USER_FUNC(make3d, 1)
   USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))

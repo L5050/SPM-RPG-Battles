@@ -19,6 +19,7 @@ namespace mod {
 EVT_DECLARE(browser_edging_attack)
 EVT_DECLARE(browser_safarshit_onspawn)
 EVT_DECLARE(browser_chromium_onhit)
+EVT_DECLARE(browser_tor_prebat)
 NPCTribeAnimDef * getAnimsBrowserFirefoxExtension();
 void browser_main();
 

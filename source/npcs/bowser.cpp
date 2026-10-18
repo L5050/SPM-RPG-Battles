@@ -22,7 +22,7 @@
 #include <spm/evt_cam.h>
 #include <spm/evt_sub.h>
 #include <spm/evt_npc.h>
-#include <spm/evt_door.h>
+#include <spm/evt_mobj.h>
 #include <spm/evt_case.h>
 #include <spm/evt_pouch.h>
 #include <spm/evt_seq.h>
@@ -57,25 +57,87 @@ NPCTribeAnimDef animsBrowserFirefoxExtension[] = {
   {11, "A_1_d"},
 
   {14, "N_1"},
+  {20, "E_8"},
+  {21, "E_9"},
+  {22, "S_1G"},
   {30, "AC_7"},
   {-1, nullptr}
 };
+
+  static NPCTribeAnimDef animsCharge[] = {
+    {0, "Z_1"},
+    {1, "S_1"},
+    {-1, nullptr}
+  };
 
   const char * browser_dia = "<dq>Bowser used all of his\n"
   "FP to muster power into his\n"
   "fire breath!!\n"
   "<o>\n";
 
+  const char * browser_dia_2 = "<scale 0.9>Hmmph... Lets see if you can handle...\n"
+  "<dkey><wait 550></dkey><scale 2.0><shake>THIS!!\n"
+  "<k>\n";
+
+  const char * browser_dia_3 = "<dq>Bowser matched his HP, FP, and\n"
+  "ATK stats with Mario's stats!\n"
+  "<k>\n";
+
 namespace mod {
 
   EVT_BEGIN(browser_safarshit_onspawn)
     USER_FUNC(evt_npc_set_disp_callback, LW(15), PTR(bowserNpcDispCb))
-    USER_FUNC(getMaxFP, LW(5))
-    USER_FUNC(setFP, LW(5))
-    USER_FUNC(set_pre_battle_cutscene, PTR(0))
-  RETURN()
+    USER_FUNC(set_pre_battle_cutscene, PTR(browser_tor_prebat))
+    USER_FUNC(spm::evt_mobj::evt_mobj_set_scale, LW(14), FLOAT(3.5), FLOAT(2.3), FLOAT(3.5))
+    RETURN()
   EVT_END()
 
+  EVT_BEGIN(browser_tor_prebat)
+    SET(LW(15), PTR("npc2"))
+    USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(browser_dia_2), 0, LW(15))
+    USER_FUNC(evt_npc_set_anim, LW(15), 30, 1)
+    USER_FUNC(spm::evt_npc::evt_npc_get_position, LW(15), LW(1), LW(2), LW(3))
+    SUB(LW(2), 10)
+    USER_FUNC(evt_npc_set_position, LW(15), LW(1), LW(2), LW(3))
+    INLINE_EVT_ID(LW(10))
+      SET(LW(9), FLOAT(0.0))
+      DO(0)
+      ADDF(LW(9), FLOAT(18.0))
+      USER_FUNC(spm::evt_npc::evt_npc_rotate, LW(15), EVT_NULLPTR, LW(9), EVT_NULLPTR)
+      WAIT_FRM(1)
+      WHILE()
+    END_INLINE()
+    USER_FUNC(evt_npc_entry_autoname, PTR("EFF_batug_tue"), 0, LW(14))
+    USER_FUNC(spm::evt_npc::evt_npc_set_scale, LW(14), FLOAT(3.0), FLOAT(3.0), FLOAT(3.0))
+    USER_FUNC(spm::evt_npc::evt_npc_set_property, LW(14), 14, PTR(animsCharge))
+    USER_FUNC(spm::evt_npc::evt_npc_get_position, LW(15), LW(5), LW(6), LW(7))
+    USER_FUNC(spm::evt_npc::evt_npc_set_position, LW(14), LW(5), LW(6), LW(7))
+    USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(14), 1, 1)
+    USER_FUNC(spm::evt_npc::evt_npc_wait_anim_end, LW(14), 1)
+    USER_FUNC(spm::evt_npc::evt_npc_delete, LW(14))
+    DELETE_EVT(LW(10))
+    USER_FUNC(spm::evt_npc::evt_npc_rotate, LW(15), EVT_NULLPTR, FLOAT(0.0), EVT_NULLPTR)
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_TUYOTUYO1"))
+    ADD(LW(6), 10)
+    USER_FUNC(spm::evt_npc::evt_npc_jump_to, LW(15), LW(5), LW(6), LW(7), 100, FLOAT(200.0))
+    USER_FUNC(evt_npc_set_anim, LW(15), 0, 1)
+    USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_I_TUYOTUYO1"))
+    USER_FUNC(spm::evt_pouch::evt_pouch_get_max_hp, LW(0))
+    USER_FUNC(set_npc_rpg_hp, 1, LW(0))
+    USER_FUNC(spm::evt_pouch::evt_pouch_get_attack, LW(0))
+    USER_FUNC(set_npc_rpg_atk, 1, LW(0))
+    USER_FUNC(evt_npc_set_anim, LW(15), 20, 1)
+    USER_FUNC(evt_npc_wait_anim_end, LW(15), 0)
+    USER_FUNC(evt_npc_set_anim, LW(15), 21, 1)
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_V_KOOPA_PLEASURE1"))
+    WAIT_MSEC(500)
+    USER_FUNC(evt_npc_set_anim, LW(15), 22, 1)
+    USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(browser_dia_3), 0, 0)
+    USER_FUNC(getMaxFP, LW(0))
+    USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, LW(15), 3, LW(0))
+    RETURN()
+  EVT_END()
+  
   EVT_BEGIN(browser_chromium_onhit)
       USER_FUNC(evt_npc_get_position, LW(15), LW(5), LW(6), LW(7))
       BROTHER_EVT_ID(LW(4))
@@ -177,6 +239,7 @@ namespace mod {
     USER_FUNC(evt_npc_walk_to, LW(15), LW(0), LW(2), FLOAT(0.0), FLOAT(190.0), 0, 0, 0)
     WAIT_FRM(1)
     USER_FUNC(evt_npc_set_anim, LW(15), 0, 1)
+    USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, LW(15), 3, 0)
     DO(0)
       CHK_EVT(LW(4), LW(0))
       IF_EQUAL(LW(0), 0)
@@ -216,7 +279,6 @@ namespace mod {
       IF_EQUAL(LW(11), 1)
         USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
         USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-        ADD(LW(10), 2)
         SUB(LW(10), 1)
         IF_SMALL(LW(10), 0)
           SET(LW(10), 0)
@@ -227,7 +289,6 @@ namespace mod {
       END_IF()
       IF_EQUAL(LW(11), 0)
         USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-        ADD(LW(10), 2)
         USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(0), LW(1), LW(2))
         RUN_EVT(mod::marioRPGtakeDamage)
         USER_FUNC(spm::an2_08::evt_rpg_mario_take_damage, LW(10), 0, LW(0))
@@ -248,9 +309,21 @@ namespace mod {
   EVT_END()
 
   EVT_BEGIN(browser_edging_attack)
-    USER_FUNC(spm::evt_sub::evt_sub_random, 100, LW(0))
-    SWITCH(LW(0))
-      CASE_SMALL_EQUAL(60)
+    USER_FUNC(getMaxFP, LW(9))
+    USER_FUNC(spm::evt_npc::evt_npc_get_unitwork, LW(15), 3, LW(0))
+    IF_SMALL(LW(0), LW(9))
+      IF_EQUAL(LW(0), 0)
+        // vacuum evt here
+      ELSE()
+      
+      END_IF()
+    END_IF()
+    USER_FUNC(spm::evt_sub::evt_sub_random, 100, LW(1))
+    IF_SMALL(LW(0), LW(9))
+      SUB(LW(1), 61)
+    END_IF()
+    SWITCH(LW(1))
+      CASE_SMALL_EQUAL(30)
         RUN_CHILD_EVT(browser_edging_attack_2)
       CASE_ETC()
         RUN_CHILD_EVT(browserFIREfoxingItAttack)
