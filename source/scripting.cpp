@@ -194,6 +194,7 @@ const char * tutorial = "<dq>\n"
   customwin::CWSelectItemDesc usableBowserTechs[2];
 
   spm::evtmgr::EvtEntry * pre_battle_cutscene = nullptr;
+  spm::evtmgr::EvtEntry * post_battle_cutscene = nullptr;
 
   s32 patchTechniquesMario(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   {
@@ -242,6 +243,22 @@ s32 set_pre_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
   spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
   pre_battle_cutscene = (spm::evtmgr::EvtEntry *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+
+  return 2;
+}
+
+s32 get_post_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)post_battle_cutscene);
+
+  return 2;
+}
+
+s32 set_post_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  post_battle_cutscene = (spm::evtmgr::EvtEntry *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
 
   return 2;
 }
@@ -317,7 +334,7 @@ EVT_DECLARE_USER_FUNC(getBadgeIdSelect, 2)
     usableBowserTechs[0].iconId = -1;
     usableBowserTechs[0].page = 0;
     msl::string::strcpy(usableBowserTechs[1].nameTxt, "Vacuum");
-    msl::string::strcpy(usableBowserTechs[1].descTxt, "Generates panels to heal HP and FP!\nDon't click the poison shrooms!");
+    msl::string::strcpy(usableBowserTechs[1].descTxt, "Inhales enemies like gummy bears!\nEffects vary depending on enemy.");
     usableBowserTechs[1].cost = 0;
     usableBowserTechs[1].iconId = -1;
     usableBowserTechs[1].page = 0;
@@ -937,7 +954,7 @@ EVT_BEGIN(levelUpScript)
     USER_FUNC(customwin::EvtCWSelectAddListing, PTR("levelup"), PTR("+3 Max BP"), PTR(leveluptut), 1610, 0, 0, 0)
     USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("levelup"), 0, LW(0))
     USER_FUNC(customwin::EvtCWSelectReset)
-    USER_FUNC(customwin::EvtCWSelectDelete, PTR("pixls"))
+    USER_FUNC(customwin::EvtCWSelectDelete, PTR("levelup"))
     IF_EQUAL(LW(0), GSW(1820))
       USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(level_up_fail), 0, 0)
       SET(LW(0), -1)
@@ -1683,7 +1700,7 @@ USER_FUNC(customwin::EvtCWSelectSetShopIcon, PTR("techniques"), 1600, FLOAT(0.6f
 USER_FUNC(customwin::EvtCWSelectSetBGColor, PTR("techniques"), PTR(accessSelectBgCols), 8)
 USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("techniques"), 0, LW(1))
 USER_FUNC(customwin::EvtCWSelectReset)
-USER_FUNC(customwin::EvtCWSelectDelete, PTR("pixls"))
+USER_FUNC(customwin::EvtCWSelectDelete, PTR("techniques"))
 IF_EQUAL(LW(1), -1)
   SET(LF(1), 1)
   RETURN()
@@ -3005,7 +3022,7 @@ EVT_BEGIN(items)
     USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("items"), 0, LW(0))
     USER_FUNC(customwin::EvtCWSelectGetSelectionItemId, LW(0), LW(2))
     USER_FUNC(customwin::EvtCWSelectReset)
-    USER_FUNC(customwin::EvtCWSelectDelete, PTR("pixls"))
+    USER_FUNC(customwin::EvtCWSelectDelete, PTR("items"))
     IF_EQUAL(LW(2), -1)
       SET(LF(1), 1)
       RETURN()
@@ -3478,7 +3495,7 @@ WHILE()
 USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("chars"), 0, LW(0))
 USER_FUNC(customwin::EvtCWSelectGetSelectionItemId, LW(0), LW(2))
 USER_FUNC(customwin::EvtCWSelectReset)
-USER_FUNC(customwin::EvtCWSelectDelete, PTR("pixls"))
+USER_FUNC(customwin::EvtCWSelectDelete, PTR("chars"))
 IF_EQUAL(LW(2), -1)
   RETURN()
 END_IF()
@@ -3822,11 +3839,13 @@ EVT_BEGIN(rpg_check_win_or_continue_evt)
       IF_EQUAL(LW(1), 1)
         WAIT_FRM(1)
       ELSE()
-        USER_FUNC(spm::evt_snd::evt_snd_bgmoff, 0)
-        USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_EVT_STG7_RPG_FF1"))
+        USER_FUNC(get_post_battle_cutscene, LW(1))
+        IF_NOT_EQUAL(LW(1), 0)
+          USER_FUNC(spm::evt_snd::evt_snd_bgmoff, 0)
+          USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_EVT_STG7_RPG_FF1"))
+        END_IF()
       END_IF()
     END_INLINE()
-    USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
     USER_FUNC(spm::an2_08::evt_rpg_point_calculation, 0, LW(11))
     USER_FUNC(spm::an2_08::evt_rpg_point_calculation, 1, LW(12))
     USER_FUNC(spm::an2_08::evt_rpg_point_calculation, 2, LW(13)) //fills the lws with points gained from the turn based combat
@@ -3834,6 +3853,15 @@ EVT_BEGIN(rpg_check_win_or_continue_evt)
     ADD(LW(11), LW(12))
     ADD(LW(11), LW(13))
     ADD(LW(11), LW(14)) //and adds them to a total here
+    USER_FUNC(get_post_battle_cutscene, LW(10))
+    IF_NOT_EQUAL(LW(10), 0)
+      RUN_CHILD_EVT(LW(10))
+      USER_FUNC(set_post_battle_cutscene, 0)
+      SET(LF(0), 1)
+      SET(LW(0), 1)
+      RETURN()
+    END_IF()
+    USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
     USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_008"), LW(10), LW(11))
     USER_FUNC(spm::evt_pouch::evt_pouch_add_xp, LW(11))
@@ -3890,6 +3918,7 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_mobj::evt_mobj_set_position, PTR("mobj1"), LW(0), LW(1), LW(2))
   USER_FUNC(mobjChangeAnimPoseName, PTR("mobj1"), PTR("MOBJ_su_blank"))
   USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj1"))
+  USER_FUNC(spm::evt_mobj::evt_mobj_flag_onoff, 1, 0, PTR("mobj1"), 0x2)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc1"), 0, LW(0))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc1"), 1, LW(1))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc1"), 2, LW(2))
@@ -3915,6 +3944,7 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_mobj::evt_mobj_set_position, PTR("mobj2"), LW(0), LW(1), LW(2))
   USER_FUNC(mobjChangeAnimPoseName, PTR("mobj2"), PTR("MOBJ_su_blank"))
   USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj2"))
+  USER_FUNC(spm::evt_mobj::evt_mobj_flag_onoff, 1, 0, PTR("mobj2"), 0x2)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc2"), 0, LW(0))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc2"), 1, LW(1))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc2"), 2, LW(2))
@@ -3940,6 +3970,7 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_mobj::evt_mobj_set_position, PTR("mobj3"), LW(0), LW(1), LW(2))
   USER_FUNC(mobjChangeAnimPoseName, PTR("mobj3"), PTR("MOBJ_su_blank"))
   USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj3"))
+  USER_FUNC(spm::evt_mobj::evt_mobj_flag_onoff, 1, 0, PTR("mobj3"), 0x2)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc3"), 0, LW(0))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc3"), 1, LW(1))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc3"), 2, LW(2))

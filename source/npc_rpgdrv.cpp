@@ -202,7 +202,7 @@ NPCTribeAnimDef animsParaKuribo[] = {
   {-1, nullptr}
 };
 
-  NPCTribeAnimDef animsCharge[] = {
+  static NPCTribeAnimDef animsCharge[] = {
     {0, "Z_1"},
     {1, "S_1"},
     {-1, nullptr}
