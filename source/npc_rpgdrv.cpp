@@ -683,7 +683,26 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].maxHp = 0;
     spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].killXp = 0;
     spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].flags = 0x8000;
-    if (firstRun == false) {}
+    return 2;
+  }
+
+  s32 set_npc_rpg_hp(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    
+    spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].maxHp = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+    return 2;
+  }
+
+  s32 set_npc_rpg_atk(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    
+    spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].attackStrength = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
     return 2;
   }
 
@@ -727,7 +746,7 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       END_BROTHER()
       USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
       ADD(LW(5), 30)
-      ADD(LW(6), 10)
+      ADD(LW(6), 30)
       USER_FUNC(spm::evt_npc::evt_npc_glide_to, LW(15), LW(5), LW(6), LW(7), 0, FLOAT(150.0), 0, 0, 0, 0)
       WAIT_FRM(1)
       DELETE_EVT(LW(10))
