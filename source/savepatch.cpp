@@ -17,6 +17,8 @@
 #include <spm/evt_snd.h>
 #include <spm/spmario.h>
 #include <spm/map_data.h>
+#include <spm/spmario_snd.h>
+#include <spm/mario_pouch.h>
 #include <spm/wpadmgr.h>
 #include <spm/fontmgr.h>
 #include <spm/swdrv.h>
@@ -27,6 +29,7 @@
 #include <spm/seqdef.h>
 #include <wii/os/OSError.h>
 #include <msl/stdio.h>
+#include <msl/string.h>
 
 using namespace spm::evtmgr_cmd;
 using namespace spm::nandmgr;
@@ -35,6 +38,9 @@ using namespace spm::camdrv;
 using namespace spm::evtmgr;
 using namespace spm::animdrv;
 using namespace spm::dispdrv;
+using namespace spm::spmario;
+using namespace spm::mario_pouch;
+using namespace spm::seqdrv;
 
 namespace mod::savepatch {
 
@@ -196,6 +202,49 @@ namespace mod::savepatch {
     RETURN()
   EVT_END()
 
+// ============================================================
+// Autosave system
+// ============================================================
+
+  bool isAutoSaveActive = false;
+  SpmarioGlobals spmgBackup;
+  MarioPouchWork mpBackup;
+  char * autoSaveMapName = nullptr;
+  char * autoSaveEntranceName = nullptr;
+  
+
+  s32 evt_Activate_Autosave(EvtEntry *entry, bool firstCall)
+  {
+    EvtVar *args = (spm::evtmgr::EvtVar *)entry->pCurData;
+    autoSaveMapName = (char *)evtGetValue(entry, args[0]);
+    autoSaveEntranceName = (char *)evtGetValue(entry, args[1]);
+    msl::string::memcpy(&spmgBackup, gp, sizeof(SpmarioGlobals));
+    msl::string::memcpy(&mpBackup, pouchGetPtr(), sizeof(MarioPouchWork));
+    isAutoSaveActive = true;
+    
+    return 2;
+  }
+
+  s32 evt_Deactivate_Autosave(EvtEntry *entry, bool firstCall)
+  {
+    isAutoSaveActive = false;
+    
+    return 2;
+  }
+
+  void handleAutoSave(s32 seqNum, const char * p0, const char * p1)
+  {
+    if (!isAutoSaveActive)
+    {
+      return seqSetSeq(seqNum, p0, p1);
+    }
+    msl::string::memcpy(gp, &spmgBackup, sizeof(SpmarioGlobals));
+    msl::string::memcpy(pouchGetPtr(), &mpBackup, sizeof(MarioPouchWork));
+    seqSetSeq(SEQ_MAPCHANGE, autoSaveMapName, autoSaveEntranceName);
+    return;
+  }
+
+
   void main(const char * name)
   {
     _saveName = name;
@@ -206,6 +255,7 @@ namespace mod::savepatch {
     writeBranchLink(nandWriteSaveMain, 0x16C, new_sprintf);
     writeBranchLink(nandDeleteSaveMain, 0x15C, new_sprintf);
     writeWord(nandWriteAllSavesMain, 0x458, CMPWI(0, 8));
+    writeBranchLink(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x448, handleAutoSave);
   }
 
 }

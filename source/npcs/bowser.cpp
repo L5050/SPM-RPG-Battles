@@ -5,6 +5,7 @@
 #include "main_scripting.h"
 #include "npc_rpgdrv.h"
 #include "bowser.h"
+#include "savepatch.h"
 
 #include <spm/rel/an.h>
 #include <spm/evtmgr.h>
@@ -337,6 +338,7 @@ namespace mod {
   }
 
   EVT_BEGIN(browser_patch)
+    //USER_FUNC(savepatch::evt_Activate_Autosave, PTR("ta1_04"), PTR("debug_koopa"))
     USER_FUNC(spm::evt_mario::evt_mario_key_on)
     USER_FUNC(start_boss_fight, 315)
     WAIT_FRM(70)
