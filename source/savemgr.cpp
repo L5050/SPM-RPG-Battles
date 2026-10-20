@@ -65,9 +65,8 @@ namespace mod {
   "Yes\n"
   "Nah, I'm good.";
 
-  const char * mura_dia = "Hi! Fancy meeting you\n"
-  "here! It's like a pearl\n"
-  "in an oyster!\n"
+  const char * mura_dia = "Hi! Fancy meeting you here!\n"
+  "It's like a pearl in an oyster!\n"
   "<k>\n<p>\n"
   "Everyone in the village left a\n"
   "while ago. They wanted to\n"
@@ -78,13 +77,7 @@ namespace mod {
   "a bit of a scare so they left.\n"
   "<k>\n<p>\n"
   "I dunno why they're so scared.\n"
-  "We're NPCs, the player can't\n"
-  "hurt us anyways.\n"
-  "<k>\n<p>\n"
-  "do u wanna buy thoreau lmao\n"
-  "<o>\n";
-  
-  const char * mura_dia_2 = "ok lol\n"
+  "I think we'll all be fine!\n"
   "<k>\n";
 
 s32 restore_fp(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
@@ -210,14 +203,6 @@ EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
     USER_FUNC(spm::evt_mario::evt_mario_key_off, 1)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(mura_dia), 0, 0)
     USER_FUNC(spm::evt_msg::evt_msg_select, 1, PTR(pixlOptions))
-    USER_FUNC(spm::evt_msg::evt_msg_continue)
-    IF_EQUAL(LW(0), 0)
-      USER_FUNC(spm::evt_pouch::evt_pouch_set_coins, 0)
-      USER_FUNC(spm::evt_pouch::evt_pouch_add_item, 0x0DD)
-    ELSE()
-      USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(mura_dia_2), 0, 0)
-    END_IF()
-    
     USER_FUNC(spm::evt_mario::evt_mario_key_on)
     RETURN()
   EVT_END()
@@ -229,13 +214,11 @@ EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
       END_IF()
       USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_1"), 1)
       USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_1_01"), 1)
-      IF_EQUAL(GSWF(1805), 1)
-        USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_2"), 1, 1)
-        USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_1"), 1, 1)
-        USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A3D_hasi_1"), 1, 1)
-        USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_2"), 1)
-        USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_2_01"), 1)
-      END_IF()
+      USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_2"), 1, 1)
+      USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_1"), 1, 1)
+      USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A3D_hasi_1"), 1, 1)
+      USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_2"), 1)
+      USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_2_01"), 1)
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mise"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_1"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_2"))

@@ -643,7 +643,7 @@ s32 evt_animPoseCharge(EvtEntry *entry, bool firstCall)
 }
 
 EVT_BEGIN(create_lucky)
-  USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_EVT_LUCKY"))
+  USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_LUCKY"))
   USER_FUNC(spm::evt_npc::evt_npc_entry, PTR("npcdrv_lucky"), PTR("EFF_lucky_us"), 0)
   USER_FUNC(spm::evt_npc::evt_npc_set_scale, PTR("npcdrv_lucky"), FLOAT(3.0), FLOAT(3.0), FLOAT(3.0))
   USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
