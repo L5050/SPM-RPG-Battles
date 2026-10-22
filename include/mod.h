@@ -11,12 +11,6 @@ namespace mod {
 
 #define MOD_VERSION "SPM-RPG-Battles"
 
-extern "C" {
-
-EVT_DECLARE(evt_memcard_save)
-
-}
-
 extern s32 *fp;
 extern s32 *maxFp;
 extern s32 *bp;
@@ -67,7 +61,6 @@ EVT_DECLARE_USER_FUNC(manage_vacuum, 0)
 EVT_DECLARE_USER_FUNC(smurf_da_npc, 1)
 EVT_DECLARE_USER_FUNC(rpg_npc_invert_xp, 2)
 
-EVT_DECLARE(evt_memcard_save)
 
   const char stg7_2_133_2_002[32] = "<dq>\n"
   "<p>\n"

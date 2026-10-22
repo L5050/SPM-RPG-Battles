@@ -26,6 +26,7 @@
 #include <spm/evt_case.h>
 #include <spm/evt_pouch.h>
 #include <spm/evt_seq.h>
+#include <spm/evt_nand.h>
 #include <spm/spmario.h>
 #include <spm/map_data.h>
 #include <spm/wpadmgr.h>
@@ -262,7 +263,7 @@ void remove_shop_door()
   void savemgr_main()
   {
     evt_read_setup_file = patch::hookFunction(spm::evt_npc::evt_read_setup_file, new_evt_read_setup_file);
-    evtpatch::hookEvt((spm::evtmgr::EvtScriptCode*)evt_memcard_save, 4, (spm::evtmgr::EvtScriptCode*)savemgr_evt);
+    evtpatch::hookEvt((spm::evtmgr::EvtScriptCode*)spm::evt_nand::evt_memcard_save, 4, (spm::evtmgr::EvtScriptCode*)savemgr_evt);
     spm::map_data::MapData * he2_md = spm::map_data::mapDataPtr("he2_01");
     evtpatch::hookEvt(he2_md->initScript, 45, const_cast<spm::evtmgr::EvtScriptCode*>(he2_hook));
     he2_md = spm::map_data::mapDataPtr("he2_03");

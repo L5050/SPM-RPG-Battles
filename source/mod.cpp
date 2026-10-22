@@ -2477,7 +2477,7 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     ring_menu_main();
     acpatch::acpatchInit();
     power_refresh_main();
-    savepatch::main("SDPM_%02d");
+    savepatch::main("SDPM_");
     robo_succ_main();
     msgskip::msgSkipInit();
     tryChainload();
