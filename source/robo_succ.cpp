@@ -2,8 +2,8 @@
 #include "mod.h"
 #include "patch.h"
 #include "evtpatch.h"
-#include "main_scripting.h"
 #include "npc_rpgdrv.h"
+#include "robo_succ.h"
 
 #include <spm/animdrv.h>
 #include <spm/evtmgr.h>
@@ -21,17 +21,6 @@
 #include <spm/evt_cam.h>
 #include <spm/evt_sub.h>
 #include <spm/evt_npc.h>
-#include <spm/evt_hit.h>
-#include <spm/evt_door.h>
-#include <spm/evt_case.h>
-#include <spm/evt_pouch.h>
-#include <spm/evt_seq.h>
-#include <spm/spmario.h>
-#include <spm/map_data.h>
-#include <spm/wpadmgr.h>
-#include <spm/fontmgr.h>
-#include <spm/swdrv.h>
-#include <spm/seqdrv.h>
 #include <spm/seq_game.h>
 #include <spm/npcdrv.h>
 #include <spm/mario.h>
@@ -43,6 +32,23 @@
 #include <patch.h>
 
 using namespace spm::npcdrv;
+
+extern "C"
+{
+  void setNewFloatRobo();
+  asm
+  (
+    "floatValueRobo:\n"
+    ".float 0.05\n"
+
+    ".global setNewFloatRobo\n"
+    "setNewFloatRobo:\n"
+        "lis 3, floatValueRobo@ha\n"
+        "ori 3, 3, floatValueRobo@l\n"
+        "lfs 1, 0x0000 (3)\n"
+        "blr\n"
+  );
+}
 
 namespace mod {
 
@@ -58,9 +64,11 @@ namespace mod {
   return 2;
  }
 
+ 
+
   void robo_succ_main()
   {
-    
+    writeBranchLink(spm::effdrv::effRoboVacuumMain, 0x48, setNewFloatRobo);
     return;
   }
 

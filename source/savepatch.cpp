@@ -10,10 +10,11 @@
 #include <spm/evtmgr_cmd.h>
 #include <spm/evt_fade.h>
 #include <spm/evt_map.h>
+#include <spm/evt_msg.h>
 #include <spm/evt_paper.h>
 #include <spm/evt_img.h>
 #include <spm/evt_sub.h>
-#include <spm/evt_case.h>
+#include <spm/evt_seq.h>
 #include <spm/evt_snd.h>
 #include <spm/spmario.h>
 #include <spm/map_data.h>
@@ -21,13 +22,15 @@
 #include <spm/mario_pouch.h>
 #include <spm/wpadmgr.h>
 #include <spm/fontmgr.h>
-#include <spm/swdrv.h>
+#include <spm/fadedrv.h>
 #include <spm/seqdrv.h>
+#include <spm/seq_mapchange.h>
 #include <spm/seq_load.h>
 #include <spm/seq_load_sub.h>
 #include <spm/nandmgr.h>
 #include <spm/seqdef.h>
 #include <wii/os/OSError.h>
+#include <wii/gx.h>
 #include <msl/stdio.h>
 #include <msl/string.h>
 
@@ -41,12 +44,23 @@ using namespace spm::dispdrv;
 using namespace spm::spmario;
 using namespace spm::mario_pouch;
 using namespace spm::seqdrv;
+using namespace spm::evt_msg;
 
 namespace mod::savepatch {
 
   const char * _saveName = nullptr;
   bool loadMainPaused = false;
   bool areSecondarySavesLoaded = false;
+
+  const char autoSaveText[] =
+      "<system>"
+      "Try again?\n"
+      "<o>";
+
+    const char autoSaveOptions[] =
+        "<select 0 -1 120 20>\n"
+        "Yes\n"
+        "No";
 
   s32 ( * seq_load_sub_loadMain )();
 
@@ -181,7 +195,7 @@ namespace mod::savepatch {
   }
 
 // ============================================================
-// Save transition evt and main func
+// Save transition evt
 // ============================================================
 
   EVT_BEGIN(savepatch_transition)
@@ -207,11 +221,29 @@ namespace mod::savepatch {
 // ============================================================
 
   bool isAutoSaveActive = false;
+  bool evt_finished = false;
+  bool autoSaveSelection = false;
+  s32 id = 0;
   SpmarioGlobals spmgBackup;
   MarioPouchWork mpBackup;
   char * autoSaveMapName = nullptr;
   char * autoSaveEntranceName = nullptr;
   
+
+  EVT_BEGIN(auto_save)
+    USER_FUNC(evt_msg_print, 1, PTR(autoSaveText), 0, 0)
+    USER_FUNC(evt_msg_select, 1, PTR(autoSaveOptions))
+    USER_FUNC(evt_msg_continue)
+    USER_FUNC(set_choice, LW(0))
+    IF_EQUAL(LW(0), 0)
+      //USER_FUNC(spm::evt_seq::evt_seq_set_seq, spm::seqdrv::SEQ_MAPCHANGE, PTR(autoSaveMapName), PTR(autoSaveEntranceName))
+    ELSE()
+      USER_FUNC(evt_Deactivate_Autosave)
+      //USER_FUNC(spm::evt_seq::evt_seq_set_seq, spm::seqdrv::SEQ_TITLE, 0, 0)
+    END_IF()
+    WAIT_FRM(5)
+    RETURN()
+  EVT_END()
 
   s32 evt_Activate_Autosave(EvtEntry *entry, bool firstCall)
   {
@@ -221,7 +253,6 @@ namespace mod::savepatch {
     msl::string::memcpy(&spmgBackup, gp, sizeof(SpmarioGlobals));
     msl::string::memcpy(&mpBackup, pouchGetPtr(), sizeof(MarioPouchWork));
     isAutoSaveActive = true;
-    
     return 2;
   }
 
@@ -232,15 +263,72 @@ namespace mod::savepatch {
     return 2;
   }
 
+  s32 set_choice(EvtEntry *entry, bool firstCall)
+  {
+    EvtVar *args = (spm::evtmgr::EvtVar *)entry->pCurData;
+    autoSaveSelection = (bool)evtGetValue(entry, args[0]);
+    return 2;
+  }
+
   void handleAutoSave(s32 seqNum, const char * p0, const char * p1)
   {
     if (!isAutoSaveActive)
     {
+      spm::seq_mapchange::_unload(gp->mapName, 0, 0);
+      msl::string::strcpy(gp->mapName, "");
+      msl::string::strcpy(gp->doorName, "");
       return seqSetSeq(seqNum, p0, p1);
     }
-    msl::string::memcpy(gp, &spmgBackup, sizeof(SpmarioGlobals));
-    msl::string::memcpy(pouchGetPtr(), &mpBackup, sizeof(MarioPouchWork));
-    seqSetSeq(SEQ_MAPCHANGE, autoSaveMapName, autoSaveEntranceName);
+    switch (seqWork.stage)
+    {
+    case 6:
+      id = spm::evtmgr::evtEntry(auto_save, 1, 0)->id;
+      seqWork.stage = 7;
+      break;
+
+    default:
+      break;
+    }
+    return;
+  }
+
+  void handleAutoSave2(s32 seqNum, const char *p0, const char *p1)
+  {
+    switch (seqWork.stage)
+    {
+    case 7:
+      if (!spm::evtmgr::evtCheckID(id))
+      {
+        seqWork.stage = 8;
+        msl::string::memcpy(gp, &spmgBackup, sizeof(SpmarioGlobals));
+        msl::string::memcpy(pouchGetPtr(), &mpBackup, sizeof(MarioPouchWork));
+        spm::seq_mapchange::_unload(gp->mapName, 0, 0);
+        msl::string::strcpy(gp->mapName, "");
+        msl::string::strcpy(gp->doorName, "");
+        if (!autoSaveSelection)
+        {
+          seqSetSeq(SEQ_MAPCHANGE, autoSaveMapName, autoSaveEntranceName);
+        }
+        else
+        {
+          spm::fadedrv::fadeSetMapChangeTransition(2, 1);
+          seqSetSeq(SEQ_TITLE, 0, 0);
+        }
+      }
+      break;
+
+    default:
+      break;
+    }
+    return;
+  }
+
+  static void fadeEntry_new(s32 transitionType, s32 lengthMsec, GXColor color)
+  {
+    if (!isAutoSaveActive)
+    {
+      spm::fadedrv::fadeEntry(transitionType, lengthMsec, color);
+    }
     return;
   }
 
@@ -255,7 +343,13 @@ namespace mod::savepatch {
     writeBranchLink(nandWriteSaveMain, 0x16C, new_sprintf);
     writeBranchLink(nandDeleteSaveMain, 0x15C, new_sprintf);
     writeWord(nandWriteAllSavesMain, 0x458, CMPWI(0, 8));
+    writeWord(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x3B0, NOP);
+    writeWord(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x410, NOP);
+    writeWord(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x428, NOP);
+    writeWord(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x438, NOP);
+    writeBranchLink(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x3e0, fadeEntry_new);
     writeBranchLink(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x448, handleAutoSave);
+    writeBranch(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x464, handleAutoSave2);
   }
 
 }

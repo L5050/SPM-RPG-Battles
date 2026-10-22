@@ -338,7 +338,7 @@ namespace mod {
   }
 
   EVT_BEGIN(browser_patch)
-    //USER_FUNC(savepatch::evt_Activate_Autosave, PTR("ta1_04"), PTR("debug_koopa"))
+    USER_FUNC(savepatch::evt_Activate_Autosave, PTR("ta1_04"), PTR("dokan_02"))
     USER_FUNC(spm::evt_mario::evt_mario_key_on)
     USER_FUNC(start_boss_fight, 315)
     WAIT_FRM(70)

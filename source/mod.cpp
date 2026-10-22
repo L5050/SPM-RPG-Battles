@@ -17,6 +17,8 @@
 #include "customwin.h"
 #include "ring_menu.h"
 #include "chainloader.h"
+#include "msgskip.h"
+#include "robo_succ.h"
 #include "map_data/map_data_main.h"
 
 #include <spm/system.h>
@@ -1873,11 +1875,6 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     END_SWITCH()
     RETURN_FROM_CALL()
 
-  bool yesits3dtime()
-  {
-    return rpgInProgress;
-  }
-
   static void hookEvent() {
     evt_cam3d_evt_zoom_in = patch::hookFunction(spm::evt_cam::evt_cam3d_evt_zoom_in, new_evt_cam3d_evt_zoom_in);
     //evt_seq_set_seq = patch::hookFunction(spm::evt_seq::evt_seq_set_seq, new_evt_seq_set_seq);
@@ -1887,7 +1884,6 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
     //C_MTXPerspective = patch::hookFunction(wii::mtx::C_MTXPerspective, new_C_MTXPerspective);
     writeBranchLink(spm::effdrv::effRoboVacuumDisp, 0x50, new_func_800630b8);
-    //writeBranch(spm::mario::marioCheck3d, 0x0, yesits3dtime);
     //evt_rpg_choice_handler = patch::hookFunction(spm::an2_08::evt_rpg_choice_handler, new_evt_rpg_choice_handler);
     evt_mario_get_height = patch::hookFunction(spm::evt_mario::evt_mario_get_height, new_evt_mario_get_height);
     //patchWangSpecial();
@@ -2482,6 +2478,8 @@ s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     acpatch::acpatchInit();
     power_refresh_main();
     savepatch::main("SDPM_%02d");
+    robo_succ_main();
+    msgskip::msgSkipInit();
     tryChainload();
   }
 }
