@@ -93,7 +93,7 @@ namespace mod::savepatch {
 
     s32 (*loadMainReal)();
 
-    void loadwinRenderArrow(Mtx34 mtxAnim, Mtx34 mtxPos, Mtx34 mtxScale, Mtx34 mtxRot, GXColor col, f32 deeznutshagoteem) {
+    static void loadwinRenderArrow(Mtx34 mtxAnim, Mtx34 mtxPos, Mtx34 mtxScale, Mtx34 mtxRot, GXColor col, f32 deeznutshagoteem) {
         PSMTXTrans(mtxPos, 360.0f * deeznutshagoteem * -1.0f, 0.0f, 0.0f);
         PSMTXRotRad((PI / 2) * deeznutshagoteem, mtxRot, 'z');
         PSMTXScale(mtxScale, 0.8f, 0.8f, 0.8f);
@@ -105,7 +105,7 @@ namespace mod::savepatch {
     }
 
     // copied pretty much this entire thing from customwin lmao
-    void loadwinArrowMain() {
+    static void loadwinArrowMain() {
         GXColor col = {255, 255, 255, 255};
         Mtx34 mtxAnim, mtxPos, mtxScale, mtxRot;
         PSMTXTrans(mtxAnim, 0.0f, select_disp_arrow_move[gp->frameCounter % 20], 0.0f);
@@ -115,14 +115,14 @@ namespace mod::savepatch {
     }
 
     // pretty much just copying the final block of loadMain
-    void loadwin_ctrloff_disp() {
+    static void loadwin_ctrloff_disp() {
         seq_load_sub_wp->cursorPos.x = (seq_load_sub_wp->destCursorPos.x - seq_load_sub_wp->cursorPos.x) * 0.25f + seq_load_sub_wp->cursorPos.x;
         seq_load_sub_wp->cursorPos.y = (seq_load_sub_wp->destCursorPos.y - seq_load_sub_wp->cursorPos.y) * 0.25f + seq_load_sub_wp->cursorPos.y;
         dispEntry(CAM_ID_3D, 4, 1000.0f, (DispCallback *)windowRenderMain, 0);
         return;
     }
 
-    s32 seq_load_sub_chg_saves() {
+    static s32 seq_load_sub_chg_saves() {
         if (savepatch_wp->startMoveMode) {
             savepatch_wp->startMoveMode = false;
             // swaps 4 saves files with next/last 4
@@ -178,12 +178,12 @@ namespace mod::savepatch {
         return loadMainReal();
     }
 
-    s32 new_sprintf(char * buffer, const char * saveName, s32 saveId) {
+    static s32 new_sprintf(char * buffer, const char * saveName, s32 saveId) {
         saveId += (savepatch_wp->page * 4);
         return msl::stdio::sprintf(buffer, "%s%02d", savepatch_wp->saveName, saveId);
     }
 
-    void nandInitNew() {
+    static void nandInitNew() {
         SaveFile * saves = (SaveFile *)__memAlloc(HEAP_MEM1_UNUSED, sizeof(SaveFile) * 16);
         msl::string::memcpy(saves, nandmgr_wp->saves, sizeof(SaveFile) * 4);
         __memFree(HEAP_MAIN, nandmgr_wp->saves);
@@ -192,7 +192,7 @@ namespace mod::savepatch {
             nandClearSave(i);
     }
 
-    void loadMainCtrlNew() {
+    static void loadMainCtrlNew() {
         s32 selection = seq_load_sub_wp->curSelection;
         u32 pressed = wpadGetButtonsPressed(0);
         u32 held_rpt = wpadGetButtonsHeldRepeat(0);
@@ -268,7 +268,7 @@ namespace mod::savepatch {
         return;
     }
 
-    void write_file_num_to_menu(Mtx34 mtx, s32 n) {
+    static void write_file_num_to_menu(Mtx34 mtx, s32 n) {
         char buf[16];
         s32 page = savepatch_wp->page;
         if (nandmgr_wp->task == 5) { // If loading new files, this display is ahead of prepared files, so resync
@@ -288,34 +288,34 @@ namespace mod::savepatch {
         return;
     }
 
-    void draw_arrows(f32 scale, Vec3 * pos, u32 flags, s32 type) {
+    static void draw_arrows(f32 scale, Vec3 * pos, u32 flags, s32 type) {
         loadwinArrowMain();
         iconDispGx(scale, pos, flags, type);
         return;
     }
 
-    void write_file_num_to_load_msg(EvtEntry * evt) {
+    static void write_file_num_to_load_msg(EvtEntry * evt) {
         evt->lw[0] = (seq_load_sub_wp->curSelection + 1 + (savepatch_wp->page * 4));
         return;
     }
 
-    void write_file_num_to_erase_msg(EvtEntry * evt) {
+    static void write_file_num_to_erase_msg(EvtEntry * evt) {
         evt->lw[0] = seq_load_sub_wp->curSelection;
         evt->lw[13] = (seq_load_sub_wp->curSelection + 1 + (savepatch_wp->page * 4));
         return;
     }
 
-    SaveFile * write_file_num_to_copy_msg(EvtEntry * evt) {
+    static SaveFile * write_file_num_to_copy_msg(EvtEntry * evt) {
         evt->lw[13] = (seq_load_sub_wp->saveCopyFrom + 1 + (savepatch_wp->page * 4));
         evt->lw[14] = (seq_load_sub_wp->saveCopyTo + 1 + (savepatch_wp->page * 4));
         return nandGetSaveFiles();
     }
 
-    SeqLoadButtonDef * getBtn() {
+    static SeqLoadButtonDef * getBtn() {
         return &buttonDefs[seq_load_sub_wp->curSelection];
     }
 
-    void move_mtx(Mtx34 mtx, f32 x, f32 y, f32 z) {
+    static void move_mtx(Mtx34 mtx, f32 x, f32 y, f32 z) {
         Mtx34 mtxTrans;
         PSMTXTrans(mtx, x, y, z);
         PSMTXTrans(mtxTrans, savepatch_wp->xOffset, 0.0f, 0.0f);
@@ -377,7 +377,7 @@ namespace mod::savepatch {
         return 2;
     }
 
-    void handleAutoSave(s32 seqNum, const char * p0, const char * p1)
+    static void handleAutoSave(s32 seqNum, const char * p0, const char * p1)
     {
         if (!isAutoSaveActive)
         {
@@ -399,7 +399,7 @@ namespace mod::savepatch {
         return;
     }
 
-    void handleAutoSave2(s32 seqNum, const char *p0, const char *p1)
+    static void handleAutoSave2(s32 seqNum, const char *p0, const char *p1)
     {
         switch (seqWork.stage)
         {
