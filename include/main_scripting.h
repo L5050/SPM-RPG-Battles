@@ -51,6 +51,7 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(set_post_battle_cutscene, 1)
   EVT_DECLARE_USER_FUNC(get_post_battle_cutscene, 1)
   EVT_DECLARE_USER_FUNC(evt_animPoseCharge, 0)
+  EVT_DECLARE_USER_FUNC(animPoseSetMaterialEvtColorWrapper, 5)
 
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)

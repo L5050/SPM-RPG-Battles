@@ -8,6 +8,7 @@
 #include "map_data/map_data_main.h"
 #include "map_data/mi1_08.h"
 #include "map_data/mi4_14.h"
+#include "map_data/ta1_01.h"
 #include "npc_rpgdrv.h"
 
 #include <patch.h>
@@ -23,6 +24,7 @@ void map_data_main()
 {
   mi1_08_main();
   mi4_14_main();
+  ta1_01_main();
 }
 
 }

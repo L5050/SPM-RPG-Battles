@@ -233,13 +233,44 @@ const char * tutorial = "<dq>\n"
     return 2;
   }
 
-s32 get_pre_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
-{
-  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-  spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)pre_battle_cutscene);
+  s32 animPoseSetMaterialEvtColorWrapper(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::mario::MarioWork *mario = spm::mario::marioGetPtr();
+    s32 r = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 g = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+    s32 b = spm::evtmgr_cmd::evtGetValue(evtEntry, args[2]);
+    s32 a = spm::evtmgr_cmd::evtGetValue(evtEntry, args[3]);
+    bool toggle = spm::evtmgr_cmd::evtGetValue(evtEntry, args[4]);
+    wii::gx::GXColor newMarioColor = {r, g, b, a};
 
-  return 2;
-}
+    for (s32 i = 0; i < 8; ++i)
+    {
+      if (mario->animPoseIds[i] != -1)
+      {
+        spm::animdrv::animPoseSetMaterialEvtColor(mario->animPoseIds[i], newMarioColor);
+        if (toggle)
+        {
+        spm::animdrv::animPoseSetFlagF4On(mario->animPoseIds[i], 100000);
+        spm::animdrv::animPoseSetMaterialFlagOn(mario->animPoseIds[i], 0x2000);
+        } else {
+        spm::animdrv::animPoseSetFlagF4Off(mario->animPoseIds[i], 100000);
+        spm::animdrv::animPoseSetMaterialFlagOff(mario->animPoseIds[i], 0x2000);
+        }
+
+      }
+    }
+    //spm::animdrv::animPoseSetMaterialAnmColor(mario->animPoseIds[0], r, g, b, a);
+    return 2;
+  }
+
+  s32 get_pre_battle_cutscene(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)pre_battle_cutscene);
+
+    return 2;
+  }
 
 s32 set_pre_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -268,7 +299,7 @@ s32 set_post_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 s32 make3d(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
   spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-  spm::camdrv::camPtrTbl[5] -> isOrthoToggle = args[0];
+  spm::camdrv::camPtrTbl[5] -> isOrthoToggle = 1;
   spm::camdrv::camPtrTbl[5] -> in3d = args[0];
 
   return 2;

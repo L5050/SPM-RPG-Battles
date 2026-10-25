@@ -58,7 +58,7 @@ using namespace spm;
 namespace mod {
 
   // Patch agb async, maybe this does something
-  const char *customModels[] = {"MOBJ_w_sui", "MOBJ_L_sui", "MOBJ_S_sui",
+  const char *customModels[] = {"MOBJ_w_sui", "MOBJ_L_sui", "MOBJ_S_sui", "MOBJ_waza_block",
                                 "terminator"};
   u32 (*animGroupBaseAsyncReal)(const char *animPoseName, s32 param_2, void *readDoneCb);
   static void agbAsyncPatch()
@@ -97,6 +97,7 @@ namespace mod {
         "MOBJ_w_sui",
         "MOBJ_L_sui",
         "MOBJ_S_sui",
+        "MOBJ_waza_block",
         "MOBJ_02_sui",
         "MOBJ_03_sui",
         "MOBJ_04_sui",
