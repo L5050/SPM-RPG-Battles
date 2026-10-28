@@ -260,7 +260,6 @@ const char * tutorial = "<dq>\n"
 
       }
     }
-    //spm::animdrv::animPoseSetMaterialAnmColor(mario->animPoseIds[0], r, g, b, a);
     return 2;
   }
 
