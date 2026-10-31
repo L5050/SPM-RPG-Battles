@@ -1,23 +1,27 @@
+#include "savepatch.h"
 #include "evt_cmd.h"
 #include "mod.h"
 #include "patch.h"
-#include "savepatch.h"
 
+#include <msl/math.h>
+#include <msl/stdio.h>
 #include <spm/animdrv.h>
 #include <spm/camdrv.h>
 #include <spm/dispdrv.h>
+#include <spm/evt_nand.h>
+#include <spm/evt_msg.h>
 #include <spm/evtmgr.h>
 #include <spm/evtmgr_cmd.h>
-#include <spm/evt_fade.h>
-#include <spm/evt_map.h>
-#include <spm/evt_msg.h>
-#include <spm/evt_paper.h>
-#include <spm/evt_img.h>
-#include <spm/evt_nand.h>
-#include <spm/evt_seq.h>
-#include <spm/evt_snd.h>
-#include <spm/spmario.h>
+#include <spm/fontmgr.h>
+#include <spm/gxsub.h>
+#include <spm/icondrv.h>
 #include <spm/map_data.h>
+#include <spm/nandmgr.h>
+#include <spm/seq_load.h>
+#include <spm/seq_load_sub.h>
+#include <spm/seqdef.h>
+#include <spm/seqdrv.h>
+#include <spm/spmario.h>
 #include <spm/spmario_snd.h>
 #include <spm/mario_pouch.h>
 #include <spm/wpadmgr.h>
@@ -26,19 +30,16 @@
 #include <spm/memory.h>
 #include <spm/seqdrv.h>
 #include <spm/seq_mapchange.h>
-#include <spm/seq_load.h>
-#include <spm/seq_load_sub.h>
-#include <spm/nandmgr.h>
-#include <spm/seqdef.h>
-#include <spm/gxsub.h>
+#include <spm/swdrv.h>
 #include <spm/system.h>
 #include <spm/winmgr.h>
-#include <wii/os/OSError.h>
+#include <spm/wpadmgr.h>
 #include <wii/gx.h>
+#include <wii/mtx.h>
+#include <wii/os/OSError.h>
 #include <wii/wpad.h>
 #include <msl/stdio.h>
 #include <msl/string.h>
-#include <msl/math.h>
 
 using namespace spm::evtmgr_cmd;
 using namespace spm::nandmgr;
@@ -54,6 +55,7 @@ using namespace spm::memory;
 using namespace spm::evt_msg;
 using namespace spm::evt_nand;
 using namespace spm::icondrv;
+using namespace spm::memory;
 using namespace spm::fontmgr;
 using namespace spm::gxsub;
 using namespace spm::seq_load_sub;
@@ -62,11 +64,11 @@ using namespace spm::spmario;
 using namespace spm::spmario_snd;
 using namespace spm::winmgr;
 using namespace wii::gx;
-using namespace wii::wpad;
 using namespace wii::mtx;
 
 namespace mod::savepatch {
- SavepatchWork savepatch_work;
+
+    SavepatchWork savepatch_work;
     SavepatchWork * savepatch_wp = &savepatch_work;
 
     SeqLoadButtonDef buttonDefs[9] = {
@@ -93,7 +95,7 @@ namespace mod::savepatch {
 
     s32 (*loadMainReal)();
 
-    static void loadwinRenderArrow(Mtx34 mtxAnim, Mtx34 mtxPos, Mtx34 mtxScale, Mtx34 mtxRot, GXColor col, f32 deeznutshagoteem) {
+    void loadwinRenderArrow(Mtx34 mtxAnim, Mtx34 mtxPos, Mtx34 mtxScale, Mtx34 mtxRot, GXColor col, f32 deeznutshagoteem) {
         PSMTXTrans(mtxPos, 360.0f * deeznutshagoteem * -1.0f, 0.0f, 0.0f);
         PSMTXRotRad((PI / 2) * deeznutshagoteem, mtxRot, 'z');
         PSMTXScale(mtxScale, 0.8f, 0.8f, 0.8f);
@@ -105,7 +107,7 @@ namespace mod::savepatch {
     }
 
     // copied pretty much this entire thing from customwin lmao
-    static void loadwinArrowMain() {
+    void loadwinArrowMain() {
         GXColor col = {255, 255, 255, 255};
         Mtx34 mtxAnim, mtxPos, mtxScale, mtxRot;
         PSMTXTrans(mtxAnim, 0.0f, select_disp_arrow_move[gp->frameCounter % 20], 0.0f);
@@ -115,14 +117,14 @@ namespace mod::savepatch {
     }
 
     // pretty much just copying the final block of loadMain
-    static void loadwin_ctrloff_disp() {
+    void loadwin_ctrloff_disp() {
         seq_load_sub_wp->cursorPos.x = (seq_load_sub_wp->destCursorPos.x - seq_load_sub_wp->cursorPos.x) * 0.25f + seq_load_sub_wp->cursorPos.x;
         seq_load_sub_wp->cursorPos.y = (seq_load_sub_wp->destCursorPos.y - seq_load_sub_wp->cursorPos.y) * 0.25f + seq_load_sub_wp->cursorPos.y;
         dispEntry(CAM_ID_3D, 4, 1000.0f, (DispCallback *)windowRenderMain, 0);
         return;
     }
 
-    static s32 seq_load_sub_chg_saves() {
+    s32 seq_load_sub_chg_saves() {
         if (savepatch_wp->startMoveMode) {
             savepatch_wp->startMoveMode = false;
             // swaps 4 saves files with next/last 4
@@ -137,7 +139,7 @@ namespace mod::savepatch {
                 savepatch_wp->page = 3;
             }
             // reloads nandmgr_wp->saves
-            nandmgr_wp->task = 5;
+            nandmgr_wp->task = NANDMGR_TASK_WRITE_BANNER_LOAD_ALL_SAVES;
             nandmgr_wp->stage = 0;
             nandmgr_wp->flag = 1;
             nandmgr_wp->code = 0;
@@ -147,7 +149,7 @@ namespace mod::savepatch {
         } else if (savepatch_wp->moveMode != MOVE_NONE) {
             // this whole move mode mechanic is complete nonsense and I hate the way I did all of this. but it works! hope this smurfs
             f32 xOffset = intplGetValue(INTPL_MODE_QUADRATIC_OUT, 0.0f, MOVE_DEST_LENGTH, savepatch_wp->moveTimer, MOVE_TIME_FRMS);
-            if (nandmgr_wp->task != 5 || savepatch_wp->moveTimer < MOVE_TIME_PHASE1_FRMS) {
+            if (nandmgr_wp->task != NANDMGR_TASK_WRITE_BANNER_LOAD_ALL_SAVES || savepatch_wp->moveTimer < MOVE_TIME_PHASE1_FRMS) {
                 savepatch_wp->moveTimer++;
             }
             if (savepatch_wp->moveTimer > MOVE_TIME_PHASE1_FRMS) {
@@ -178,12 +180,12 @@ namespace mod::savepatch {
         return loadMainReal();
     }
 
-    static s32 new_sprintf(char * buffer, const char * saveName, s32 saveId) {
+    s32 new_sprintf(char * buffer, const char * saveName, s32 saveId) {
         saveId += (savepatch_wp->page * 4);
         return msl::stdio::sprintf(buffer, "%s%02d", savepatch_wp->saveName, saveId);
     }
 
-    static void nandInitNew() {
+    void nandInitNew() {
         SaveFile * saves = (SaveFile *)__memAlloc(HEAP_MEM1_UNUSED, sizeof(SaveFile) * 16);
         msl::string::memcpy(saves, nandmgr_wp->saves, sizeof(SaveFile) * 4);
         __memFree(HEAP_MAIN, nandmgr_wp->saves);
@@ -192,7 +194,7 @@ namespace mod::savepatch {
             nandClearSave(i);
     }
 
-    static void loadMainCtrlNew() {
+    void loadMainCtrlNew() {
         s32 selection = seq_load_sub_wp->curSelection;
         u32 pressed = wpadGetButtonsPressed(0);
         u32 held_rpt = wpadGetButtonsHeldRepeat(0);
@@ -268,10 +270,10 @@ namespace mod::savepatch {
         return;
     }
 
-    static void write_file_num_to_menu(Mtx34 mtx, s32 n) {
+    void write_file_num_to_menu(Mtx34 mtx, s32 n) {
         char buf[16];
         s32 page = savepatch_wp->page;
-        if (nandmgr_wp->task == 5) { // If loading new files, this display is ahead of prepared files, so resync
+        if (nandmgr_wp->task == NANDMGR_TASK_WRITE_BANNER_LOAD_ALL_SAVES) { // If loading new files, this display is ahead of prepared files, so resync
             if (seq_load_sub_wp->curSelection == SEQ_LOAD_BTN_PAGE_LEFT) {
                 page += 1;
             } else {
@@ -288,34 +290,34 @@ namespace mod::savepatch {
         return;
     }
 
-    static void draw_arrows(f32 scale, Vec3 * pos, u32 flags, s32 type) {
+    void draw_arrows(f32 scale, Vec3 * pos, u32 flags, s32 type) {
         loadwinArrowMain();
         iconDispGx(scale, pos, flags, type);
         return;
     }
 
-    static void write_file_num_to_load_msg(EvtEntry * evt) {
+    void write_file_num_to_load_msg(EvtEntry * evt) {
         evt->lw[0] = (seq_load_sub_wp->curSelection + 1 + (savepatch_wp->page * 4));
         return;
     }
 
-    static void write_file_num_to_erase_msg(EvtEntry * evt) {
+    void write_file_num_to_erase_msg(EvtEntry * evt) {
         evt->lw[0] = seq_load_sub_wp->curSelection;
         evt->lw[13] = (seq_load_sub_wp->curSelection + 1 + (savepatch_wp->page * 4));
         return;
     }
 
-    static SaveFile * write_file_num_to_copy_msg(EvtEntry * evt) {
+    SaveFile * write_file_num_to_copy_msg(EvtEntry * evt) {
         evt->lw[13] = (seq_load_sub_wp->saveCopyFrom + 1 + (savepatch_wp->page * 4));
         evt->lw[14] = (seq_load_sub_wp->saveCopyTo + 1 + (savepatch_wp->page * 4));
         return nandGetSaveFiles();
     }
 
-    static SeqLoadButtonDef * getBtn() {
+    SeqLoadButtonDef * getBtn() {
         return &buttonDefs[seq_load_sub_wp->curSelection];
     }
 
-    static void move_mtx(Mtx34 mtx, f32 x, f32 y, f32 z) {
+    void move_mtx(Mtx34 mtx, f32 x, f32 y, f32 z) {
         Mtx34 mtxTrans;
         PSMTXTrans(mtx, x, y, z);
         PSMTXTrans(mtxTrans, savepatch_wp->xOffset, 0.0f, 0.0f);
@@ -443,51 +445,94 @@ namespace mod::savepatch {
         msl::string::memset(savepatch_wp, 0, sizeof(SavepatchWork));
         savepatch_wp->saveName = name;
         loadMainReal = patch::hookFunction(seq_load_sub_loadMain, seq_load_sub_chg_saves);
+
         // Read refs to custom saves instead of wiimarioXX saves
         writeBranchLink(nandWriteBannerLoadAllSavesMain, 0x42C, new_sprintf);
-        writeBranchLink(nandWriteAllSavesMain, 0x184, new_sprintf);
-        writeBranchLink(nandWriteAllSavesMain, 0x210, new_sprintf);
+        #if defined(SPM_US2)
+            writeBranchLink(nandWriteAllSavesMain, 0x178, new_sprintf); 
+            writeBranchLink(nandWriteAllSavesMain, 0x204, new_sprintf);
+        #else
+            writeBranchLink(nandWriteAllSavesMain, 0x184, new_sprintf); 
+            writeBranchLink(nandWriteAllSavesMain, 0x210, new_sprintf);
+        #endif
         writeBranchLink(nandWriteSaveMain, 0x16C, new_sprintf);
         writeBranchLink(nandDeleteSaveMain, 0x15C, new_sprintf);
+
         // Extend nandmgr savefile allocation space
         nandInitNew();
+
         // Create 16 saves instead of 4
-        writeWord(nandWriteAllSavesMain, 0x458, CMPWI(0, 16));
+        #if defined(SPM_US2)
+            writeWord(nandWriteAllSavesMain, 0x44C, CMPWI(0, 16));
+        #else
+            writeWord(nandWriteAllSavesMain, 0x458, CMPWI(0, 16));
+        #endif
+
         // "save file X" messages recognize files 5-16
         writeBranchLink(seq_load_sub_loadMain, 0x89C, write_file_num_to_load_msg);
         writeBranchLink(seq_load_sub_loadMain, 0xBA8, write_file_num_to_erase_msg);
         writeBranchLink(seq_load_sub_loadMain, 0x109C, write_file_num_to_copy_msg);
-        // I really don't want to make evtpatch a dependency so we're gonna do evt patches like thiiiiis
+        // cont. I really don't want to make evtpatch a dependency, so we're gonna do some fuckass evt patches like thiiiiis
         writeWord(delete_save_confirm_evt, 0x3C, LW(13));
         writeWord(delete_save_confirm_evt, 0xCC, LW(13));
         writeWord(copy_save_confirm_evt, 0x54, LW(14));
         writeWord(copy_save_confirm_evt, 0x120, LW(13));
         writeWord(copy_save_confirm_evt, 0x124, LW(14));
+
         // Implement new control scheme
         writeBranchLink(seq_load_sub_loadMain, 0x3E4, loadMainCtrlNew); // Replace first instruction of block with bl to new ctrl
         writeWord(seq_load_sub_loadMain, 0x3E8, B(0xD20));              // Jump to end of function (as if fade hasn't finished)
+
         // Replace button def references with new array
         writeBranchLink(windowRenderMain, 0xC4, getBtn);
         writeWord(windowRenderMain, 0xCC, MR(0, 3));
+
         // Draw arrow graphics
-        writeBranchLink(windowRenderMain, 0x1DAC, draw_arrows);
-        // Move graphics
-        writeBranchLink(windowRenderMain, 0x1360, move_mtx);
-        writeBranchLink(windowRenderMain, 0x138C, move_mtx);
-        writeBranchLink(windowRenderMain, 0x13FC, move_mtx);
-        writeBranchLink(windowRenderMain, 0x1488, move_mtx);
-        writeBranchLink(windowRenderMain, 0x15AC, move_mtx);
-        writeBranchLink(windowRenderMain, 0x1658, move_mtx);
-        writeBranchLink(windowRenderMain, 0x16F4, move_mtx);
-        writeBranchLink(windowRenderMain, 0x16B0, move_mtx);
-        writeBranchLink(windowRenderMain, 0x17F8, move_mtx);
-        writeBranchLink(windowRenderMain, 0x186C, move_mtx);
-        writeBranchLink(windowRenderMain, 0x18D4, move_mtx);
-        writeBranchLink(windowRenderMain, 0x1570, move_mtx);
-        writeBranchLink(windowRenderMain, 0x1510, move_mtx);
-        // Display accurate save file numbers (Forces English)
-        writeWord(windowRenderMain, 0x14C4, MR(4, 17)); // Moves i to param 2, replacing the original string
-        writeBranchLink(windowRenderMain, 0x14CC, write_file_num_to_menu);
+        #if defined(SPM_EU0) || defined(SPM_EU1)
+            writeBranchLink(windowRenderMain, 0x1DAC, draw_arrows);
+        #else
+            writeBranchLink(windowRenderMain, 0x1D6C, draw_arrows);
+        #endif
+
+        // Scroll graphics
+        #if defined(SPM_EU0) || defined(SPM_EU1)
+            writeBranchLink(windowRenderMain, 0x1360, move_mtx);
+            writeBranchLink(windowRenderMain, 0x138C, move_mtx);
+            writeBranchLink(windowRenderMain, 0x13FC, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1488, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1510, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1570, move_mtx);
+            writeBranchLink(windowRenderMain, 0x15AC, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1658, move_mtx);
+            writeBranchLink(windowRenderMain, 0x16B0, move_mtx);
+            writeBranchLink(windowRenderMain, 0x16F4, move_mtx);
+            writeBranchLink(windowRenderMain, 0x17F8, move_mtx);
+            writeBranchLink(windowRenderMain, 0x186C, move_mtx);
+            writeBranchLink(windowRenderMain, 0x18D4, move_mtx);
+        #else
+            writeBranchLink(windowRenderMain, 0x1354, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1380, move_mtx);
+            writeBranchLink(windowRenderMain, 0x13F0, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1478, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1500, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1560, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1598, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1640, move_mtx);
+            writeBranchLink(windowRenderMain, 0x16BC, move_mtx);
+            writeBranchLink(windowRenderMain, 0x16FC, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1750, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1794, move_mtx);
+            writeBranchLink(windowRenderMain, 0x1894, move_mtx);
+        #endif
+
+        // Display accurate save file numbers (Forces English but w/e)
+        #if defined(SPM_EU0) || defined(SPM_EU1)
+            writeWord(windowRenderMain, 0x14C4, MR(4, 17)); // Moves i to param 2, replacing the original string
+            writeBranchLink(windowRenderMain, 0x14CC, write_file_num_to_menu);
+        #else
+            writeWord(windowRenderMain, 0x14B4, MR(4, 16));
+            writeBranchLink(windowRenderMain, 0x14BC, write_file_num_to_menu);
+        #endif
         writeWord(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x3B0, NOP);
         writeWord(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x410, NOP);
         writeWord(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x428, NOP);
@@ -496,6 +541,5 @@ namespace mod::savepatch {
         writeBranchLink(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x448, handleAutoSave);
         writeBranch(spm::seqdef::seq_data[SEQ_GAMEOVER].main, 0x464, handleAutoSave2);
     }
-
 
 }

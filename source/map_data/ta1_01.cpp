@@ -21,7 +21,7 @@
 #include <spm/evt_env.h>
 #include <spm/evt_fade.h>
 #include <spm/evt_fairy.h>
-#include <spm/seqdef.h>
+#include <spm/spmario_snd.h>
 
 using namespace spm::npcdrv;
 using namespace spm::evt_npc;
@@ -31,6 +31,16 @@ using namespace spm::evt_snd;
 namespace mod {
 
 bool unfurled = false;
+
+void new_func_spsndSFXOn(char * name)
+{
+  if (unfurled)
+  {
+    return;
+  }
+  spm::spmario_snd::spsndSFXOn(name);
+  return;
+}
 
 void new_func_80058404(s32 camId, s32 isFlipped)
 {
@@ -57,7 +67,7 @@ s32 make3d_unfurl(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
   unfurled = true;
   spm::mario::func_80129d8c();
-  writeWord(spm::camdrv::func_80058404, 0x138, LI(3, 750));
+  writeWord(spm::camdrv::func_80058404, 0x138, LI(3, 1000));
   return 2;
 }
 EVT_DECLARE_USER_FUNC(make3d_unfurl, 0)
@@ -94,18 +104,19 @@ EVT_END()
 
 
 EVT_BEGIN(ta1_01_patch)
-  USER_FUNC(evt_mobj_sui_new, 11, PTR("unfurl"), -150, 100, FLOAT(137.5), (s32)unfurl_evt, 0, EVT_NULLPTR)
+  USER_FUNC(evt_mobj_sui_new, 11, PTR("unfurl"), -150, 100, FLOAT(-138.0), (s32)unfurl_evt, 0, EVT_NULLPTR)
   USER_FUNC(evt_run_case_evt, 6, 1, PTR("MOBJ2_unfurl"), PTR("MOBJ3_unfurl"), PTR(unfurl_evt_fwd), LW(7))
+  USER_FUNC(spm::evt_mobj::evt_mobj_save_blk, PTR("save"), -50, 100, FLOAT(-138.0), 0)
 RETURN_FROM_CALL()
 
 void ta1_01_main()
 {
   spm::map_data::MapData * ta1_01_md = spm::map_data::mapDataPtr("ta1_01");
   spm::evtmgr::EvtScriptCode* ta1_01_init_evt = ta1_01_md->initScript;
-  evtpatch::hookEvt(ta1_01_init_evt, 108, (spm::evtmgr::EvtScriptCode*)ta1_01_patch);
+  evtpatch::hookEvtReplace(ta1_01_init_evt, 108, (spm::evtmgr::EvtScriptCode*)ta1_01_patch);
   writeBranchLink(spm::camdrv::cam3dMain, 0x474, new_func_80058404);
   writeBranchLink(spm::mario_pouch::pouchMain, 0x14, new_checkHaveItem);
-  writeWord(spm::mario_pouch::pouchMain, 0x19C, NOP);
+  writeBranchLink(spm::mario_pouch::pouchMain, 0x19C, new_func_spsndSFXOn);
   return;
 }
 
