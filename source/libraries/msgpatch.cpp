@@ -7,6 +7,7 @@
 #include <spm/evtmgr_cmd.h>
 #include <spm/msgdrv.h>
 #include <spm/system.h>
+#include <spm/spmario_snd.h>
 #include <wii/os.h>
 #include <msl/string.h>
 
@@ -85,6 +86,7 @@ namespace mod::msgpatch
     using namespace spm;
 
     MsgPatchPtrs msgpatchEntries[MSGPATCH_ENTRY_MAX];
+    msgdrv::MsgTalkSfxGroup msgSfxGroup[MSG_SFX_COUNT_MAX];
 
     void msgpatchAddEntry(const char *msgName, const char *newText, bool allowDuplicate)
     {
@@ -285,14 +287,57 @@ namespace mod::msgpatch
         return msgSearchMainRewrite(msgName);
     }
 
-    void implement()
+    static void handleBlipSfx(msgdrv::MsgSpeaker * speaker)
     {
-        patch::hookFunction(msgdrv::msgSearch, msgSearchNew);
-        patch::hookFunction(msgdrv::msgSearchNoFallback, msgSearchNoFallbackNew);
+      s32 rand = system::irand(3);
+      const char ** group = (const char **)&msgSfxGroup[speaker->talkSfxGroup];
+      spmario_snd::spsndSFXOnVol(group[rand], speaker->talkVolume);
+    }
+
+    static void activateSfxPatch()
+    {
+      writeWord(msgdrv::msgMain, 0x6C0, NOP);
+      writeWord(msgdrv::msgMain, 0x6C4, NOP);
+      writeWord(msgdrv::msgMain, 0x6C8, NOP);
+      writeWord(msgdrv::msgMain, 0x6CC, NOP);
+      writeWord(msgdrv::msgMain, 0x6D0, NOP);
+      writeWord(msgdrv::msgMain, 0x6D4, LWZ(3, 0, 26));
+      writeBranchLink(msgdrv::msgMain, 0x6D8, handleBlipSfx);
+      writeWord(msgdrv::msgMain, 0x744, NOP);
+      writeWord(msgdrv::msgMain, 0x748, NOP);
+      writeWord(msgdrv::msgMain, 0x74C, NOP);
+      writeWord(msgdrv::msgMain, 0x750, NOP);
+      writeWord(msgdrv::msgMain, 0x754, NOP);
+      writeWord(msgdrv::msgMain, 0x758, LWZ(3, 0, 26));
+      writeBranchLink(msgdrv::msgMain, 0x75C, handleBlipSfx);
+      // Vanilla sfx groups
+      msgSfxGroup[0].name1 = "SFX_SYS_TALK_MSG1";
+      msgSfxGroup[0].name2 = "SFX_SYS_TALK_MSG1";
+      msgSfxGroup[0].name3 = "SFX_SYS_TALK_MSG1";
+      msgSfxGroup[0].name4 = "SFX_SYS_TALK_MSG1";
+      msgSfxGroup[1].name1 = "SFX_SYS_TALK_MSG5";
+      msgSfxGroup[1].name2 = "SFX_SYS_TALK_MSG5";
+      msgSfxGroup[1].name3 = "SFX_SYS_TALK_MSG5";
+      msgSfxGroup[1].name4 = "SFX_SYS_TALK_MSG5";
+      msgSfxGroup[2].name1 = "SFX_SYS_TALK_MSG6";
+      msgSfxGroup[2].name2 = "SFX_SYS_TALK_MSG6";
+      msgSfxGroup[2].name3 = "SFX_SYS_TALK_MSG6";
+      msgSfxGroup[2].name4 = "SFX_SYS_TALK_MSG6";
+      msgSfxGroup[3].name1 = "SFX_EVT_3_ADV_MSG_TALK1";
+      msgSfxGroup[3].name2 = "SFX_EVT_3_ADV_MSG_TALK1";
+      msgSfxGroup[3].name3 = "SFX_EVT_3_ADV_MSG_TALK1";
+      msgSfxGroup[3].name4 = "SFX_EVT_3_ADV_MSG_TALK1";
+    }
+
+    static void implement()
+    {
+      patch::hookFunction(msgdrv::msgSearch, msgSearchNew);
+      patch::hookFunction(msgdrv::msgSearchNoFallback, msgSearchNoFallbackNew);
+      activateSfxPatch();
     }
 
     void msgpatchMain()
     {
-        implement();
+      implement();
     }
 }

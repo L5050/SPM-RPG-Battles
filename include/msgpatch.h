@@ -6,6 +6,7 @@
 namespace mod::msgpatch
 {
     #define MSGPATCH_ENTRY_MAX 512
+    #define MSG_SFX_COUNT_MAX 100
 
     struct MsgPatchPtrs
     {

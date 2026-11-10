@@ -2,6 +2,7 @@
 #include "mod.h"
 #include "patch.h"
 #include "evtpatch.h"
+#include "msgpatch.h"
 #include "main_scripting.h"
 #include "npc_rpgdrv.h"
 
@@ -25,13 +26,14 @@
 #include <spm/evt_door.h>
 #include <spm/evt_case.h>
 #include <spm/evt_pouch.h>
-#include <spm/evt_seq.h>
+#include <spm/evt_mobj.h>
 #include <spm/evt_nand.h>
 #include <spm/spmario.h>
 #include <spm/map_data.h>
 #include <spm/wpadmgr.h>
 #include <spm/fontmgr.h>
 #include <spm/swdrv.h>
+#include <spm/item_data_ids.h>
 #include <spm/seqdrv.h>
 #include <spm/seq_game.h>
 #include <spm/npcdrv.h>
@@ -61,11 +63,6 @@ namespace mod {
   "%d left.\n"
   "<k>\n";
 
-  const char pixlOptions[] =
-  "<select 0 -1 250 20>\n"
-  "Yes\n"
-  "Nah, I'm good.";
-
   const char * mura_dia = "Hi! Fancy meeting you here!\n"
   "It's like a pearl in an oyster!\n"
   "<k>\n<p>\n"
@@ -74,7 +71,7 @@ namespace mod {
   "safekeep their pet squigs.\n"
   "<k>\n<p>\n"
   "Someone's been killing all of the\n"
-  "wild Squigs nearby and it sent up\n"
+  "wild Squigs nearby, and it sent up\n"
   "a bit of a scare so they left.\n"
   "<k>\n<p>\n"
   "I dunno why they're so scared.\n"
@@ -118,6 +115,12 @@ s32 genocide_check_2(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   return 2;
 }
 
+s32 genocide_check_msgpatch(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  msgpatch::msgpatchAddEntry("stg1_2_058_01", "...<k>\n", 0);
+  return 2;
+}
+
 s32 new_evt_read_setup_file(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
   if (firstRun){
@@ -135,6 +138,7 @@ s32 new_evt_read_setup_file(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 EVT_DECLARE_USER_FUNC(restore_fp, 0)
 EVT_DECLARE_USER_FUNC(genocide_check, 1)
 EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
+EVT_DECLARE_USER_FUNC(genocide_check_msgpatch, 0)
 
   EVT_BEGIN(genocide_check_evt)
     USER_FUNC(genocide_check_2, LW(15))
@@ -203,23 +207,25 @@ EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
   EVT_BEGIN(mura_3_fwd)
     USER_FUNC(spm::evt_mario::evt_mario_key_off, 1)
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(mura_dia), 0, 0)
-    USER_FUNC(spm::evt_msg::evt_msg_select, 1, PTR(pixlOptions))
     USER_FUNC(spm::evt_mario::evt_mario_key_on)
     RETURN()
   EVT_END()
 
   EVT_BEGIN(he2_03_hook)
     IF_EQUAL(GSWF(1802), 1)
-      IF_SMALL(GSW(0), 25)
-        SET(GSW(0), 25)
+      IF_SMALL(GSW(0), 24)
+        SET(GSW(0), 24)
       END_IF()
-      USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_1"), 1)
-      USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_1_01"), 1)
-      USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_2"), 1, 1)
-      USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_1"), 1, 1)
-      USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A3D_hasi_1"), 1, 1)
-      USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_2"), 1)
-      USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_2_01"), 1)
+      USER_FUNC(spm::evt_pouch::evt_pouch_check_have_item, spm::item_data::ITEM_ID_FAIRY_THROW, LW(0))
+      IF_EQUAL(LW(0), 1)
+        USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_1"), 1)
+        USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_1_01"), 1)
+        USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_2"), 1, 1)
+        USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A2D_hasi_1"), 1, 1)
+        USER_FUNC(spm::evt_hit::evt_hitobj_onoff, PTR("A3D_hasi_1"), 1, 1)
+        USER_FUNC(evt_mapobj_flag_onoff, 1, 1, PTR("hasi_2"), 1)
+        USER_FUNC(evt_mapobj_flag_onoff, 1, 0, PTR("hasi_2_01"), 1)
+      END_IF()
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mise"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_1"))
       USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("mura_2"))
@@ -251,6 +257,16 @@ EVT_DECLARE_USER_FUNC(genocide_check_2, 1)
     END_IF()
   RETURN_FROM_CALL()
 
+  EVT_BEGIN(he2_07_box_hook)
+    IF_EQUAL(GSWF(1802), 1)
+      USER_FUNC(spm::evt_mobj::evt_mobj_delete, PTR("box"))
+      WAIT_FRM(1)
+      USER_FUNC(spm::evt_mobj::evt_mobj_thako, 1, PTR("box"), 150, 0, 0, 0, 0, spm::item_data::ITEM_ID_FAIRY_THROW, 0)
+      USER_FUNC(genocide_check_msgpatch)
+    END_IF()
+    USER_FUNC(spm::evt_mobj::evt_mobj_flag_onoff, 1, 0, PTR("box"), 64)
+  RETURN_FROM_CALL()
+
 void remove_shop_door()
 {
   spm::map_data::MapData * he2_md = spm::map_data::mapDataPtr("he2_03");
@@ -272,6 +288,8 @@ void remove_shop_door()
     evtpatch::hookEvt(he2_md->initScript, 44, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_red_green_hook_us));
     he2_md = spm::map_data::mapDataPtr("he2_05");
     evtpatch::hookEvt(he2_md->initScript, 23, const_cast<spm::evtmgr::EvtScriptCode*>(he2_03_red_green_hook));
+    he2_md = spm::map_data::mapDataPtr("he2_07");
+    evtpatch::hookEvtReplace(he2_md->initScript, 20, const_cast<spm::evtmgr::EvtScriptCode*>(he2_07_box_hook));
     spm::map_data::MapData * he3_md = spm::map_data::mapDataPtr("he3_08");
     evtpatch::hookEvt(he3_md->initScript, 2, const_cast<spm::evtmgr::EvtScriptCode*>(he3_08_hook_fwd));
     spm::map_data::MapData * he4_md = spm::map_data::mapDataPtr("he4_01");
