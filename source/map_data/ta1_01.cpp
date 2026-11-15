@@ -13,8 +13,11 @@
 #include <spm/evtmgr.h>
 #include <spm/animdrv.h>
 #include <spm/camdrv.h>
+#include <spm/casedrv.h>
 #include <spm/npcdrv.h>
 #include <spm/spmario.h>
+#include <spm/mario_hit.h>
+#include <spm/mario_motion.h>
 #include <spm/mario_pouch.h>
 #include <spm/evt_snd.h>
 #include <spm/mot_fairy_mario.h>
@@ -84,6 +87,32 @@ bool new_checkHaveItem(s32 id)
   }
 }
 
+bool new_marioKeyOffChk(s32 id)
+{
+  if (unfurled)
+  {
+    return false;
+  } else {
+    return spm::mario::marioKeyOffChk();
+  }
+}
+
+void new_clear_hitobj_hammer_wall()
+{
+  if (!unfurled)
+  {
+    spm::mario_hit::clear_hitobj_hammer_wall();
+  }
+  return;
+}
+
+s32 evt_clear_hitobj_hammer_wall(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::mario_hit::clear_hitobj_hammer_wall();
+  return 2;
+}
+EVT_DECLARE_USER_FUNC(evt_clear_hitobj_hammer_wall, 0)
+
 s32 make2d_unfurl(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
   spm::mario::func_80129d8c();
@@ -91,6 +120,13 @@ s32 make2d_unfurl(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   return 2;
 }
 EVT_DECLARE_USER_FUNC(make2d_unfurl, 0)
+
+s32 end_unfurl(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  curFrames = spm::spmario::gp->fps * unfurlDuration;
+  return 2;
+}
+EVT_DECLARE_USER_FUNC(end_unfurl, 0)
 
 s32 make3d_unfurl(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -106,8 +142,16 @@ s32 hammer_hit_unfurl(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
   spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
   s32 ret = 0;
+  spm::mario::MarioWork * marioWork = spm::mario::marioGetPtr();
   spm::hitdrv::HitObj * obj = spm::mot_fairy_mario::fairyHammerHitChk(&ret);
-  spm::mario::marioGetPtr()->hitObjLastHammeredWall = obj;
+  if (obj)
+  {
+    marioWork->hitObjLastHammeredWall = obj;
+    marioWork->hitObjHammerWallArray2[0] = obj;
+    marioWork->hitObjHammerWallArray[0] = marioWork->hitObjHammerWallArray2[0];
+    marioWork->numHitObjHammerWallArray += 1;
+  }
+  wii::os::OSReport("hitObjHammerWallArray Num %d\n", marioWork->numHitObjHammerWallArray);
   if (ret != 0)
   {
     ret = 1;
@@ -140,6 +184,12 @@ EVT_BEGIN(unfurl_evt_end)
 EVT_END()
 
 EVT_BEGIN(unfurl_hit_visual)
+  USER_FUNC(evt_mario_key_off, 1)
+  USER_FUNC(evt_snd_bgmon, 2, PTR("BGM_FF_CORRECT1"))
+  WAIT_MSEC(500)
+  USER_FUNC(end_unfurl)
+  USER_FUNC(evt_snd_get_bgm_wait_time, 2, LW(0))
+  WAIT_MSEC(LW(0))
   INLINE_EVT_ID(LW(9))
       USER_FUNC(evt_cam_shake, 5, FLOAT(1.5), FLOAT(1.5), FLOAT(0.0), 0, 0)
   END_INLINE()
@@ -151,7 +201,10 @@ EVT_BEGIN(unfurl_hit_visual)
   USER_FUNC(evt_mario_wait_anim)
   USER_FUNC(evt_mario_set_pose, PTR("T_7"), 0)
   USER_FUNC(evt_paper_entry, PTR("OFF_d_16pazu"))
-  USER_FUNC(spm::evt_env::evt_env_blur_on, 0, 2600)
+  INLINE_EVT()
+  USER_FUNC(spm::evt_env::evt_env_blur_on, 0, 1000)
+  END_INLINE()
+  WAIT_MSEC(500)
   USER_FUNC(evt_paper_entry, PTR("OFF_rot"))
   USER_FUNC(evt_img_entry, PTR("dummy"))
   USER_FUNC(evt_img_set_paper, PTR("dummy"), PTR("OFF_rot"))
@@ -162,7 +215,7 @@ EVT_BEGIN(unfurl_hit_visual)
   USER_FUNC(evt_img_set_z, PTR("dummy"), 100)
   WAIT_FRM(1)
   //USER_FUNC(evt_map_playanim, PTR(&s_anm_zun_80cb6ef8), 2, 0)
-  USER_FUNC(evt_mario_set_character, 2)
+  USER_FUNC(spm::evt_mobj::evt_mobj_delete, PTR("ham_blk"))
   WAIT_FRM(1)
   USER_FUNC(evt_img_entry, PTR("img"))
   USER_FUNC(evt_img_set_paper, PTR("img"), PTR("OFF_d_16pazu"))
@@ -178,7 +231,7 @@ EVT_BEGIN(unfurl_hit_visual)
       USER_FUNC(evt_cam_shake, 5, FLOAT(0.0), FLOAT(0.0), FLOAT(0.0), 500, 0)
   END_INLINE()
   USER_FUNC(evt_snd_sfx_fadeout, LW(8), 1000)
-  USER_FUNC(evt_sub_intpl_msec_init, 11, 500000, 0, 1000)
+  USER_FUNC(evt_sub_intpl_msec_init, 11, 500000, 0, 500)
   DO(0)
       USER_FUNC(evt_sub_intpl_msec_get_value)
       DIVF(LW(0), FLOAT(100.0))
@@ -189,7 +242,7 @@ EVT_BEGIN(unfurl_hit_visual)
           DO_BREAK()
       END_IF()
   WHILE()
-  USER_FUNC(evt_sub_intpl_msec_init, 11, 100, 0, 1000)
+  USER_FUNC(evt_sub_intpl_msec_init, 11, 100, 0, 500)
   DO(0)
       USER_FUNC(evt_img_set_paper_anim, PTR("img"), PTR("A_1"))
       WAIT_FRM(1)
@@ -201,12 +254,14 @@ EVT_BEGIN(unfurl_hit_visual)
   USER_FUNC(evt_img_set_paper_anim, PTR("img"), PTR("A_1"))
   WAIT_FRM(1)
   USER_FUNC(evt_img_wait_animend, PTR("img"))
-  WAIT_MSEC(2000)
+  WAIT_MSEC(1000)
   USER_FUNC(evt_cam_zoom_to_coords, 0, 11)
   USER_FUNC(evt_img_release, PTR("img"))
   USER_FUNC(evt_img_release, PTR("dummy"))
   USER_FUNC(evt_paper_delete, PTR("OFF_d_16pazu"))
   USER_FUNC(evt_paper_delete, PTR("OFF_rot"))
+  USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
+  USER_FUNC(evt_mario_key_on)
   RETURN()
 EVT_END()
 
@@ -228,6 +283,10 @@ EVT_BEGIN(unfurl_hammer)
   USER_FUNC(evt_mario_key_off, 1)
   WAIT_FRM(1)
   USER_FUNC(hammer_hit_unfurl, LW(0))
+  INLINE_EVT()
+    WAIT_FRM(1)
+    USER_FUNC(evt_clear_hitobj_hammer_wall)
+  END_INLINE()
   IF_EQUAL(LW(0), 0)
     USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("H_1C"), 0)
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_HAMMER_SWING1"))
@@ -238,6 +297,7 @@ EVT_BEGIN(unfurl_hammer)
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_HAMMER_SWING1"))
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_HAMMER_HIT1"))
     USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
+    WAIT_FRM(5)
   END_IF()
   WAIT_FRM(5)
   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
@@ -328,9 +388,14 @@ void gameInitPatch()
 }
 
 EVT_BEGIN(ta1_01_patch)
-  USER_FUNC(evt_mobj_sui_new, 11, PTR("unfurl"), -150, 100, FLOAT(-138.0), (s32)unfurl_evt, 0, EVT_NULLPTR)
+  USER_FUNC(evt_mobj_sui_new, 11, PTR("unfurl"), -1105, 100, FLOAT(-138.0), (s32)unfurl_evt, 0, EVT_NULLPTR)
   USER_FUNC(evt_run_case_evt, 6, 1, PTR("MOBJ2_unfurl"), PTR("MOBJ3_unfurl"), PTR(unfurl_evt_fwd), LW(7))
   USER_FUNC(spm::evt_mobj::evt_mobj_save_blk, PTR("save"), -50, 100, FLOAT(-138.0), 0)
+  USER_FUNC(spm::evt_mobj::evt_mobj_hunmer_blk, 2, PTR("ham_blk"), 250, 0, 0, PTR(0), 0)
+  USER_FUNC(spm::evt_mobj::evt_mobj_set_scale, PTR("ham_blk"), FLOAT(1.3), FLOAT(1.0), FLOAT(3.0))
+  USER_FUNC(spm::evt_mobj::evt_mobj_flag_onoff, 0, 0, PTR("ham_blk"), 0x20)
+  USER_FUNC(spm::evt_mobj::evt_mobj_flag_onoff, 0, 0, PTR("ham_blk"), 0x100000)
+  USER_FUNC(evt_run_case_evt, 8, 1, PTR("MOBJ2_ham_blk"), PTR("MOBJ3_ham_blk"), PTR(unfurl_hit_visual), LW(7))
 RETURN_FROM_CALL()
 
 void unfurl_main()
@@ -338,6 +403,8 @@ void unfurl_main()
   writeBranchLink(spm::camdrv::cam3dMain, 0x474, new_func_80058404);
   writeBranchLink(spm::mario_pouch::pouchMain, 0x14, new_checkHaveItem);
   writeBranchLink(spm::mario_pouch::pouchMain, 0x19C, new_func_spsndSFXOn);
+  writeBranchLink(spm::mario_motion::marioMotion, 0x1c, new_clear_hitobj_hammer_wall);
+  writeBranchLink(spm::casedrv::caseMain, 0x164, new_marioKeyOffChk);
   seqMain = patch::hookFunction(spm::seqdrv::seqMain, new_seqMain);
   writeBranch(spm::seqdef::seq_data[spm::seqdrv::SEQ_GAME].init, 0xC0, gameInitPatch);
 }
