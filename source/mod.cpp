@@ -2744,9 +2744,9 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     evtpatch::hookEvt(he3_md->initScript, 78, const_cast<spm::evtmgr::EvtScriptCode*>(gswPatch));
     evtpatch::hookEvtReplace(he3_md->initScript, 38, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
     evtpatch::hookEvtReplace(he3_md->initScript, 37, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
-    evtpatch::hookEvtReplace(spm::item_event_data::getItemUseEvt(87), 9, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
-    evtpatch::hookEvtReplace(spm::item_event_data::getItemUseEvt(87), 7, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
-    evtpatch::hookEvtReplaceBlock(spm::item_event_data::getItemUseEvt(87), 2, const_cast<spm::evtmgr::EvtScriptCode*>(addNpcToItemScript), 10);
+    evtpatch::hookEvtReplace(spm::item_event_data::getItemUseEvt(spm::item_data::ITEM_ID_USE_BLANK_KUN), 9, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
+    evtpatch::hookEvtReplace(spm::item_event_data::getItemUseEvt(spm::item_data::ITEM_ID_USE_BLANK_KUN), 7, const_cast<spm::evtmgr::EvtScriptCode*>(insertNop));
+    evtpatch::hookEvtReplaceBlock(spm::item_event_data::getItemUseEvt(spm::item_data::ITEM_ID_USE_BLANK_KUN), 2, const_cast<spm::evtmgr::EvtScriptCode*>(addNpcToItemScript), 10);
     evtpatch::hookEvtReplace((spm::evtmgr::EvtScriptCode*)spm::aa1_01::aa1_01_mario_house_transition_evt, 10, (spm::evtmgr::EvtScriptCode*)determine_quickstart);
     fp = (s32 *)&spm::spmario::gp->gsw[1900];
     maxFp = (s32 *)&spm::spmario::gp->gsw[1904];
