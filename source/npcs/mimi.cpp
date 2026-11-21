@@ -633,9 +633,9 @@ EVT_END()
     npcTribes[280].attackStrength = 3;
     npcTribes[280].maxHp = 57;
     #ifdef SPM_EU0
-    evtpatch::hookEvt(boss, 152, mimi_cam_reset);
+    evtpatch::hookEvt(boss, 152, const_cast<spm::evtmgr::EvtScriptCode*>(mimi_cam_reset));
     #else
-    evtpatch::hookEvt(boss, 146, mimi_cam_reset);
+    evtpatch::hookEvt(boss, 146, const_cast<spm::evtmgr::EvtScriptCode*>(mimi_cam_reset));
     #endif
   }
 

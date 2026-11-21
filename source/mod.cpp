@@ -191,8 +191,8 @@ extern "C" {
 
   const char *msgSearchPatch(const char *msgName, spm::evtmgr::EvtEntry *evtEntry)
   {
-    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    s32 selectedTechnique = spm::an2_08::rpgdrv_wp->menus[1].selected;
+    //spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    //s32 selectedTechnique = spm::an2_08::rpgdrv_wp->menus[1].selected;
     //wii::os::OSReport("%d , yahoeo\n", selectedTechnique);
     //mod::rpg_set_technique_index(selectedTechnique);
     return spm::msgdrv::msgSearch(msgName);
@@ -274,7 +274,7 @@ namespace mod {
   */
 
   static spm::seqdef::SeqFunc * seq_titleMainReal;
-  static spm::seqdef::SeqFunc * seq_gameMainReal;
+  //static spm::seqdef::SeqFunc * seq_gameMainReal;
   static void seq_titleMainOverride(spm::seqdrv::SeqWork * wp) {
     wii::gx::GXColor green = {
       0,
@@ -295,6 +295,7 @@ namespace mod {
     seq_titleMainReal(wp);
   }
 
+    /*
     static void seq_gameMainOverride(spm::seqdrv::SeqWork * wp) {
       spm::mario::MarioWork *mwpp = spm::mario::marioGetPtr();
 
@@ -309,6 +310,7 @@ namespace mod {
       
       seq_gameMainReal(wp);
     }
+    */
 
   static void titleScreenCustomTextPatch() {
     seq_titleMainReal = spm::seqdef::seq_data[spm::seqdrv::SEQ_TITLE].main;
@@ -1352,7 +1354,7 @@ bool IsNpcActive(s32 index) {
     {
       if (defense->max > 1)
       {
-        for (s32 i = 0; i < defense->max; i++)
+        for (u32 i = 0; i < defense->max; i++)
         {
           if (damageType == defense[i].type && damageType != 0x2)
           {
@@ -1690,7 +1692,7 @@ bool IsNpcActive(s32 index) {
 
   static void turnBasedCombatOverrideInit() {
     turnBasedCombatOverride[0].type = 20;
-    turnBasedCombatOverride[0].value = turnBasedCombatOverrideFunc;
+    turnBasedCombatOverride[0].value = (void *)turnBasedCombatOverrideFunc;
     turnBasedCombatOverride[1].type = 0;
     turnBasedCombatOverride[1].value = nullptr;
     spm::npcdrv::npcEnemyTemplates[2].unkDefinitionTable = turnBasedCombatOverride;
@@ -1932,7 +1934,6 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
   }
 
   s32 getCurMap(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-    spm::npcdrv::NPCWork * npcWork = spm::npcdrv::npcGetWorkPtr();
     spm::evtmgr::EvtVar * args = evtEntry -> pCurData;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)spm::spmario::gp->mapName);
     return 2;
@@ -2121,7 +2122,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     const char * name = (const char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     spm::npcdrv::NPCEntry * npc = spm::npcdrv::npcNameToPtr(name);
     wii::os::OSReport("%s thename\n", npc->name);
-    wii::os::OSReport("%p\n", spm::item_event_data::item_event_data_wp->wp->ItemNpcRef[0]);
+    wii::os::OSReport("%p\n", &spm::item_event_data::item_event_data_wp->wp->ItemNpcRef[0]);
     spm::item_event_data::item_event_data_wp->wp->ItemNpcRef[0].npcId = npc->id;
     if (firstRun == false) {}
     return 2;

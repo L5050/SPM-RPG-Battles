@@ -244,7 +244,6 @@ s32 bossGetMaxHp(spm::npcdrv::NPCEntry * npc)
 
 void enemyDisp()
 {
-    spm::npcdrv::NPCWork * wp = spm::npcdrv::npcGetWorkPtr();
     spm::npcdrv::NPCEntry * npc = nullptr;
     for (s32 i = 0; i < 3; i++)
     {

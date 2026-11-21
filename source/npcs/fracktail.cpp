@@ -987,7 +987,7 @@ RETURN_FROM_CALL()
   {
     npcTribes[313].attackStrength = 1;
     npcTribes[313].maxHp = 30;
-    spm::evtmgr::EvtScriptCode* fracktail_fight_setup_evt = getInstructionEvtArg(he4_10_md->initScript, 24, 0);
+    //spm::evtmgr::EvtScriptCode* fracktail_fight_setup_evt = getInstructionEvtArg(he4_10_md->initScript, 24, 0);
     //fracktail_evt_death = fracktail_evt;
     //fracktail_evt_death += evtpatch::getLineOffset(fracktail_evt, 385);
     evtpatch::hookEvtReplace(fracktail_evt, 405, (spm::evtmgr::EvtScriptCode*)insertNop);

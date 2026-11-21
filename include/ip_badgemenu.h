@@ -10,4 +10,6 @@ namespace ip {
 
 void badgeMenuPatch();
 
+extern wii::tpl::TPLHeader * badgeIconTpl;
+
 }
