@@ -169,7 +169,7 @@ RETURN_FROM_CALL()
 /// @param line The line number to find the offset of, 1-indexed
 /// @return The offset of the line, in EvtScriptCodes, from the start of the script
 s32 getLineOffset(EvtScriptCode* script, s32 line) {
-    SPM_ASSERT(isStartOfInstruction(script), "Cannot hook on non-instruction, what are you doing :sob:");
+    SPM_ASSERT(isStartOfInstruction(script), "Cannot hook on non-instruction (line: %d), what are you doing :sob:", line);
     wii::os::OSReport("getLineOffset(): script: [%p], line: %d\n", script, line);
     EvtScriptCode* instruction = script;
     s32 offset = 0;
