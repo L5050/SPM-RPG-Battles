@@ -28,7 +28,7 @@ using namespace spm::evtmgr;
 namespace mod
 {
 
-  typedef struct Panel
+  struct Panel
   {
     u32 flags; // TBD
     s32 iconId;  // Type of panel, sorted by Icon Id
@@ -40,7 +40,7 @@ namespace mod
     spm::icondrv::IconEntry * background; // Background of the panel thats displayed when the panel is inactive
   };
 
-  typedef struct PowerRefreshWork
+  struct PowerRefreshWork
   {
     u32 flags; // TBD
     u32 startTimer; // How much time in frames until the action command starts

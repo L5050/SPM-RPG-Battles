@@ -14,7 +14,7 @@ namespace mod::sndpatch
     {
         evtmgr::EvtVar *args = (evtmgr::EvtVar *)evtEntry->pCurData;
         u8 setPlayer = evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-        const char * name = (const char *)evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+        // const char * name = (const char *)evtmgr_cmd::evtGetValue(evtEntry, args[1]);
         u8 getPlayer = evtmgr_cmd::evtGetValue(evtEntry, args[2]);
 
         nw4r::snd::Snd_BasicSound * setBasicSnd = spmario_snd::spsndBgmPlayers[setPlayer].soundHandle.mSound;
@@ -34,7 +34,7 @@ namespace mod::sndpatch
         basicPlayerSet->progressLoop = basicPlayerGet->progressLoop;
         UpdateLoadingBlockIndex(basicPlayerSet);
         UpdateLoadingBlockIndex(basicPlayerGet);
-        wii::os::OSReport("AFTER: basicPlayerGet Progress: %d. basicPlayerSet Progress: %d. basicPlayerSet struct is 0x%x.\n", basicPlayerGet->progress, basicPlayerSet->progress, basicPlayerSet);
+        wii::os::OSReport("AFTER: basicPlayerGet Progress: %d. basicPlayerSet Progress: %d. basicPlayerSet struct is %p.\n", basicPlayerGet->progress, basicPlayerSet->progress, basicPlayerSet);
     //    spmario_snd::spsndBGMFadein(setPlayer, 1);
         return 2;
     }

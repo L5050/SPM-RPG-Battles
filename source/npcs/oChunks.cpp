@@ -49,7 +49,7 @@ namespace mod {
 spm::evtmgr::EvtScriptCode* onSpawn = spm::npcdrv::npcEnemyTemplates[183].onSpawnScript;
 spm::evtmgr::EvtScriptCode* chonkyAttackScript = getInstructionEvtArg(onSpawn, 41, 3);
 spm::evtmgr::EvtScriptCode* throwScript = getInstructionEvtArg(chonkyAttackScript, 182, 0);
-spm::evtmgr::EvtScriptCode* throwScriptOffset = evtpatch::getLineOffset(throwScript, 135);
+s32 throwScriptOffset = evtpatch::getLineOffset(throwScript, 135); // Unused --Yme
 spm::evtmgr::EvtScriptCode* chunks_fight_death_evt = nullptr;
 NPCTribeAnimDef animsChunks[] = {
     {0, "S_1"},

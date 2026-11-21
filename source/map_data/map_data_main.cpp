@@ -1,5 +1,3 @@
-#pragma once
-
 #include <common.h>
 #include "evt_cmd.h"
 #include "mod.h"
