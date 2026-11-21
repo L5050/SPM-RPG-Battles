@@ -179,7 +179,7 @@ UNKNOWN_FUNCTION(pausewinCheckVisible)
 UNKNOWN_FUNCTION(_pausewinDelete)
 void pausewinPauseGame();
 void pausewinUnpauseGame();
-UNKNOWN_FUNCTION(pausewinUpdate)
+void pausewinUpdate();
 UNKNOWN_FUNCTION(pausewinNumberToString)
 UNKNOWN_FUNCTION(pausewinCheckHavePixls)
 UNKNOWN_FUNCTION(pausewinCheckHaveCards)

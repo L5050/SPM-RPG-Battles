@@ -875,6 +875,7 @@
 
 // pausewin.c
 // text
+80184220:pausewinMain
 80184c18:pausewinEntry
 80185088:pausewinMoveTo
 801850d8:pausewinAppear
@@ -882,6 +883,7 @@
 80185148:pausewinDelete
 801853cc:pausewinPauseGame
 80185510:pausewinUnpauseGame
+801855bc:pausewinUpdate
 80188508:pausewinSetMessage
 80188628:pausewinSetMessageCard
 80188a64:pluswinKeyItemMain

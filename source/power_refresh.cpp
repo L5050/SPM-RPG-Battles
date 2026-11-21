@@ -527,7 +527,6 @@ void mainFunc(spm::acdrv::AcEntry *entry)
 
 void dispFunc(s8 camId, spm::acdrv::AcEntry *entry)
 {
-  spm::spmario::SpmarioGlobals *gp = spm::spmario::gp;
   PowerRefreshWork *wp = (PowerRefreshWork *)entry->acDefEntry;
   if (wp->flags != 0x3)
   {

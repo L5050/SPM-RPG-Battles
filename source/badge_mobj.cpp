@@ -190,7 +190,7 @@ s32 evt_mobj_sui_new(evtmgr::EvtEntry *evtEntry, bool isFirstCall)
         f32 z = evtmgr_cmd::evtGetFloat(evtEntry, args[4]);
         evtmgr::EvtScriptCode *interact = (evtmgr::EvtScriptCode *)evtmgr_cmd::evtGetValue(evtEntry, args[5]);
         s32 inactive = args[6];
-        void *stg3SuiNames = (void *)evtmgr_cmd::evtGetValue(evtEntry, args[7]);
+        // void *stg3SuiNames = (void *)evtmgr_cmd::evtGetValue(evtEntry, args[7]);
         s32 agbAsync = animdrv::animGroupBaseAsync(mobjSuiNamesNew[type], 0, 0);
         if (agbAsync == 0)
         {
@@ -203,22 +203,26 @@ s32 evt_mobj_sui_new(evtmgr::EvtEntry *evtEntry, bool isFirstCall)
             mobj->flag0 = (mobj->flag0 | 0x400); // 3D_ONLY
             (mobj->rotation).y = 270.0;
             hitdrv::hitDelete(mobj->joints[1].name);
-            mobj->joints[1].hitObj = (hitdrv::HitObj *)0x0;
+            mobj->joints[1].hitObj = nullptr;
         }
         else if (type == evt_mobj::MobjSuiType::MOBJ_SUI_BLUE_2D || type == evt_mobj::MobjSuiType::MOBJ_SUI_RED_2D || type == evt_mobj::MobjSuiType::MOBJ_SUI_STG3_BLUE_2D)
         {
             mobj->flag0 = (mobj->flag0 | 0x200); // 2D_ONLY
             hitdrv::hitDelete(mobj->joints[0].name);
-            mobj->joints[0].hitObj = (hitdrv::HitObj *)0x0;
+            mobj->joints[0].hitObj = nullptr;
         }
         mobjdrv::mobjSetPosition(name, x, y, z);
-        if (type == evt_mobj::MobjSuiType::MOBJ_SUI_STG3_BLUE || type == evt_mobj::MobjSuiType::MOBJ_SUI_STG3_PINK)
-        {
-        }
-        else
-        {
-            mobj->updateFunction = (mobjdrv::MobjUpdateFunc *)mobj_sui_new;
-        }
+        // Restore this block if you ever use stg3SuiNames again --Yme
+        /*
+            if (type == evt_mobj::MobjSuiType::MOBJ_SUI_STG3_BLUE || type == evt_mobj::MobjSuiType::MOBJ_SUI_STG3_PINK)
+            {
+            }
+            else
+            {
+                mobj->updateFunction = (mobjdrv::MobjUpdateFunc *)mobj_sui_new;
+            }
+        */
+        mobj->updateFunction = (mobjdrv::MobjUpdateFunc *)mobj_sui_new;
         mobj->interactScript = interact;
         mobj->flag0 = (mobj->flag0 | 0xeab00004); // tons of unknown flags
         mobj->collectedVar = inactive;
@@ -295,7 +299,7 @@ s32 evt_mobj_sui_new(evtmgr::EvtEntry *evtEntry, bool isFirstCall)
   void mobj_main() {
     agbAsyncPatch();
     spm::map_data::MapData * he1_md = spm::map_data::mapDataPtr("he1_01");
-    evtpatch::hookEvt(he1_md->initScript, 32, addSleepyStomp);
+    evtpatch::hookEvt(he1_md->initScript, 32, const_cast<spm::evtmgr::EvtScriptCode*>(addSleepyStomp));
   }
 
 }
