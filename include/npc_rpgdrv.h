@@ -43,7 +43,8 @@
 using namespace spm::npcdrv;
 using namespace spm::evtmgr;
 
-#define NPC_TABLE_MAX 20
+#define NPC_TABLE_MAX 24
+#define NPC_HEALTH_OVERRIDE_MAX 1
 
 namespace mod {
 
@@ -57,6 +58,25 @@ typedef struct
 
 typedef struct
 {
+  s32 tribeId = -1;
+  s32 health = 0;
+} npc_rpg_health_override;
+
+typedef struct
+{
+  u32 type = 0;
+  const EvtScriptCode* vacuumScript = nullptr;
+} VacuumDef;
+
+enum BrainwashType
+{
+  TYPE_NONE = 0,
+  TYPE_NASTASIA = 1,
+  TYPE_FLORO = 2
+};
+
+typedef struct
+{
   s32 tribeId;
   NPCTribeAnimDef* animDefs;
   s32 chargeOdds;
@@ -66,6 +86,9 @@ typedef struct
   const EvtScriptCode* onSpawnScript = nullptr;
   const EvtScriptCode* onThrowScript = nullptr;
   NPC_RPG_Defense * defense = nullptr;
+  npc_rpg_health_override healthOverride;
+  VacuumDef vacuumDef;
+  BrainwashType brainwashType = TYPE_NASTASIA;
 } npc_rpg_data;
 
 extern NPCTribeAnimDef animsKuribo[];
@@ -77,6 +100,8 @@ EVT_DECLARE_USER_FUNC(get_rpg_enemy_charge_odds, 2)
 EVT_DECLARE_USER_FUNC(get_rpg_enemy_damage_script, 2)
 EVT_DECLARE_USER_FUNC(get_rpg_enemy_death_script, 2)
 EVT_DECLARE_USER_FUNC(get_rpg_enemy_info, 5)
+EVT_DECLARE_USER_FUNC(set_npc_rpg_hp, 2)
+EVT_DECLARE_USER_FUNC(set_npc_rpg_atk, 2)
 EVT_DECLARE_USER_FUNC(kill_rpg_npc, 1)
 EVT_DECLARE_USER_FUNC(evt_rpg_revive_enemy, 2)
 EVT_DECLARE_USER_FUNC(get_rpg_enemy_card_id, 2)
@@ -92,8 +117,11 @@ EVT_DECLARE(increase_stylish)
 EVT_DECLARE(npc_charge)
 EVT_DECLARE(make_npc_transparent)
 EVT_DECLARE(make_npc_not_transparent)
+EVT_DECLARE(basic_vacuum)
 
+npc_rpg_data * get_rpg_enemy(s32 rpgIndex);
 NPC_RPG_Defense * getNpcDefense(s32 tribeId);
+VacuumDef * get_rpg_enemy_vacuum(s32 rpgIndex);
 void npc_rpgdrv_main();
 
 }

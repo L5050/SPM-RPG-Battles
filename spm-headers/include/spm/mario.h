@@ -243,16 +243,25 @@ typedef bool (MarioPaneChangeFunc)(s32 newPane);
 // Jumping out of water
 #define MARIO_MISC_FLAG_WATER_JUMP 0x10
 
-// Paper pose on
-#define MARIO_DISP_FLAG_PAPER 0x40000000
+// Where did he go?
+#define MARIO_DISP_FLAG_INVISIBLE 0x1
 
-#define MARIO_DISP_FLAG_0x800000 0x800000
+// Locks the current anim pose
+#define MARIO_DISP_FLAG_LOCK_POSE 0x2
+
+// Forces Mario to face the toward the screen at all times (back pose disabled)
+#define MARIO_DISP_FLAG_FORCE_FRONT_POSE 0x4
 
 // Lock facing direction towards facingTarget
 #define MARIO_DISP_FLAG_LOCK_FACING 0x20
 
-// Entering/exiting a door
-#define MARIO_DISP_FLAG_DOOR 0x80
+// Displays at marioWork->dispCamId rather than CAM_3D
+#define MARIO_DISP_FLAG_CAM_ID 0x80
+
+#define MARIO_DISP_FLAG_FLORO_SPROUT 0x800000
+
+// Paper pose on
+#define MARIO_DISP_FLAG_PAPER 0x40000000
 
 
 typedef struct
@@ -338,7 +347,9 @@ typedef struct
 /* 0x0054 */ f32 jumpPeakAirTime; // value of airTimer when reaching top of jump
 /* 0x0058 */ u8 unknown_0x58[0x5c - 0x58];
 /* 0x005C */ Vec3 position;
-/* 0x0068 */ u8 unknown_0x68[0xb0 - 0x68];
+/* 0x0068 */ u8 unknown_0x68[0x8c - 0x68];
+/* 0x008C */ Vec3 modelTranslation;
+/* 0x0098 */ u8 unknown_0x98[0xb0 - 0x98];
 /* 0x00B0 */ Vec3 ttydRotation;
 /* 0x00BC */ Vec3 scale;
 /* 0x00C8 */ u8 unknown_0xc8[0x120 - 0xc8];
@@ -374,7 +385,7 @@ typedef struct
         Others unknown
     */
 /* 0x01BC */ HitObj * hitObjs1[10];
-/* 0x01E4 */ u8 unknown_0x1e4[0x1e8 - 0x1e4];
+/* 0x01E4 */ HitObj * hitObjLastHammeredWall;
 /* 0x01E8 */ HitObj * cudgeFloorHitObj; // Updates for 1 frame during hammer action on a floor and then clears, value taken directly from below
 /* 0x01EC */ HitObj * cudgeFloorHitObj2; // Updates only when cudge is used (?)
 /* 0x01F0 */ u8 unknown_0x1ec[0x1fc - 0x1f0];
@@ -444,9 +455,9 @@ typedef struct
 /* 0x09B8 */ HitObj * hitObjHeadArray[20];
 /* 0x0A08 */ s32 numHitObjHeadArray; // number of pointers in the array above
 /* 0x0A0C */ u8 unknown_0xa0c[0xafc - 0xa0c];
-/* 0x0AFC */ HitObj * hitObj9Array[16];
-/* 0x0B3C */ u8 unknown_0xb3c[0xb7c - 0xb3c];
-/* 0x0B7C */ s32 hitobj_related1;
+/* 0x0AFC */ HitObj * hitObjHammerWallArray[16];
+/* 0x0B3C */ HitObj * hitObjHammerWallArray2[16];
+/* 0x0B7C */ s32 numHitObjHammerWallArray;
 /* 0x0B80 */ u8 unknown_0xb80[0xcd8 - 0xb80];
 /* 0x0CD8 */ MarioJumpFallPara jumpFallPara;
 /* 0x0D0C */ u8 unknown_0xd0c[0xd58 - 0xd0c];
@@ -779,7 +790,7 @@ DECOMP_STATIC(const char * mario_toRearPose(const char * name))
 DECOMP_STATIC(const char * mario_toFrontPose(const char * name))
 
 UNKNOWN_FUNCTION(func_801299f8)
-UNKNOWN_FUNCTION(func_80129d8c)
+void func_80129d8c();
 UNKNOWN_FUNCTION(func_80129db8)
 UNKNOWN_FUNCTION(func_80129ddc)
 UNKNOWN_FUNCTION(func_80129dfc)

@@ -142,6 +142,8 @@ NPCTribeAnimDef animsMimi2[] = {
       WAIT_MSEC(200)
     WHILE()
     USER_FUNC(evt_npc_delete, LW(15))
+    USER_FUNC(rpg_off)
+    USER_FUNC(spm::evt_pouch::evt_pouch_remove_item, 220)
     #ifdef SPM_EU0
     CALL(boss + evtpatch::getLineOffset(boss, 135))
     #else
@@ -169,6 +171,7 @@ NPCTribeAnimDef animsMimi2[] = {
       USER_FUNC(spm::evt_npc::evt_npc_set_animpose_disp_callback, LW(15), PTR(spm::mi4::mi4MimiHolographicEffect), 0)
       USER_FUNC(spm::an2_08::evt_rpg_status_remove, 1, UW(0), 0x3)
     ELSE()
+      USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 10, 0, EVT_NULLPTR)
       RUN_EVT(mimi_decharge)
     END_IF()
     ADD(LW(1), 70)
@@ -211,7 +214,7 @@ NPCTribeAnimDef animsMimi2[] = {
     IF_EQUAL(LW(11), 1)
       USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
       USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-      SUB(LW(10), 2)
+      SUB(LW(10), 1)
       IF_SMALL(LW(10), 0)
         SET(LW(10), 0)
       END_IF()
@@ -342,7 +345,7 @@ NPCTribeAnimDef animsMimi2[] = {
           IF_EQUAL(LW(11), 1)
               USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
               USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-              SUB(LW(10), 2)
+              SUB(LW(10), 1)
               IF_SMALL(LW(10), 0)
                 SET(LW(10), 0)
               END_IF()
@@ -358,6 +361,7 @@ NPCTribeAnimDef animsMimi2[] = {
       USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, UW(1), EVT_NULLPTR, UW(3), UW(1), EVT_NULLPTR, 200, 1000, 11)
     END_INLINE() 
     USER_FUNC(ac_success_reset)
+    WAIT_MSEC(500)
     LBL(5)
     CHK_EVT(LW(4), LW(0))
     IF_EQUAL(LW(0), 0)
@@ -626,7 +630,7 @@ EVT_END()
   void mimi_main()
   {
     npcTribes[280].killXp *= 2;
-    npcTribes[280].attackStrength = 4;
+    npcTribes[280].attackStrength = 3;
     npcTribes[280].maxHp = 57;
     #ifdef SPM_EU0
     evtpatch::hookEvt(boss, 152, const_cast<spm::evtmgr::EvtScriptCode*>(mimi_cam_reset));

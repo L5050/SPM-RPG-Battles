@@ -11,12 +11,6 @@ namespace mod {
 
 #define MOD_VERSION "SPM-RPG-Battles"
 
-extern "C" {
-
-EVT_DECLARE(evt_memcard_save)
-
-}
-
 extern s32 *fp;
 extern s32 *maxFp;
 extern s32 *bp;
@@ -31,7 +25,7 @@ extern bool superGuard;
 s32 getRpgTribeID(s32 index);
 bool IsNpcActive(s32 index);
 extern s32( * rpgHandleMenu)(s32, spm::an2_08::RpgMenuOption*);
-bool checkBadgeTechnique(ip::BadgeId id);
+s32 checkBadgeTechnique(ip::BadgeId id);
 spm::evtmgr::EvtScriptCode* getInstructionEvtArg(spm::evtmgr::EvtScriptCode* script, s32 line, int instruction);
 void mobj_main();
 s32 _getFP();
@@ -61,8 +55,12 @@ EVT_DECLARE_USER_FUNC(cam_3d_off_on, 1)
 EVT_DECLARE_USER_FUNC(check_stylish, 2)
 EVT_DECLARE_USER_FUNC(npc_get_bounding_box, 5)
 EVT_DECLARE_USER_FUNC(evt_mobj_sui_new, 8)
+EVT_DECLARE_USER_FUNC(reduce_game_speed, 0)
+EVT_DECLARE_USER_FUNC(increase_game_speed, 0)
+EVT_DECLARE_USER_FUNC(manage_vacuum, 0)
+EVT_DECLARE_USER_FUNC(smurf_da_npc, 1)
+EVT_DECLARE_USER_FUNC(rpg_npc_invert_xp, 2)
 
-EVT_DECLARE(evt_memcard_save)
 
   const char stg7_2_133_2_002[32] = "<dq>\n"
   "<p>\n"

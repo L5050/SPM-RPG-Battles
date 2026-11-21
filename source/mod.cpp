@@ -4,12 +4,21 @@
 #include "npc_rpgdrv.h"
 #include "hpwindow.h"
 #include "main_scripting.h"
+#include "map_patch.h"
 #include "ip_messages.h"
 #include "ip.h"
 #include "ip_badges.h"
 #include "ip_badgepouch.h"
 #include "power_refresh.h"
 #include "tplpatch.h"
+#include "acpatch.h"
+#include "savepatch.h"
+#include "msgpatch.h"
+#include "customwin.h"
+#include "ring_menu.h"
+#include "chainloader.h"
+#include "msgskip.h"
+#include "robo_succ.h"
 #include "map_data/map_data_main.h"
 
 #include <spm/system.h>
@@ -94,9 +103,9 @@ extern "C" {
     false
   };
 
-  static void drawStuff() {
+  static void drawFlower(){
     // Flower disp
-    const Vec3 fpVec = {-100.0, -202.0, 0.0};
+    const Vec3 fpVec = {-350.0, -30.0, 0.0};
     spm::icondrv::iconDispGx(0.7, &fpVec, 4, 1600);
     // FP number disp
     wii::gx::GXColor white = {
@@ -107,7 +116,7 @@ extern "C" {
     };
     f32 scale = 1.0;
     char buffer [50];
-    sprintf(buffer, "%d", *mod::fp);
+    sprintf(buffer, "%d/%d", *mod::fp, *mod::maxFp);
     const char * msg = buffer;
     spm::fontmgr::FontDrawStart();
     spm::fontmgr::FontDrawEdge();
@@ -116,7 +125,37 @@ extern "C" {
     spm::fontmgr::FontDrawNoiseOff();
     spm::fontmgr::FontDrawRainbowColorOff();
     f32 x = -((spm::fontmgr::FontGetMessageWidth(msg) * scale) / 2);
-    spm::fontmgr::FontDrawString(x+-70, -172.0, msg);
+    spm::fontmgr::FontDrawString(x+-280, 0.0, msg);
+    return;
+  }
+
+  static void drawHP(){
+    const Vec3 fpVec = {-350.0, 20.0, 0.0};
+    spm::icondrv::iconDispGx(0.7, &fpVec, 4, 1601);
+    wii::gx::GXColor white = {
+      255,
+      255,
+      255,
+      255
+    };
+    f32 scale = 1.0;
+    char buffer [50];
+    sprintf(buffer, "%d/%d", spm::mario_pouch::pouchGetPtr()->hp, spm::mario_pouch::pouchGetPtr()->maxHp);
+    const char * msg = buffer;
+    spm::fontmgr::FontDrawStart();
+    spm::fontmgr::FontDrawEdge();
+    spm::fontmgr::FontDrawColor( & white);
+    spm::fontmgr::FontDrawScale(scale);
+    spm::fontmgr::FontDrawNoiseOff();
+    spm::fontmgr::FontDrawRainbowColorOff();
+    f32 x = -((spm::fontmgr::FontGetMessageWidth(msg) * scale) / 2);
+    spm::fontmgr::FontDrawString(x+-280, 50.0, msg);
+    return;
+  }
+
+  static void drawStuff() {
+    drawFlower();
+    drawHP();
     return;
   }
 
@@ -159,29 +198,6 @@ extern "C" {
     return spm::msgdrv::msgSearch(msgName);
   }
 
-  s32 patchTechniquesMario(s32 type, spm::an2_08::RpgMenuOption* options)
-  {
-    options->name = spm::msgdrv::msgSearch("wang_special_1");
-    options->index = 0;
-
-    s32 numOptions = 1;
-
-    s32 badgeCount = ip::pouchCountBadges();
-    for (s32 i = 0; i < badgeCount; i++)
-    {
-      ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(i);
-      if (badgeInfo->equipped && mod::checkBadgeTechnique(badgeInfo->id))
-      {
-        ip::BadgeDef *badgeDef = ip::pouchGetBadgeDef(i);
-        const char *name = spm::msgdrv::msgSearch(badgeDef->nameMsg);
-        options[numOptions].name = name;
-        options[numOptions].index = badgeInfo->id;
-        numOptions++;
-      }
-    }
-    return numOptions;
-  }
-
   s32 patchTechniquesPeach(s32 type, spm::an2_08::RpgMenuOption* options)
   {
     options->name = "Appeal";
@@ -211,7 +227,7 @@ extern "C" {
     spm::mario::MarioWork *mwpp = spm::mario::marioGetPtr();
     if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_MARIO)
     {
-      return patchTechniquesMario(type, options);
+      //return patchTechniquesMario(type, options);
     }
     if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_PEACH)
     {
@@ -239,15 +255,16 @@ namespace mod {
   bool superGuard = false;
   bool isFrog = false;
   bool is3dCam = false;
+  bool smurfed[3] = {0, 0, 0};
   u8 guardFrames = 0;
   u8 stylishFrames = 0;
+  s32 vacuumDirection = -1;
   spm::npcdrv::NPCEntryUnkDef turnBasedCombatOverride[2];
   s32 *fp = nullptr;
   s32 *maxFp = nullptr;
   s32 *bp = nullptr;
   s32 *maxBp = nullptr;
   wii::tpl::TPLHeader *myTplHeader = nullptr;
-  char * mainText = nullptr;
   char modTplName[] = "mod/mod";
   s32 itemMax = 0;
   spm::icondrv::IconEntry * flower = nullptr;
@@ -340,7 +357,8 @@ namespace mod {
   s32( * evt_inline_evt)(spm::evtmgr::EvtEntry * entry);
   s32( * evt_rpg_choice_handler)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   s32 ( * evt_mario_get_height)(spm::evtmgr::EvtEntry * entry, bool firstRun);
-  s32 ( * evt_cam3d_evt_zoom_in)(spm::evtmgr::EvtEntry * entry, bool firstRun);
+  s32 ( * evt_cam3d_evt_zoom_in)(spm::evtmgr::EvtEntry * entry, bool firstRun); 
+  s32 ( * evt_rpg_mario_take_damage)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   s32 ( * evt_seq_set_seq)(spm::evtmgr::EvtEntry * entry, bool firstRun);
   void( * msgUnLoad)(s32 slot);
   void( * rpg_screen_draw)();
@@ -384,6 +402,9 @@ static const char * getNpcName(s32 tribeId) {
     break;
     case 25:
       return "Buzzy Beetle";
+    break;
+    case 69:
+      return "Koopa Striker";
     break;
     case 84:
       return "Boo";
@@ -432,15 +453,17 @@ static const char * getNpcName(s32 tribeId) {
   }
 }
 
-bool checkBadgeTechnique(BadgeId id)
+s32 checkBadgeTechnique(BadgeId id)
 {
   switch (id) {
     case BadgeId::BADGEID_POWER_BOUNCE:
-      return true;
+      return 2;
+    case BadgeId::BADGEID_SMURF_STOMP:
+      return 1;
     default:
-      return false;
+      return -1;
   }
-  return false;
+  return -1;
 }
 
 s32 getRpgTribeID(s32 index) {
@@ -452,9 +475,6 @@ bool IsNpcActive(s32 index) {
 }
 
   const char * rpgStart = "Can't flee from this fight!\n"
-  "<o>\n";
-  const char * stg7_2_133_2_003 = "<p>\n"
-  "Attack who?\n"
   "<o>\n";
   const char * stg7_2_133_2_004 = "<p>\n"
   "%s attacks!\n"
@@ -479,41 +499,6 @@ bool IsNpcActive(s32 index) {
   "<k>\n"
   "<p>\n"
   "%s receives %d points!\n"
-  "<k>\n"
-  "<o>\n";
-  const char * stg7_2_133_2_009 = "<p>\n"
-  "You gained a level!\n"
-  "<o>\n";
-  const char * stg7_2_133_2_009_01 = "<p>\n"
-  "Your attack power increased\n"
-  "by %d!\n"
-  "<k>\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_009_02 = "<p>\n"
-  "Your HP increased by %d!\n"
-  "<k>\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_010 = "<p>\n"
-  "Choose a technique.\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_011 = "<p>\n"
-  "Mario flips!\n"
-  "<dkey><wait 250></dkey>\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_012 = "<dkey><wait 250></dkey>\n"
-  "<p>\n"
-  "...You found 2 FP!\n"
-  "<k>\n"
-  "<o>\n";
-
-  const char * no_fp = "<dkey><wait 250></dkey>\n"
-  "<p>\n"
-  "no FP?\n"
-  "*Megamind gif*"
   "<k>\n"
   "<o>\n";
 
@@ -553,10 +538,6 @@ bool IsNpcActive(s32 index) {
   "<k>\n"
   "<o>\n";
 
-  const char * stg7_2_133_2_020 = "<p>\n"
-  "Select a Pixl.\n"
-  "<o>\n";
-
   const char * stg7_2_133_2_021 = "<p>\n"
   "Use it on who?\n"
   "<o>\n";
@@ -587,15 +568,15 @@ bool IsNpcActive(s32 index) {
   "<k>\n"
   "<o>\n";
 
-  const char * stg7_2_133_2_028 = "<p>\n"
-  "%s uses Slim!\n"
-  "<dkey><wait 250></dkey>\n"
-  "<o>\n";
-
   const char * stg7_2_133_2_029 = "<dkey><wait 250></dkey>\n"
   "<p>\n"
-  "%s turns sideways\n"
-  "and is hard to see!\n"
+  "Slim will turn %s\n"
+  "into a tube, making it\n"
+  "easier to dodge attacks!\n"
+  "<k>\n"
+  "<p>\n"
+  "<col cffffff>Press <icon PAD_2 0.67 0 0 2><col cffffff> to jump away\n"
+  "from the attack!!"
   "<k>\n"
   "<o>\n";
 
@@ -978,12 +959,6 @@ bool IsNpcActive(s32 index) {
   "<k>\n"
   "<o>\n";
 
-  const char * stg7_2_133_2_093 = "<p>\n"
-  "%s\n"
-  "shoots a missile!\n"
-  "<wait 300>\n"
-  "<o>\n";
-
   const char * stg7_2_133_2_094 = "<p>\n"
   "%s takes %d damage!\n"
   "<k>\n"
@@ -994,12 +969,6 @@ bool IsNpcActive(s32 index) {
   "But you're invincible!\n"
   "<wait 150>\n"
   "The attack is ineffective!\n"
-  "<k>\n"
-  "<o>\n";
-
-  const char * stg7_2_133_2_096 = "<dkey><wait 250></dkey>\n"
-  "<p>\n"
-  "%s dodges like a pro!\n"
   "<k>\n"
   "<o>\n";
 
@@ -1307,420 +1276,15 @@ bool IsNpcActive(s32 index) {
     peach_special
   };
 
-  const char * newMsgSearch(const char * msgName) {
-    const char * ipChar = ip::messagePatch(msgName);
-    if (ipChar != nullptr) return ipChar;
-    //wii::os::OSReport("%s\n", msgName);
-    if (msl::string::strcmp(msgName, "stg7_2_133_2_001") == 0)
-      //Override intro
-      return rpgStart;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_002") == 0)
-      //Replace message
-      if (mainText == nullptr)
-      {
-        return stg7_2_133_2_002;
-      } else {
-        return mainText;
-      }
-    else if (msl::string::strcmp(msgName, "peach_heal") == 0)
-        //Replace message
-      return peach_heal;
-    else if (msl::string::strcmp(msgName, "peach_heal_success") == 0)
-          //Replace message
-      return peach_heal_success;
-    else if (msl::string::strcmp(msgName, "anna_ehelp_241") == 0)
-          //Replace message
-      return chunks_tattle;
-    else if (msl::string::strcmp(msgName, "wang_cmd_1") == 0)
-      //Replace message
-      return wang_cmd_1;
-    else if (msl::string::strcmp(msgName, "wang_cmd_2") == 0)
-      //Replace message
-      return wang_cmd_2;
-    else if (msl::string::strcmp(msgName, "wang_cmd_3") == 0)
-      //Replace message
-      return wang_cmd_3;
-    else if (msl::string::strcmp(msgName, "wang_cmd_4") == 0)
-      //Replace message
-      return wang_cmd_4;
-    else if (msl::string::strcmp(msgName, "wang_cmd_5") == 0)
-      //Replace message
-      return wang_cmd_5;
-    else if (msl::string::strcmp(msgName, "wang_cmd_6") == 0)
-      //Replace message
-      return wang_cmd_6;
-    else if (msl::string::strcmp(msgName, "wang_special_1") == 0)
-      //Replace message
-      return wang_special_1;
-    else if (msl::string::strcmp(msgName, "wang_special_2") == 0)
-      //Replace message
-      return wang_special_2;
-    else if (msl::string::strcmp(msgName, "wang_special_3") == 0)
-      //Replace message
-      return wang_special_3;
-    else if (msl::string::strcmp(msgName, "peach_special") == 0)
-        //Replace message
-      return peach_special;
-    else if (msl::string::strcmp(msgName, "wang_level") == 0)
-      //Replace message
-      return wang_level;
-    else if (msl::string::strcmp(msgName, "wang_hp") == 0)
-      //Replace message
-      return wang_hp;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_008") == 0)
-      //Replace message
-      return stg7_2_133_2_008;
-    else if (msl::string::strcmp(msgName, "wang_wang_r") == 0)
-      //Replace message
-      return getNpcName(rpgTribeID[0]);
-    else if (msl::string::strcmp(msgName, "wang_wang_b") == 0)
-      //Replace message
-      return getNpcName(rpgTribeID[1]);
-    else if (msl::string::strcmp(msgName, "wang_wang_y") == 0)
-      //Replace message
-      return getNpcName(rpgTribeID[2]);
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_003") == 0)
-      //Replace message
-      return stg7_2_133_2_003;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_004") == 0)
-      //Replace message
-      return stg7_2_133_2_004;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_005") == 0)
-      //Replace message
-      return stg7_2_133_2_005;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_006") == 0)
-      //Replace message
-      return stg7_2_133_2_006;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_007") == 0)
-      //Replace message
-      return stg7_2_133_2_007;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_009") == 0)
-      //Replace message
-      return stg7_2_133_2_009;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_009_01") == 0)
-      return stg7_2_133_2_009_01;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_009_02") == 0)
-      return stg7_2_133_2_009_02;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_010") == 0)
-      return stg7_2_133_2_010;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_011") == 0)
-      return stg7_2_133_2_011;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_012") == 0)
-      return stg7_2_133_2_012;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_013") == 0)
-      return stg7_2_133_2_013;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_014") == 0)
-      return stg7_2_133_2_014;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_015") == 0)
-      return stg7_2_133_2_015;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_016") == 0)
-      return stg7_2_133_2_016;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_017") == 0)
-      return stg7_2_133_2_017;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_018") == 0)
-      return stg7_2_133_2_018;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_019") == 0)
-      return stg7_2_133_2_019;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_020") == 0)
-      return stg7_2_133_2_020;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_021") == 0)
-      return stg7_2_133_2_021;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_022") == 0)
-      return stg7_2_133_2_022;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_023") == 0)
-      return stg7_2_133_2_023;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_024") == 0)
-      return stg7_2_133_2_024;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_025") == 0)
-      return stg7_2_133_2_025;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_026") == 0)
-      return stg7_2_133_2_026;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_027") == 0)
-      return stg7_2_133_2_027;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_028") == 0)
-      return stg7_2_133_2_028;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_029") == 0)
-      return stg7_2_133_2_029;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_031") == 0)
-      return stg7_2_133_2_031;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_032") == 0)
-      return stg7_2_133_2_032;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_033") == 0)
-      return stg7_2_133_2_033;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_034") == 0)
-      return stg7_2_133_2_034;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_035") == 0)
-      return stg7_2_133_2_035;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_036") == 0)
-      return stg7_2_133_2_036;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_037") == 0)
-      return stg7_2_133_2_037;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_038") == 0)
-      return stg7_2_133_2_038;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_039") == 0)
-      return stg7_2_133_2_039;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_040") == 0)
-      return stg7_2_133_2_040;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_042") == 0)
-      return stg7_2_133_2_042;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_043") == 0)
-      return stg7_2_133_2_043;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_044") == 0)
-      return stg7_2_133_2_044;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_045") == 0)
-      return stg7_2_133_2_045;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_046") == 0)
-      return stg7_2_133_2_046;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_047") == 0)
-      return stg7_2_133_2_047;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_048") == 0)
-      return stg7_2_133_2_048;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_050") == 0)
-      return stg7_2_133_2_050;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_051") == 0)
-      return stg7_2_133_2_051;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_052") == 0)
-      return stg7_2_133_2_052;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_053") == 0)
-      return stg7_2_133_2_053;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_054") == 0)
-      return stg7_2_133_2_054;
-
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_055") == 0)
-      return stg7_2_133_2_055;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_056") == 0)
-      return stg7_2_133_2_056;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_056_01") == 0)
-      return stg7_2_133_2_056_01;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_056_02") == 0)
-      return stg7_2_133_2_056_02;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_057") == 0)
-      return stg7_2_133_2_057;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_058") == 0)
-      return stg7_2_133_2_058;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_059") == 0)
-      return stg7_2_133_2_059;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_060") == 0)
-      return stg7_2_133_2_060;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_061") == 0)
-      return stg7_2_133_2_061;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_062") == 0)
-      return stg7_2_133_2_062;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_063") == 0)
-      return stg7_2_133_2_063;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_064") == 0)
-      return stg7_2_133_2_064;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_065") == 0)
-      return stg7_2_133_2_065;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_066") == 0)
-      return stg7_2_133_2_066;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_067") == 0)
-      return stg7_2_133_2_067;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_068") == 0)
-      return stg7_2_133_2_068;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_069") == 0)
-      return stg7_2_133_2_069;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_070") == 0)
-      return stg7_2_133_2_070;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_071") == 0)
-      return stg7_2_133_2_071;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_072") == 0)
-      return stg7_2_133_2_072;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_073") == 0)
-      return stg7_2_133_2_073;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_074") == 0)
-      return stg7_2_133_2_074;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_075") == 0)
-      return stg7_2_133_2_075;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_076") == 0)
-      return stg7_2_133_2_076;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_077") == 0)
-      return stg7_2_133_2_077;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_078") == 0)
-      return stg7_2_133_2_078;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_079") == 0)
-      return stg7_2_133_2_079;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_080") == 0)
-      return stg7_2_133_2_080;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_081") == 0)
-      return stg7_2_133_2_081;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_082") == 0)
-      return stg7_2_133_2_082;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_083") == 0)
-      return stg7_2_133_2_083;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_084") == 0)
-      return stg7_2_133_2_084;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085") == 0)
-      return stg7_2_133_2_085;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_01") == 0)
-      return stg7_2_133_2_085_01;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_02") == 0)
-      return stg7_2_133_2_085_02;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_03") == 0)
-      return stg7_2_133_2_085_03;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_04") == 0)
-      return stg7_2_133_2_085_04;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_05") == 0)
-      return stg7_2_133_2_085_05;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_085_06") == 0)
-      return stg7_2_133_2_085_06;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_086") == 0)
-      return stg7_2_133_2_086;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_087") == 0)
-      return stg7_2_133_2_087;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_088") == 0)
-      return stg7_2_133_2_088;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_089") == 0)
-      return stg7_2_133_2_089;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_090") == 0)
-      return stg7_2_133_2_090;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_092") == 0)
-      return stg7_2_133_2_092;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_093") == 0)
-      return stg7_2_133_2_093;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_094") == 0)
-      return stg7_2_133_2_094;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_095") == 0)
-      return stg7_2_133_2_095;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_096") == 0)
-      return stg7_2_133_2_096;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_097") == 0)
-      return stg7_2_133_2_097;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_098") == 0)
-      return stg7_2_133_2_098;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_099") == 0)
-      return stg7_2_133_2_099;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_100") == 0)
-      return stg7_2_133_2_100;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_101") == 0)
-      return stg7_2_133_2_101;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_102") == 0)
-      return stg7_2_133_2_102;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_103") == 0)
-      return stg7_2_133_2_103;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_104") == 0)
-      return stg7_2_133_2_104;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_105") == 0)
-      return stg7_2_133_2_105;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_106") == 0)
-      return stg7_2_133_2_106;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_107") == 0)
-      return stg7_2_133_2_107;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_108") == 0)
-      return stg7_2_133_2_108;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_109") == 0)
-      return stg7_2_133_2_109;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_110") == 0)
-      return stg7_2_133_2_110;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_111") == 0)
-      return stg7_2_133_2_111;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_112") == 0)
-      return stg7_2_133_2_112;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_113") == 0)
-      return stg7_2_133_2_113;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_114") == 0)
-      return stg7_2_133_2_114;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_115") == 0)
-      return stg7_2_133_2_115;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_116") == 0)
-      return stg7_2_133_2_116;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_117") == 0)
-      return stg7_2_133_2_117;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_118") == 0)
-      return stg7_2_133_2_118;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_119") == 0)
-      return stg7_2_133_2_119;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_120") == 0)
-      return stg7_2_133_2_120;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_121") == 0)
-      return stg7_2_133_2_121;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_122") == 0)
-      return stg7_2_133_2_122;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_123") == 0)
-      return stg7_2_133_2_123;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124") == 0)
-      return stg7_2_133_2_124;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_01") == 0)
-      return stg7_2_133_2_124_01;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_02") == 0)
-      return stg7_2_133_2_124_02;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_03") == 0)
-      return stg7_2_133_2_124_03;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_04") == 0)
-      return stg7_2_133_2_124_04;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_05") == 0)
-      return stg7_2_133_2_124_05;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_124_06") == 0)
-      return stg7_2_133_2_124_06;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_125") == 0)
-      return stg7_2_133_2_125;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_126") == 0)
-      return stg7_2_133_2_126;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_127") == 0)
-      return stg7_2_133_2_127;
-    else if (msl::string::strcmp(msgName, "stg7_2_133_2_091") == 0)
-      return stg7_2_133_2_091;
-    else if (msl::string::strcmp(msgName, "no_fp") == 0)
-      return no_fp;
-    else
-    //wii::os::OSReport("%s\n", msgName);
-      return msgSearch(msgName);
-
-  }
-
   s32 compareStrings(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
   {
     spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     const char *mapName = reinterpret_cast<const char *>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
-    wii::os::OSReport("%s name\n", mapName);
+    wii::os::OSReport("%s mapName\n", mapName);
     const char *comparison = reinterpret_cast<const char *>(spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]));
-    wii::os::OSReport("%s name\n", comparison);
+    wii::os::OSReport("%s comparisonName\n", comparison);
     const char *result = msl::string::strstr(mapName, comparison);
-    wii::os::OSReport("%d name\n", result != 0);
+    wii::os::OSReport("%d comparison\n", result != 0);
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[2], result != 0);
     return 2;
   }
@@ -1758,15 +1322,37 @@ bool IsNpcActive(s32 index) {
 
   }
 
+  s32 new_func_800630b8(spm::effdrv::EffTargetUnion * target, s32 param_1, s32 param_2, wii::mtx::Mtx34 matrix)
+  {
+    return spm::effdrv::func_800630b8(target, vacuumDirection, param_2, matrix);
+  }
+
+  s32 new_evt_rpg_mario_take_damage(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 damage = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+
+    if (smurfed[evtEntry->uw[0]] == 1)
+    {
+      damage -= 1;
+    }
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], damage);
+    return evt_rpg_mario_take_damage(evtEntry, firstRun);
+  }
+
   s32 new_evt_rpg_calc_damage_to_enemy(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
     s32 damageType = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
     s32 damage = spm::mario::marioCalcDamageToEnemy(damageType, rpgTribeID[index]);
     NPC_RPG_Defense * defense = getNpcDefense(rpgTribeID[index]);
+    if (damageType == 8)
+    {
+      damage /= 2;
+      damage += _getFP();
+    }
     if (defense != nullptr)
     {
-      if (defense->max > 0)
+      if (defense->max > 1)
       {
         for (u32 i = 0; i < defense->max; i++)
         {
@@ -1839,7 +1425,10 @@ bool IsNpcActive(s32 index) {
     {
       attackStrength = 0;
     }
-
+    if (smurfed[evtEntry->uw[0]] == 1)
+    {
+      attackStrength -= 1;
+    }
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], attackStrength);
     return 2;
   }
@@ -1860,6 +1449,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 0;
       break;
+      case 3: // Gloomba
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 3;
+        rpgTribeID[1] = 3;
+        rpgTribeID[2] = 3;
+      break;
       case 7: // Paragoomba
         rpgIsActive[0] = true;
         rpgIsActive[1] = true;
@@ -1875,6 +1472,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[0] = 0;
         rpgTribeID[1] = 0;
         rpgTribeID[2] = 11;
+      break;
+      case 12: // Green Koopa Troopa no glasses
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 12;
+        rpgTribeID[1] = 25;
+        rpgTribeID[2] = 12;
       break;
       case 14: // Red Koopa Troopa
         rpgIsActive[0] = true;
@@ -1907,6 +1512,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[0] = 25;
         rpgTribeID[1] = 99;
         rpgTribeID[2] = 25;
+      break;
+      case 69: // Koopa Striker
+        rpgIsActive[0] = true;
+        rpgIsActive[1] = false;
+        rpgIsActive[2] = true;
+        rpgTribeID[0] = 69;
+        rpgTribeID[1] = 69;
+        rpgTribeID[2] = 69;
       break;
       case 125: // Squiglet
         rpgIsActive[0] = true;
@@ -2030,6 +1643,14 @@ bool IsNpcActive(s32 index) {
         rpgTribeID[1] = 450;
         rpgTribeID[2] = 313;
       break;
+      case 315: // Bowser 1
+        rpgIsActive[0] = false;
+        rpgIsActive[1] = true;
+        rpgIsActive[2] = false;
+        rpgTribeID[0] = 0;
+        rpgTribeID[1] = 315;
+        rpgTribeID[2] = 0;
+      break;
       case 529: // Doopliss
         rpgIsActive[0] = false;
         rpgIsActive[1] = true;
@@ -2048,10 +1669,13 @@ bool IsNpcActive(s32 index) {
       //spm::npcdrv::npcTakeDamage(npcPart->owner, npcPart, 1, 5, 0, 4);
       //return 4;
     //}
-    wii::os::OSReport("%d\n", power);
     if (power == 0) return 4;
     if (npcPart->owner->moveMode == 5 && tribeId != 440) return 4;
     spm::mario::MarioWork * mpp = spm::mario::marioGetPtr();
+    if (mpp->keyOff)
+    {
+      return 4;
+    }
     if ((mpp->flags & 0x40000000) == 0) {
       if (!rpgInProgress) {
         rpgInProgress = true;
@@ -2087,6 +1711,12 @@ bool IsNpcActive(s32 index) {
     spm::npcdrv::npcEnemyTemplates[67].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[70].unkDefinitionTable = turnBasedCombatOverride;
     spm::npcdrv::npcEnemyTemplates[110].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[80].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[235].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[237].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[128].unkDefinitionTable = turnBasedCombatOverride;
+    spm::npcdrv::npcEnemyTemplates[132].unkDefinitionTable = turnBasedCombatOverride;
+    return;
   }
 
   static void deleteUnderchompTextures() {
@@ -2115,16 +1745,18 @@ bool IsNpcActive(s32 index) {
     return;
   }
 
+/*
 void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, f32 far)
 {
   return wii::mtx::C_MTXPerspective(dest, fovY, aspect, near, 5000.0f);
 }
-  
+*/
+
   void new_rpg_screen_draw()
   {
     if (screenOn)
     {
-      rpg_screen_draw();
+      //rpg_screen_draw();
       drawStuff();
       enemyDisp();
     }
@@ -2215,6 +1847,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
 
     // Yme is a good bunny
     EVT_BEGIN(determine_quickstart)
+    SET(GSW(1820), -1)
     USER_FUNC(evt_msg::evt_msg_print, 1, PTR(quickie_1), 0, 0)
     USER_FUNC(evt_msg::evt_msg_print, 1, PTR(quickstartText), 0, 0)
     USER_FUNC(evt_msg::evt_msg_select, 1, PTR(quickstartOptions))
@@ -2246,17 +1879,18 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
 
   static void hookEvent() {
     evt_cam3d_evt_zoom_in = patch::hookFunction(spm::evt_cam::evt_cam3d_evt_zoom_in, new_evt_cam3d_evt_zoom_in);
-    evt_seq_set_seq = patch::hookFunction(spm::evt_seq::evt_seq_set_seq, new_evt_seq_set_seq);
+    //evt_seq_set_seq = patch::hookFunction(spm::evt_seq::evt_seq_set_seq, new_evt_seq_set_seq);
+    //evt_rpg_mario_take_damage = patch::hookFunction(spm::an2_08::evt_rpg_mario_take_damage, new_evt_rpg_mario_take_damage);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_damage_to_enemy, new_evt_rpg_calc_damage_to_enemy);
     patch::hookFunction(spm::an2_08::evt_rpg_calc_mario_damage, new_evt_rpg_calc_mario_damage); 
     rpg_screen_draw = patch::hookFunction(spm::an2_08::rpg_screen_draw, new_rpg_screen_draw);
     //C_MTXPerspective = patch::hookFunction(wii::mtx::C_MTXPerspective, new_C_MTXPerspective);
-    //writeBranchLink(0x80057c50, 0x0, new_C_MTXPerspective);
+    writeBranchLink(spm::effdrv::effRoboVacuumDisp, 0x50, new_func_800630b8);
     //evt_rpg_choice_handler = patch::hookFunction(spm::an2_08::evt_rpg_choice_handler, new_evt_rpg_choice_handler);
     evt_mario_get_height = patch::hookFunction(spm::evt_mario::evt_mario_get_height, new_evt_mario_get_height);
-    patchWangSpecial();
+    //patchWangSpecial();
 
-    pouchSetEnemiesDefeated = patch::hookFunction(spm::mario_pouch::pouchSetEnemiesDefeated, new_pouchSetEnemiesDefeated);
+    //pouchSetEnemiesDefeated = patch::hookFunction(spm::mario_pouch::pouchSetEnemiesDefeated, new_pouchSetEnemiesDefeated);
 
     //marioCalcDamageToEnemy = patch::hookFunction(spm::mario::marioCalcDamageToEnemy, newMarioCalcDamageToEnemy);
 
@@ -2264,20 +1898,21 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
 
     //spsndSFXOn = patch::hookFunction(spm::spmario_snd::spsndSFXOn, new_spsndSFXOn);
 
-    msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
+    //msgSearch = patch::hookFunction(spm::msgdrv::msgSearch, newMsgSearch);
 
     writeWord( & spm::pausewin::levelUpWindowMain, 0x0, 0x4e800020);
-    writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
-    rpgHandleMenu = patch::hookFunction(spm::an2_08::rpgHandleMenu, patchTechniquesChars);
+    //writeWord( & spm::effdrv::effRoboVacuumMain, 0x1A0, 0x4e800020);
+    //writeBranchLink( & spm::an2_08::rpgHandleMenu, 0x1BC, returnCharacterTechnique);
+    //rpgHandleMenu = patch::hookFunction(spm::an2_08::rpgHandleMenu, patchTechniquesChars);
     writeBranchLink( & spm::an2_08::evt_rpg_npctribe_handle, 0x94, returnTribe);
-    writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
-    writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
-    writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C0C0003);
-    writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x1324, 0x2c000057);
+    //writeBranchLink( & spm::an2_08::evt_rpg_choice_handler, 0x764, patchTechniques);
+    //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x768, 0x60000000);
+    //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x76C, 0x2C0C0003);
+    //writeWord( & spm::an2_08::evt_rpg_choice_handler, 0x1324, 0x2c000057);
     
     writeWord( & spm::an2_08::evt_rpg_npctribe_handle, 0x2BC, 0x60000000);
     writeWord(& spm::mario::marioCalcDamageToEnemy, 0x16C, 0x57FF003E);
-    deleteUnderchompTextures();
+    //deleteUnderchompTextures();
     turnBasedCombatOverrideInit();
   }
 
@@ -2317,6 +1952,7 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
 
   s32 rpg_npc_setup(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::camdrv::camPtrTbl[5] -> isOrthoToggle = 1;
+    spm::camdrv::camPtrTbl[5] -> in3d = 1;
     for (int i = 0; i < 3; i++) {
       if (rpgIsActive[i]) {
         spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].attackStrength = spm::npcdrv::npcTribes[rpgTribeID[i]].attackStrength;
@@ -2341,6 +1977,20 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     return 2;
   }
 
+  s32 rpg_npc_invert_xp(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::an2_08::rpgdrv_wp->rpgNpcInfo[args[0]].killXp *= -1;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::an2_08::rpgdrv_wp->rpgNpcInfo[args[0]].killXp);
+    return 2;
+  }
+  
+
+  s32 rpg_npc_get_xp(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], spm::an2_08::rpgdrv_wp->rpgNpcInfo[args[0]].killXp);
+    return 2;
+  }
+
   s32 start_boss_fight(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
@@ -2354,6 +2004,14 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
   {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)bossFight);
+    return 2;
+  }
+
+  s32 smurf_da_npc(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 smurfIndex = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    smurfed[smurfIndex] = true;
     return 2;
   }
 
@@ -2481,25 +2139,51 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     return 2;
   }
 
-  s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    char name[11];
-    msl::stdio::sprintf(name,"item_%08x", itemMax);
-    itemMax++;
-    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], 0);
-    spm::evt_item::evt_item_entry(evtEntry, firstRun);
+  s32 reduce_game_speed(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::mario::marioGetPtr()->statusFlags = 0x800;
     return 2;
   }
 
+  s32 increase_game_speed(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::mario::marioGetPtr()->statusFlags = 0x400;
+    return 2;
+  }
+
+  s32 normalize_game_speed(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::mario::marioGetPtr()->statusFlags = 0;
+    return 2;
+  }
+
+char item_name[11];
+
+s32 evt_item_entry_autoname(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  msl::stdio::sprintf(item_name, "i_%d", itemMax);
+  itemMax++;
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)item_name);
+  spm::evt_item::evt_item_entry(evtEntry, firstRun);
+
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)spm::itemdrv::itemNameToPtr(item_name)->name);
+  return 2;
+}
+
   s32 rpg_off(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::camdrv::camPtrTbl[5]->isOrthoToggle = 1;
+    spm::camdrv::camPtrTbl[5] -> in3d = 0;
     rpgInProgress = false;
     succeededActionCommand = false;
     bossFight = false;
     isFrog = false;
     is3dCam = false;
-    if (firstRun == false) {}
-    if (evtEntry->flags == 0) {}
+    for (u8 i = 0; i < 3; i++)
+    {
+      smurfed[i] = 0;
+    }
+    
     return 2;
   }
 
@@ -2696,13 +2380,6 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     return 2;
   }
 
-  s32 rpg_set_dialogue(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
-    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
-    char * dialogue = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-    mainText = dialogue;
-    return 2;
-  }
-
     s32 evt_offscreen_set_type(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
     char * name = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
@@ -2720,6 +2397,35 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     return 2;
   }
 
+  s32 manage_vacuum(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    for (s32 i = 0; i < 3; i++)
+    {
+      if ((spm::an2_08::rpgdrv_wp->rpgNpcInfo[i].flags & 0x8000) == 0) 
+      {
+        npc_rpg_data * enemy = get_rpg_enemy(i);
+        if (enemy)
+        {
+          u32 vacuumType = enemy->vacuumDef.type;
+          switch (vacuumType)
+          {
+          case 0:
+            if (!enemy->vacuumDef.vacuumScript)
+            {
+              spm::evtmgr::evtEntry(basic_vacuum, 0, 0)->lw[0] = i;
+            }
+            break;
+          
+          default:
+            break;
+          }
+        }
+      }
+    }
+    
+    return 2;
+  }
+
+
   EVT_BEGIN(insertNop)
     SET(LW(0), LW(0))
   RETURN_FROM_CALL()
@@ -2735,8 +2441,19 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
 
   void main() {
     wii::os::OSReport("SPM Rel Loader: the mod has ran!\n");
-    titleScreenCustomTextPatch();
+    //titleScreenCustomTextPatch();
     evtpatch::evtmgrExtensionInit();
+    msgpatch::msgpatchMain(); 
+    msgpatch::msgpatchAddEntry("anna_ehelp_241", chunks_tattle, false); 
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_090", stg7_2_133_2_090, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_091", stg7_2_133_2_091, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_092", stg7_2_133_2_092, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_008", stg7_2_133_2_008, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_029", stg7_2_133_2_029, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_110", stg7_2_133_2_110, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_111", stg7_2_133_2_111, false);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_001", rpgStart, false);
+    customwin::CustomWinMain();
     hookEvent();
     npc_rpgdrv_main();
     patchXP();
@@ -2756,7 +2473,14 @@ void new_C_MTXPerspective(wii::mtx::Mtx44 dest, f32 fovY, f32 aspect, f32 near, 
     ip::main();
     mobj_main();
     tplpatch::iconPatch(modTplName);
-    power_refresh_main();
     map_data_main();
+    map_patch::map_patch_main();
+    ring_menu_main();
+    acpatch::acpatchInit();
+    power_refresh_main();
+    savepatch::main("SDPM_");
+    robo_succ_main();
+    msgskip::msgSkipInit();
+    tryChainload();
   }
 }

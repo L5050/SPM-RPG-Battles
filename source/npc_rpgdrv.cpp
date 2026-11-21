@@ -17,6 +17,8 @@
 #include "fracktail.h"
 #include "teresa.h"
 #include "mimi.h"
+#include "koopa_striker.h"
+#include "bowser.h"
 #include "kamek.h"
 
 #include <spm/rel/an.h>
@@ -27,7 +29,7 @@
 #include <spm/evt_mario.h>
 #include <spm/evt_pouch.h>
 #include <spm/evt_fade.h>
-#include <spm/evt_map.h>
+#include <spm/evt_mobj.h>
 #include <spm/evt_paper.h>
 #include <spm/evt_img.h>
 #include <spm/evt_env.h>
@@ -104,9 +106,9 @@ NPCTribeAnimDef animsParaKuribo[] = {
     {-1, nullptr}
   };
 
-  NPC_RPG_Defense sinnoDefense = {0, 2, 0x0, 0};
-  NPC_RPG_Defense metDefense[] = {{0, 1, 0x0, 0}, {8, 99, 0x0, 0}};
-  NPC_RPG_Defense mimiDefense = {2, 1, 0x0, 0};
+  NPC_RPG_Defense sinnoDefense[] = {{0, 2, 0x0, 2}, {8, 99, 0x0, 0}};
+  NPC_RPG_Defense metDefense[] = {{0, 1, 0x0, 2}, {8, 99, 0x0, 0}};
+  NPC_RPG_Defense mimiDefense = {2, 2, 0x0, 1};
 
   NPCTribeAnimDef animsOcta2[] = {
     {0, "S_1"},
@@ -200,7 +202,7 @@ NPCTribeAnimDef animsParaKuribo[] = {
   {-1, nullptr}
 };
 
-  NPCTribeAnimDef animsCharge[] = {
+  static NPCTribeAnimDef animsCharge[] = {
     {0, "Z_1"},
     {1, "S_1"},
     {-1, nullptr}
@@ -347,6 +349,28 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
 
     if (firstRun == false) {}
     return 2;
+  }
+
+  VacuumDef * get_rpg_enemy_vacuum(s32 rpgIndex)
+  {
+    s32 tribeId = getRpgTribeID(rpgIndex);
+
+    if (!IsNpcActive(rpgIndex)) {
+      return nullptr;
+    }
+    s32 index = getDataTableIndex(tribeId);
+    return &npcDataTable[index].vacuumDef;
+  }
+
+  npc_rpg_data * get_rpg_enemy(s32 rpgIndex)
+  {
+    s32 tribeId = getRpgTribeID(rpgIndex);
+
+    if (!IsNpcActive(rpgIndex)) {
+      return nullptr;
+    }
+    s32 index = getDataTableIndex(tribeId);
+    return &npcDataTable[index];
   }
 
   s32 get_rpg_enemy_card_id(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
@@ -613,6 +637,40 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
       spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
       return 2;
     }
+    comparison = "ta1_01";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -250.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.16);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "ta1_03";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = -1828.0;
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
+    comparison = "ta1_04";
+    result = msl::string::strstr(mapName, comparison);
+    if (result != 0)
+    {
+      f32 x = 1949.0;
+      if (spm::mario::marioGetPtr()->position.x > 3300.0f)
+      {
+        x = 3500.0;
+      }
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[1], x);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[2], 0.0);
+      spm::evtmgr_cmd::evtSetFloat(evtEntry, args[3], 0.0);
+      return 2;
+    }
     return 2;
   }
 
@@ -625,7 +683,26 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
     spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].maxHp = 0;
     spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].killXp = 0;
     spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].flags = 0x8000;
-    if (firstRun == false) {}
+    return 2;
+  }
+
+  s32 set_npc_rpg_hp(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    
+    spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].maxHp = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+    return 2;
+  }
+
+  s32 set_npc_rpg_atk(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+
+    s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    
+    spm::an2_08::rpgdrv_wp->rpgNpcInfo[index].attackStrength = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
     return 2;
   }
 
@@ -639,6 +716,52 @@ s32 mobjChangeAnimPoseName(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
         DO_BREAK()
       END_IF()
     WHILE()
+    RETURN()
+  EVT_END()
+
+  EVT_BEGIN(basic_vacuum)
+    WAIT_FRM(1)
+    ALLOC_USER_WRK(1)
+    SET(UW(0), LW(0))
+    RUN_CHILD_EVT(get_rpg_npc_name)
+    RUN_CHILD_EVT(get_rpg_mobj_name)
+    USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(15), 4, 1)
+    USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("vore"), LW(7))
+    USER_FUNC(osReportLW, LW(7))
+    IF_SMALL(LW(7), 5)
+      USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(15), 0, 1)
+      RETURN()
+    END_IF()
+    USER_FUNC(spm::an2_08::evt_rpg_calc_damage_to_enemy, UW(0), 0, LW(11))
+    USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(11), 0, LW(0))
+    IF_FLAG(LW(0), 0x8000)
+      WAIT_FRM(30)
+      BROTHER_EVT_ID(LW(10))
+        SET(LW(9), FLOAT(0.0))
+        DO(0)
+          ADDF(LW(9), FLOAT(9.0))
+          USER_FUNC(spm::evt_npc::evt_npc_rotate, LW(15), EVT_NULLPTR, LW(9), EVT_NULLPTR)
+          WAIT_FRM(1)
+        WHILE()
+      END_BROTHER()
+      USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+      ADD(LW(5), 30)
+      //ADD(LW(6), 30)
+      USER_FUNC(spm::evt_npc::evt_npc_glide_to, LW(15), LW(5), LW(6), LW(7), 0, FLOAT(150.0), 0, 0, 0, 0)
+      WAIT_FRM(1)
+      DELETE_EVT(LW(10))
+      USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_HAPPYFLOWER1"))
+      USER_FUNC(getFP, LW(1))
+      ADD(LW(1),1)
+      USER_FUNC(setFP, LW(1))
+      USER_FUNC(flower_effect, 4)
+      USER_FUNC(spm::evt_npc::evt_npc_delete, LW(15))
+      USER_FUNC(spm::evt_mobj::evt_mobj_delete, LW(14))
+    ELSE()
+      MUL(LW(11), -1)
+      USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(11), 0, LW(0))
+      USER_FUNC(spm::evt_npc::evt_npc_set_anim, LW(15), 0, 1)
+    END_IF()
     RETURN()
   EVT_END()
 
@@ -784,7 +907,7 @@ EVT_END()
     npcDataTable[3] = {11, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Green Koopa Troopa
 
     sproing_main();
-    npcDataTable[4] = {134, animsTecti, 50, sproing_oing_attack, nullptr, nullptr}; // Sproing-Oing
+    npcDataTable[4] = {134, animsTecti, 10, sproing_oing_attack, nullptr, nullptr}; // Sproing-Oing
 
     npcDataTable[5] = {126, animsOctar, 10, octar_attack, nullptr, nullptr}; // Squig
 
@@ -795,7 +918,7 @@ EVT_END()
     npcDataTable[8] = {22, getParaKoopaAnims(), 10, para_koopa_attack, para_koopa_onhit, nullptr}; // Parakoopa
 
     sinno_main();
-    npcDataTable[9] = {99, animsSinno, 10, sinno_attack, nullptr, nullptr, nullptr, nullptr, &sinnoDefense}; // Bald Cleft 
+    npcDataTable[9] = {99, animsSinno, 10, sinno_attack, nullptr, nullptr, nullptr, nullptr, sinnoDefense}; // Bald Cleft 
 
     chunks_main();
     npcDataTable[10] = {270, getChunksAnims(), 0, chunks_attack, chunks_onhit, getChunksDeath(), chunks_on_spawn}; // O'Chunks
@@ -824,6 +947,42 @@ EVT_END()
 
     mimi_main();
     npcDataTable[19] = {280, getMimiAnims(), 0, mimi_attack, mimi_onhit, mimi_ondeath, mimi_onspawn, mimi_throw_script, &mimiDefense}; // Mimi
+    
+    npcDataTable[20] = {3, animsKuribo, 20, kuribo_attack, nullptr, nullptr};
+
+    npcDataTable[21] = {12, getKoopaAnims(), 10, koopa_attack, koopa_onhit, nullptr}; // Green Koopa Troopa no glasses
+
+    koopa_striker_main();
+    npcDataTable[22] = {69, getKoopaStrikerAnims(), 5, koopa_striker_attack, koopa_striker_onhit, nullptr}; // Koopa Striker
+
+    browser_main();
+    npcDataTable[23] = {315, getAnimsBrowserFirefoxExtension(), 0, browser_edging_attack, browser_chromium_onhit, nullptr, browser_safarshit_onspawn}; // Bowser
   }
+
+/*
+
+     .-""""--.
+      /         )
+     /      --"`
+    /       _`:---.
+   |     .-'       `\
+    \   /    .----'./
+     \  : ,-' ~(.).)\
+      \_| \      ._) |
+       /   |  \.__, /
+  _.--'    )`///-,-'
+ /        / _| (_\\
+|        (____/____)
+ \     ___/       | _
+  `---(            ` )
+       `-,          .'
+        (__.'._/'._/
+             |`| |
+          __/ / /
+         //   | `--.
+        ||    /_____)
+
+*/
+
 
 }

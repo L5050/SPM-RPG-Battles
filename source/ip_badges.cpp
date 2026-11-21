@@ -22,7 +22,7 @@ BadgeDef badgeDefs[NUM_BADGES] = {
         "bd_test_1",
         0,
         3,
-        power_bounce
+        nullptr
     },
     // Power Jump
     {
@@ -30,7 +30,7 @@ BadgeDef badgeDefs[NUM_BADGES] = {
         "bd_test_2",
         1,
         3,
-        nullptr
+        power_bounce
     },
     // Sleepy Stomp
     {
@@ -48,17 +48,19 @@ BadgeDef badgeDefs[NUM_BADGES] = {
         4,
         nullptr
     },
+    // Smurf Stomp
+    {
+        "n_smurf",
+        "d_smurfstomp",
+        4,
+        2,
+        rpg_jump_smurf
+    },
 };
 
 const spm::evtmgr::EvtScriptCode* getBadgeScriptById(s32 id)
 {
-  for (s32 i = 0; i < NUM_BADGES; i++)
-  {
-    if (badgeDefs[i].iconId == i) {
-      return badgeDefs[i].badgeScript;
-    }
-  }
-  return nullptr;
+  return badgeDefs[id].badgeScript;
 }
 
 s32 getBadgeIdByTechnique(s32 index)
@@ -70,8 +72,10 @@ s32 getBadgeIdByTechnique(s32 index)
   s32 badgeArrayIndex = 1;
   for (int i = 0; i < badgeCount; i++)
   {
-    if (badgeInfo[i].equipped && mod::checkBadgeTechnique(badgeInfo[i].id))
+    if (badgeInfo[i].equipped && mod::checkBadgeTechnique(badgeInfo[i].id) != -1)
     {
+      wii::os::OSReport("equipped [%d]\n", badgeInfo[i].equipped);
+      wii::os::OSReport("equipped badge id [%d]\n", badgeInfo[i].id);
       ip::BadgeDef *badgeDef = ip::pouchGetBadgeDef(i);
       badgeArray[badgeArrayIndex] = badgeDef->iconId;
       badgeArrayIndex++;
@@ -84,7 +88,7 @@ s32 get_badge_script_by_id(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
   spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
   s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
-  spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)getBadgeScriptById(index));
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], (s32)getBadgeScriptById(index));
   return 2;
 }
 
@@ -92,7 +96,9 @@ s32 get_badge_script_by_technique(spm::evtmgr::EvtEntry * evtEntry, bool firstRu
 {
   spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
   s32 index = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+  wii::os::OSReport("badge script index [%d]\n", index);
   index = getBadgeIdByTechnique(index);
+  wii::os::OSReport("badge id [%d]\n", index);
   spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)getBadgeScriptById(index));
   return 2;
 }

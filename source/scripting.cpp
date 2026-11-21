@@ -3,10 +3,15 @@
 #include "patch.h"
 #include "main_scripting.h"
 #include "npc_rpgdrv.h"
+#include "msgpatch.h"
+#include "ring_menu.h"
+#include "customwin.h"
 #include "ip_badgepouch.h"
+#include "robo_succ.h"
 
 #include <spm/rel/an.h>
 #include <spm/rel/bos_01.h>
+#include <spm/animdrv.h>
 #include <spm/evtmgr.h>
 #include <spm/evt_ac.h>
 #include <spm/evt_msg.h>
@@ -19,8 +24,10 @@
 #include <spm/evt_env.h>
 #include <spm/evt_eff.h>
 #include <spm/eff/eff_happy_flower.h>
+#include <spm/eff/eff_gonbaba_breathe.h>
 #include <spm/evt_fairy.h>
 #include <spm/evt_snd.h>
+#include <spm/spmario.h>
 #include <spm/evt_cam.h>
 #include <spm/evt_sub.h>
 #include <spm/evt_npc.h>
@@ -29,10 +36,11 @@
 #include <spm/evt_case.h>
 #include <spm/evt_item.h>
 #include <spm/evt_seq.h>
+#include <spm/item_data_ids.h>
 #include <spm/rel/an2_08.h>
-#include <spm/rel/sp4_13.h>
 #include <spm/rel/an.h>
 #include <spm/wpadmgr.h>
+#include <spm/msgdrv.h>
 #include <spm/fontmgr.h>
 #include <spm/seqdrv.h>
 #include <spm/seq_game.h>
@@ -46,12 +54,15 @@
 #include <spm/evt_offscreen.h>
 #include <spm/seqdef.h>
 #include <spm/item_data.h>
+#include <spm/item_data_ids.h>
 #include <spm/item_event_data.h>
 #include <wii/os/OSError.h>
 #include <msl/string.h>
 #include <patch.h>
 #include <string>
 namespace mod {
+
+char * mainText = nullptr;
 
 const char * tippi_fail = "<p>\n"
 "This enemy cannot be\n"
@@ -67,7 +78,12 @@ const char * tippi_pacify = "<p>\n"
 const char * level_up = "<system><p>\n"
 "You leveled up!\n"
 "Choose a stat!\n"
-"<dkey><wait 200></dkey><o>\n";
+"<dkey><wait 200></dkey><k>\n";
+
+const char * level_up_fail = "<system><p>\n"
+"This stat was chosen recently.\n"
+"Please choose a different stat.\n"
+"<k>\n";
 
 const char levelOptions[] =
 "<select 0 -1 540 10>\n"
@@ -80,6 +96,8 @@ const char * stylish_fail = "<p>\n"
 "Not a high enough\n"
 "stylish level!\n"
 "<k>\n";
+
+const char * leveluptut = "This option will be unavailable\nthe next time you level up.";
 
 const char * tippi_pacify_success = "<p>\n"
 "%d enemies were\n"
@@ -147,7 +165,7 @@ const char * tutorial = "<dq>\n"
 "Use them wisely...\n"
 "<k>\n"
 "<p>\n"
-"<scale 0.5>developers note, not all items are guarunteed to\n"
+"<scale 0.5>developers note, not all items are guaranteed to\n"
 "work as they havent all been tested yet. all healing\n"
 "items should be completely functional though\n"
 "<k>\n"
@@ -155,6 +173,324 @@ const char * tutorial = "<dq>\n"
 "<scale 1.0>Enjoy!\n"
 "-Lily\n"
 "<k>\n";
+
+// gay color from lunatic pit
+    customwin::CWSelectColorDef accessSelectBgCols[] =
+        {
+            {{255, 160, 160, 160}, {255, 200, 160, 160}, 80, 0}, // Red-Orange
+            {{255, 160, 255, 160}, {255, 160, 160, 160}, 80, 0}, // Magenta-Red
+            {{200, 160, 255, 160}, {255, 160, 255, 160}, 80, 0}, // Purple-Magenta
+            {{160, 160, 255, 160}, {200, 160, 255, 160}, 80, 0}, // Blue-Purple
+            {{160, 255, 255, 160}, {160, 160, 255, 160}, 80, 0}, // Cyan-Blue
+            {{160, 255, 160, 160}, {160, 255, 255, 160}, 80, 0}, // Green-Cyan
+            {{255, 255, 160, 160}, {160, 255, 160, 160}, 80, 0}, // Yellow-Green
+            {{255, 200, 160, 160}, {255, 255, 160, 160}, 80, 0}  // Orange-Yellow
+    };
+
+  customwin::CWSelectItemDesc usableItems[10];
+  customwin::CWSelectItemDesc usablePixls[16];
+
+  customwin::CWSelectItemDesc usableMarioTechs[10];
+  s32 badgeidList[10];
+  customwin::CWSelectItemDesc usablePeachTechs[10];
+  customwin::CWSelectItemDesc usableBowserTechs[2];
+
+  spm::evtmgr::EvtEntry * pre_battle_cutscene = nullptr;
+  spm::evtmgr::EvtEntry * post_battle_cutscene = nullptr;
+
+  s32 patchTechniquesMario(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    msl::string::strcpy(usableMarioTechs[0].nameTxt, "Tattle");
+    msl::string::strcpy(usableMarioTechs[0].descTxt, "Get information on a target enemy!");
+    usableMarioTechs[0].cost = 0;
+    usableMarioTechs[0].iconId = -1;
+    usableMarioTechs[0].page = 0;
+
+    s32 numOptions = 1;
+
+    s32 badgeCount = ip::pouchCountBadges();
+    for (s32 i = 0; i < badgeCount; i++)
+    {
+      ip::PouchBadgeInfo *badgeInfo = ip::pouchGetBadgeInfo(i);
+      s32 badgeFP = checkBadgeTechnique(badgeInfo->id);
+      if (badgeInfo->equipped && badgeFP != -1)
+      {
+        ip::BadgeDef *badgeDef = ip::pouchGetBadgeDef(i);
+        msl::string::strcpy(usableMarioTechs[numOptions].nameTxt, spm::msgdrv::msgSearch(badgeDef->nameMsg));
+        msl::string::strcpy(usableMarioTechs[numOptions].descTxt, spm::msgdrv::msgSearch(badgeDef->descMsg));
+        usableMarioTechs[numOptions].page = 0;
+        usableMarioTechs[numOptions].cost = badgeFP;
+        usableMarioTechs[numOptions].iconId = -1;
+        badgeidList[numOptions] = badgeInfo->id;
+        numOptions++;
+      }
+    }
+    
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)&usableMarioTechs[0]);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], numOptions);
+
+    return 2;
+  }
+
+  s32 animPoseSetMaterialEvtColorWrapper(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::mario::MarioWork *mario = spm::mario::marioGetPtr();
+    s32 r = spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    s32 g = spm::evtmgr_cmd::evtGetValue(evtEntry, args[1]);
+    s32 b = spm::evtmgr_cmd::evtGetValue(evtEntry, args[2]);
+    s32 a = spm::evtmgr_cmd::evtGetValue(evtEntry, args[3]);
+    bool toggle = spm::evtmgr_cmd::evtGetValue(evtEntry, args[4]);
+    wii::gx::GXColor newMarioColor = {r, g, b, a};
+
+    for (s32 i = 0; i < 8; ++i)
+    {
+      if (mario->animPoseIds[i] != -1)
+      {
+        spm::animdrv::animPoseSetMaterialEvtColor(mario->animPoseIds[i], newMarioColor);
+        if (toggle)
+        {
+        spm::animdrv::animPoseSetFlagF4On(mario->animPoseIds[i], 100000);
+        spm::animdrv::animPoseSetMaterialFlagOn(mario->animPoseIds[i], 0x2000);
+        } else {
+        spm::animdrv::animPoseSetFlagF4Off(mario->animPoseIds[i], 100000);
+        spm::animdrv::animPoseSetMaterialFlagOff(mario->animPoseIds[i], 0x2000);
+        }
+
+      }
+    }
+    return 2;
+  }
+
+  s32 get_pre_battle_cutscene(spm::evtmgr::EvtEntry *evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar *args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)pre_battle_cutscene);
+
+    return 2;
+  }
+
+s32 set_pre_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  pre_battle_cutscene = (spm::evtmgr::EvtEntry *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+
+  return 2;
+}
+
+s32 get_post_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)post_battle_cutscene);
+
+  return 2;
+}
+
+s32 set_post_battle_cutscene(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  post_battle_cutscene = (spm::evtmgr::EvtEntry *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+
+  return 2;
+}
+
+s32 make3d(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  spm::camdrv::camPtrTbl[5] -> isOrthoToggle = 1;
+  spm::camdrv::camPtrTbl[5] -> in3d = args[0];
+
+  return 2;
+}
+
+s32 makeNot3d(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::camdrv::camPtrTbl[5] -> isOrthoToggle = 0;
+  spm::camdrv::camPtrTbl[5] -> in3d = 0;
+
+  return 2;
+}
+
+s32 getBadgeIdSelect(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+  spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+  spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], badgeidList[args[0]]);
+
+  return 2;
+}
+EVT_DECLARE_USER_FUNC(getBadgeIdSelect, 2)
+
+  s32 patchTechniquesPeach(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    msl::string::strcpy(usablePeachTechs[0].nameTxt, "Appeal");
+    msl::string::strcpy(usablePeachTechs[0].descTxt, "Raises your stylish level by 2!");
+    usablePeachTechs[0].cost = 0;
+    usablePeachTechs[0].iconId = -1;
+    usablePeachTechs[0].page = 0;
+    msl::string::strcpy(usablePeachTechs[1].nameTxt, "Power Refresh");
+    msl::string::strcpy(usablePeachTechs[1].descTxt, "Generates panels to heal HP and FP!\nDon't click the poison shrooms!");
+    usablePeachTechs[1].cost = 1;
+    usablePeachTechs[1].iconId = -1;
+    usablePeachTechs[1].page = 0;
+    msl::string::strcpy(usablePeachTechs[2].nameTxt, "Soulstopper");
+    msl::string::strcpy(usablePeachTechs[2].descTxt, "OHKO's enemies you have a catch card for!\nConsumes the catch card if they aren't pacifiable.");
+    usablePeachTechs[2].cost = 1;
+    usablePeachTechs[2].iconId = -1;
+    usablePeachTechs[2].page = 0;
+    s32 numOptions = 3;
+    if (spm::spmario::gp->gsw0 >= 96)
+    {
+      msl::string::strcpy(usablePeachTechs[3].nameTxt, "Purification");
+      msl::string::strcpy(usablePeachTechs[3].descTxt, "Does 10 damage against enemies with a status effect\nRemoves statuses from all enemies.");
+      usablePeachTechs[3].cost = 1;
+      usablePeachTechs[3].iconId = -1;
+      usablePeachTechs[3].page = 0;
+      numOptions += 1;
+    }
+    
+    
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)&usablePeachTechs[0]);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], numOptions);
+
+    return 2;
+  }
+
+  s32 patchTechniquesBowser(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+  {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    msl::string::strcpy(usableBowserTechs[0].nameTxt, "Fire");
+    msl::string::strcpy(usableBowserTechs[0].descTxt, "Breathe fire against all enemies!\nUses all FP.");
+    usableBowserTechs[0].cost = _getFP();
+    usableBowserTechs[0].iconId = -1;
+    usableBowserTechs[0].page = 0;
+    msl::string::strcpy(usableBowserTechs[1].nameTxt, "Vacuum");
+    msl::string::strcpy(usableBowserTechs[1].descTxt, "Inhales enemies like gummy bears!\nEffects vary depending on enemy.");
+    usableBowserTechs[1].cost = 0;
+    usableBowserTechs[1].iconId = -1;
+    usableBowserTechs[1].page = 0;
+    s32 numOptions = 2;
+
+    
+    
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)&usableBowserTechs[0]);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], numOptions);
+
+    return 2;
+  }
+
+  /*
+  s32 patchTechniquesPeach(s32 type, spm::an2_08::RpgMenuOption* options)
+  {
+    options->name = "Appeal";
+    options->index = 0;
+    options[1].name = spm::msgdrv::msgSearch("peach_special");
+    options[1].index = 1;
+
+    s32 numOptions = 2;
+
+    if(spm::spmario::gp->gsw0 >= 63)
+    {
+    options[2].name = "Soulstopper";
+    options[2].index = 2;
+    numOptions++;
+    }
+
+
+    return numOptions;
+  }*/
+
+s32 eff_spawn_bowser_fire(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    f32 x = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[0]);
+    f32 y = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[1]);
+    f32 z = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[2]);
+    f32 scale = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[3]);
+    s32 type = spm::evtmgr_cmd::evtGetValue(evtEntry, args[4]);
+    s32 duration = spm::evtmgr_cmd::evtGetValue(evtEntry, args[5]);
+    f32 direction = spm::evtmgr_cmd::evtGetFloat(evtEntry, args[6]);
+    const char * name = (const char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[7]);
+    spm::effdrv::EffEntry * entry = spm::eff_gonbaba::effGonbabaBreathEntry(x, y, z, scale, type, duration);
+    spm::effdrv::effSetName(entry, name);
+    spm::eff_gonbaba::EffGonbabaBreath * userWork = (spm::eff_gonbaba::EffGonbabaBreath *)entry->userWork;
+    userWork->direction = direction;
+    return 2;
+}
+
+s32 rpg_populate_techniques(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::mario::MarioWork *mwpp = spm::mario::marioGetPtr();
+    if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_MARIO)
+    {
+      return patchTechniquesMario(evtEntry, firstRun);
+    }
+    if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_PEACH)
+    {
+      return patchTechniquesPeach(evtEntry, firstRun);
+    }
+    if (mwpp->character == spm::mario::PlayerCharacter::PLAYER_BOWSER)
+    {
+      return patchTechniquesBowser(evtEntry, firstRun);
+    }
+    return 2;
+}
+EVT_DECLARE_USER_FUNC(rpg_populate_techniques, 2)
+
+s32 rpg_populate_pixls(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 itemCount = spm::mario_pouch::pouchCountPixls();
+    for (s32 i = 0; i < itemCount; i++)
+    {
+      spm::mario_pouch::PouchCharOrPixlInfo item = spm::mario_pouch::pouchGetPtr()->pixls[i];
+      usableItems[i].cost = 0;
+      usableItems[i].itemId = item.itemType;
+      usableItems[i].iconId = spm::item_data::itemDataTable[item.itemType].iconId;
+      usableItems[i].page = 0;
+      switch (item.itemType)
+      {
+      case spm::item_data::ITEM_ID_FAIRY_THROW:
+        usableItems[i].cost = 1;
+        break;
+      case spm::item_data::ITEM_ID_FAIRY_BAKUDAN:
+        usableItems[i].cost = 2;
+        break;
+      case spm::item_data::ITEM_ID_FAIRY_SLIT:
+        usableItems[i].cost = 1;
+        break;
+      
+      default:
+        usableItems[i].cost = 0;
+        break;
+      }
+    }
+    
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)&usableItems[0]);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], itemCount);
+    return 2;
+}
+EVT_DECLARE_USER_FUNC(rpg_populate_pixls, 2)
+
+s32 rpg_populate_items(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
+{
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    s32 itemCount = spm::mario_pouch::pouchCountUseItems();
+    for (s32 i = 0; i < itemCount; i++)
+    {
+      u16 item = spm::mario_pouch::pouchGetPtr()->useItem[i];
+      usableItems[i].cost = spm::item_data::itemDataTable[item].buyPrice;
+      usableItems[i].itemId = item;
+      usableItems[i].iconId = spm::item_data::itemDataTable[item].iconId;
+      usableItems[i].page = 0;
+    }
+    
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[0], (s32)&usableItems[0]);
+    spm::evtmgr_cmd::evtSetValue(evtEntry, args[1], itemCount);
+    return 2;
+}
+EVT_DECLARE_USER_FUNC(rpg_populate_items, 2)
 
 s32 mario_paper_on(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -191,7 +527,6 @@ s32 flower_effect(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     spm::happy_flower::effHappyFlower(spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]));
     return 2;
 }
-EVT_DECLARE_USER_FUNC(flower_effect, 1)
 
 s32 mario_reset_rotation(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
@@ -275,6 +610,13 @@ s32 evt_rpg_add_player_effect(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
     return 2;
 }
 
+  s32 rpg_set_dialogue(spm::evtmgr::EvtEntry * evtEntry, bool firstRun) {
+    spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
+    char * dialogue = (char *)spm::evtmgr_cmd::evtGetValue(evtEntry, args[0]);
+    msgpatch::msgpatchAddEntry("stg7_2_133_2_002", dialogue, true);
+    return 2;
+  }
+
 /*s32 rpg_check_for_bounding_box(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
 {
     spm::evtmgr::EvtVar * args = (spm::evtmgr::EvtVar *)evtEntry->pCurData;
@@ -317,8 +659,22 @@ s32 npc_change_name(spm::evtmgr::EvtEntry * evtEntry, bool firstRun)
   return 2;
 }
 
+s32 evt_animPoseCharge(EvtEntry *entry, bool firstCall)
+{
+  EvtVar *args = (spm::evtmgr::EvtVar *)entry->pCurData;
+  u32 asyncTest = spm::animdrv::animGroupBaseAsync("EFF_batug_tue", 0, 0);
+  if (asyncTest == 0)
+  {
+    return 0;
+  }
+  else
+  {
+    return 2;
+  }
+}
+
 EVT_BEGIN(create_lucky)
-  USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_EVT_LUCKY"))
+  USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_LUCKY"))
   USER_FUNC(spm::evt_npc::evt_npc_entry, PTR("npcdrv_lucky"), PTR("EFF_lucky_us"), 0)
   USER_FUNC(spm::evt_npc::evt_npc_set_scale, PTR("npcdrv_lucky"), FLOAT(3.0), FLOAT(3.0), FLOAT(3.0))
   USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
@@ -578,10 +934,83 @@ EVT_BEGIN(soul_stopper_kill)
 RETURN()
 EVT_END()
 
+EVT_BEGIN(get_rpg_mobj_name)
+    IF_EQUAL(UW(0), 0)
+      SET(LW(14), PTR("mobj1"))
+    END_IF()
+    IF_EQUAL(UW(0), 1)
+      SET(LW(14), PTR("mobj2"))
+    END_IF()
+    IF_EQUAL(UW(0), 2)
+      SET(LW(14), PTR("mobj3"))
+    END_IF()
+  RETURN()
+EVT_END()
+
+EVT_BEGIN(get_rpg_npc_name)
+    IF_EQUAL(UW(0), 0)
+      SET(LW(15), PTR("npc1"))
+    END_IF()
+    IF_EQUAL(UW(0), 1)
+      SET(LW(15), PTR("npc2"))
+    END_IF()
+    IF_EQUAL(UW(0), 2)
+      SET(LW(15), PTR("npc3"))
+    END_IF()
+  RETURN()
+EVT_END()
+
+EVT_BEGIN(purify_evt)
+  RUN_CHILD_EVT(get_rpg_npc_name)
+  USER_FUNC(spm::an2_08::evt_rpg_enemy_death_check, UW(0), LW(10))
+  IF_FLAG(LW(10), 0x3)
+    USER_FUNC(spm::evt_npc::evt_npc_set_animpose_disp_callback, LW(15), 0, 0)
+    USER_FUNC(spm::an2_08::evt_rpg_status_remove, 1, UW(0), 0x3)
+    USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 10, 0, LW(0))
+    USER_FUNC(spm::evt_npc::evt_npc_get_position, LW(15), LW(5), LW(6), LW(7))
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_SMASH1"))
+    USER_FUNC(displayDamage, LW(5), LW(6), LW(7), 10)
+    RUN_EVT(damageAnims)
+    RUN_CHILD_EVT(runEnemyDeath)
+    WAIT_MSEC(500)
+  END_IF()
+  RETURN()
+EVT_END()
+
+EVT_BEGIN(bowserFireDamageEvt)
+  RUN_CHILD_EVT(get_rpg_npc_name)
+  USER_FUNC(spm::an2_08::evt_rpg_calc_damage_to_enemy, UW(0), 8, LW(10))
+  USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(10), 8, LW(0))
+  USER_FUNC(spm::evt_npc::evt_npc_get_position, LW(15), LW(5), LW(6), LW(7))
+  USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_SMASH1"))
+  RUN_EVT(damageAnims)
+  USER_FUNC(displayDamage, LW(5), LW(6), LW(7), LW(10))
+RETURN()
+EVT_END()
+
 EVT_BEGIN(levelUpScript)
+  USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_FF_LEVELUP1"))
   USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(level_up), 0, 0)
-  USER_FUNC(spm::evt_msg::evt_msg_select, 1, PTR(levelOptions))
-  USER_FUNC(spm::evt_msg::evt_msg_continue)
+  DO(0)
+    USER_FUNC(customwin::EvtCWSelectEntry, PTR("levelup"), customwin::CWSELECT_DEFAULT, PTR("Level up!"), PTR("Select a stat to level up!"), 0, 0)
+    USER_FUNC(customwin::EvtCWSelectSetBGColor, PTR("levelup"), PTR(accessSelectBgCols), 8)
+    USER_FUNC(customwin::EvtCWSelectAddListing, PTR("levelup"), PTR("+1 ATK"), PTR(leveluptut), spm::icondrv::ICON_POWER_PLUS, 0, 0, 0)
+    USER_FUNC(customwin::EvtCWSelectAddListing, PTR("levelup"), PTR("+5 Max HP"), PTR(leveluptut), 1609, 0, 0, 0)
+    USER_FUNC(customwin::EvtCWSelectAddListing, PTR("levelup"), PTR("+5 Max FP"), PTR(leveluptut), 1608, 0, 0, 0)
+    USER_FUNC(customwin::EvtCWSelectAddListing, PTR("levelup"), PTR("+3 Max BP"), PTR(leveluptut), 1610, 0, 0, 0)
+    USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("levelup"), 0, LW(0))
+    USER_FUNC(customwin::EvtCWSelectReset)
+    USER_FUNC(customwin::EvtCWSelectDelete, PTR("levelup"))
+    IF_EQUAL(LW(0), GSW(1820))
+      USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR(level_up_fail), 0, 0)
+      SET(LW(0), -1)
+    END_IF()
+    IF_NOT_EQUAL(LW(0), -1)
+      DO_BREAK()
+    END_IF()
+    WAIT_FRM(1)
+  WHILE()
+  SET(GSW(1820), LW(0))
   SWITCH(LW(0))
     CASE_EQUAL(0)
       USER_FUNC(spm::evt_pouch::evt_pouch_get_attack, LW(1))
@@ -603,6 +1032,10 @@ EVT_BEGIN(levelUpScript)
       USER_FUNC(setMaxBP, LW(1))
       USER_FUNC(addBP, 3)
   END_SWITCH()
+  USER_FUNC(spm::evt_pouch::evt_pouch_get_max_hp, LW(0))
+  USER_FUNC(spm::evt_pouch::evt_pouch_set_hp, LW(0))
+  USER_FUNC(getMaxFP, LW(1))
+  USER_FUNC(setFP, LW(1))
   RETURN()
 EVT_END()
 
@@ -705,29 +1138,20 @@ EVT_BEGIN(rpgDeathHandler)
   IF_NOT_FLAG(LW(0), 0x8000)
       RETURN()
   END_IF()
-  USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("D_4"), 0)
   USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_MARIO_CRUSH1"))
   USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_LAND_COMICAL1"))
   WAIT_MSEC(1000)
   USER_FUNC(spm::evt_pouch::evt_pouch_check_have_item, 84, LW(0)) //checks if mario has a life shroom
   IF_EQUAL(LW(0), 0) //if not, rpg death screen plays
-      USER_FUNC(spm::evt_mario::evt_mario_get_character, LW(0))
-      SWITCH(LW(0))
-          CASE_EQUAL(0)
-              USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_107"))
-          CASE_EQUAL(2)
-              USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_108"))
-          CASE_EQUAL(3)
-              USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_109"))
-      END_SWITCH()
       USER_FUNC(spm::evt_fade::evt_fade_entry, 65538, 1000, 0, 0, 0, 255)
       USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
       USER_FUNC(mod::rpg_off)
-      USER_FUNC(rpg_set_dialogue, PTR(stg7_2_133_2_002))
+      USER_FUNC(set_pre_battle_cutscene, 0)
       USER_FUNC(spm::evt_seq::evt_seq_set_seq, 4, 0, 0)
   ELSE() //if yes, life shroom revives the party
       USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(0))
+      USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
       USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_110"), LW(0))
       USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_KINKYU_KINOKO1"))
       USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_RECOVER_HP_EFFECT_SMALL1"))
@@ -773,11 +1197,17 @@ IF_FLAG(LW(0), 0x8000)
         WAIT_MSEC(1000)
         DELETE_EVT(LW(10))
         USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc1"), LW(5), LW(6), LW(7))
-        IF_EQUAL(LF(2), 0)
+        USER_FUNC(ip::evt_pouch_check_badge_equipped, 2, LW(11))
+        IF_EQUAL(LW(11), 0)
           USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 0, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
           USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
+          USER_FUNC(rpg_npc_invert_xp, 0, LW(11))
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("score"), 1, LW(5), LW(6), LW(7), LW(11), 1, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_DOWN_POINT1"))
         ELSE()
           USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 13, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(rpg_npc_get_xp, 0, LW(11))
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("score"), 1, LW(5), LW(6), LW(7), LW(11), 1, 0, 0, 0, 0, 0, 0)
         END_IF()
         USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("npc1"))
         USER_FUNC(npc_change_name, PTR("npc1"), PTR("deadNPC"))
@@ -795,8 +1225,18 @@ IF_FLAG(LW(0), 0x8000)
         WAIT_MSEC(1000)
         DELETE_EVT(LW(10))
         USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc2"), LW(5), LW(6), LW(7))
-        USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 0, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
-        USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
+        USER_FUNC(ip::evt_pouch_check_badge_equipped, 2, LW(11))
+        IF_EQUAL(LW(11), 0)
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 0, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
+          USER_FUNC(rpg_npc_invert_xp, 1, LW(11))
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("score"), 1, LW(5), LW(6), LW(7), LW(11), 1, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_DOWN_POINT1"))
+        ELSE()
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 13, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(rpg_npc_get_xp, 1, LW(11))
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("score"), 1, LW(5), LW(6), LW(7), LW(11), 1, 0, 0, 0, 0, 0, 0)
+        END_IF()
         USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("npc2"))
         USER_FUNC(npc_change_name, PTR("npc2"), PTR("deadNPC"))
         USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj2"))
@@ -813,8 +1253,18 @@ IF_FLAG(LW(0), 0x8000)
         WAIT_MSEC(1000)
         DELETE_EVT(LW(10))
         USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc3"), LW(5), LW(6), LW(7))
-        USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 0, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
-        USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
+        USER_FUNC(ip::evt_pouch_check_badge_equipped, 2, LW(11))
+        IF_EQUAL(LW(11), 0)
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 0, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(spm::evt_pouch::evt_pouch_increment_enemies_defeated)
+          USER_FUNC(rpg_npc_invert_xp, 2, LW(11))
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("score"), 1, LW(5), LW(6), LW(7), LW(11), 1, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_DOWN_POINT1"))
+        ELSE()
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("kemuri_test"), 13, LW(5), LW(6), LW(7), FLOAT(2.0), 0, 0, 0, 0, 0, 0, 0)
+          USER_FUNC(rpg_npc_get_xp, 2, LW(11))
+          USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("score"), 1, LW(5), LW(6), LW(7), LW(11), 1, 0, 0, 0, 0, 0, 0)
+        END_IF()
         USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("npc3"))
         USER_FUNC(npc_change_name, PTR("npc3"), PTR("deadNPC"))
         USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj3"))
@@ -827,15 +1277,6 @@ IF_FLAG(LW(0), 0x8000)
     USER_FUNC(evt_item_entry_autoname, 0, 1, 0, LW(5), LW(6), LW(7), 0xd, 0, 0, 0)
   WHILE()
 ELSE()
-/*
-  IF_FLAG(LW(0), 0x1)
-      USER_FUNC(spm::an2_08::evt_rpg_status_remove, 0, UW(0), 1)
-      USER_FUNC(get_rpg_name_by_id, UW(0), LW(1))
-      USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-      USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_115"), LW(1))
-      USER_FUNC(spm::evt_msg::evt_msg_continue)
-  END_IF()
-*/
 END_IF()
 RETURN()
 EVT_END()
@@ -1126,12 +1567,93 @@ EVT_BEGIN(rpg_jump)
   RETURN()
 EVT_END()
 
+EVT_BEGIN(bowser_attack) 
+  USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("AC_7"), 0)
+  BROTHER_EVT_ID(LW(2))
+    SET(LW(11), 0)
+    SETF(LW(10), FLOAT(0.0))
+    DO(0)
+      USER_FUNC(mario_rotate, LW(10))
+      ADD(LW(11), 1)
+      ADDF(LW(10), FLOAT(25.0))
+      WAIT_FRM(1)
+    WHILE()
+  END_BROTHER()
+  WAIT_FRM(20)
+  USER_FUNC(spm::evt_ac::evt_ac_entry, PTR("ac"), 12)
+  USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("ac"), LW(8))
+  USER_FUNC(spm::evt_ac::evt_ac_delete, PTR("ac"))
+  IF_EQUAL(LW(8), 7)
+    SWITCH(UW(0))
+      CASE_EQUAL(0)
+        USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc1"), LW(5), LW(6), LW(7))
+      CASE_EQUAL(1)
+        USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc2"), LW(5), LW(6), LW(7))
+      CASE_EQUAL(2)
+        USER_FUNC(spm::evt_npc::evt_npc_get_position, PTR("npc3"), LW(5), LW(6), LW(7))
+    END_SWITCH()
+    INLINE_EVT()
+      WAIT_FRM(1)
+      USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("AC_7"), 0)
+    END_INLINE()
+    USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 50, 500)
+    USER_FUNC(spm::an2_08::evt_rpg_calc_damage_to_enemy, UW(0), 0, LW(10))
+    MUL(LW(10), 2)
+    ADD(LW(10), 1)
+    USER_FUNC(displayDamage, LW(5), LW(6), LW(7), LW(10))
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon_character, PTR("SFX_P_V_MARIO_ATTACK1"), PTR("SFX_P_V_PEACH_ATTACK1"), PTR("SFX_P_V_KOOPA_ATTACK1"), PTR("SFX_P_V_LUIGI_ATTACK1"))
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_SMASH1"))
+    DELETE_EVT(LW(2))
+    USER_FUNC(mario_rotate, FLOAT(0.0))
+    USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), LW(10), 0, LW(0))
+    BROTHER_EVT_ID(LW(2))
+      RUN_CHILD_EVT(runEnemyDeath)
+    END_BROTHER()
+    RUN_EVT(damageAnims)
+    INLINE_EVT()
+      WAIT_FRM(31)
+      USER_FUNC(enable_disable_stylish, 1)
+      WAIT_FRM(9)
+      USER_FUNC(check_stylish, 9, LW(11))
+      IF_EQUAL(LW(11), 1)
+        USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("AC_5"), 0)
+        USER_FUNC(spm::evt_sub::evt_sub_random, 50, LW(11))
+        ADD(LW(11), 50)
+        USER_FUNC(spm::an2_08::evt_rpg_add_xp, LW(11))
+        USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_ACROBAT_RENZOKU1"))
+        USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("nice"), UW(6), 150, 0, 0, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0) 
+        RUN_EVT(increase_stylish)
+      END_IF()
+    END_INLINE()
+    SUB(LW(5), FLOAT(50.0))
+    USER_FUNC(spm::evt_mario::evt_mario_jump_to, LW(5), LW(6), LW(7), 50, 500)
+    SET(LW(5), UW(4))
+    USER_FUNC(spm::evt_mario::evt_mario_pos_change, LW(5), LW(7), FLOAT(180.0))
+    USER_FUNC(spm::evt_mario::evt_mario_set_pos, LW(5), FLOAT(0.0), LW(7))
+    USER_FUNC(spm::evt_mario::evt_mario_direction_face, 90, 200)
+    DO(0)
+      CHK_EVT(LW(2), LW(0))
+      IF_EQUAL(LW(0), 0)
+        DO_BREAK()
+      END_IF()
+      WAIT_FRM(1)
+    WHILE()
+  ELSE()
+    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_HELWANWAN_MISS1"))
+    WAIT_MSEC(1000)
+  END_IF()
+  RETURN()
+EVT_END()
+
 EVT_BEGIN(attack)
     SET(UW(0), LW(2))
-    USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
-    USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_004"), LW(10))
     USER_FUNC(enable_disable_rpg_menu, 0)
     USER_FUNC(spm::evt_msg::evt_msg_continue)
+    USER_FUNC(spm::evt_mario::evt_mario_get_character, LW(5))
+    IF_EQUAL(LW(5), 2)
+      RUN_CHILD_EVT(bowser_attack)
+      RETURN()
+    END_IF()
     USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
     SET(LW(5), UW(4))
     ADD(LW(5), 150)
@@ -1152,7 +1674,7 @@ EVT_BEGIN(attack)
     USER_FUNC(get_rpg_enemy_damage_script, LW(2), LW(14))
     IF_NOT_EQUAL(LW(14), 0)
       SET(UW(0), LW(2))
-      SWITCH(LW(2))
+      SWITCH(UW(0))
         CASE_EQUAL(0)
           SET(LW(15), PTR("npc1"))
         CASE_EQUAL(1)
@@ -1163,7 +1685,7 @@ EVT_BEGIN(attack)
       RUN_CHILD_EVT(LW(14))
     ELSE()
       SET(UW(0), LW(2))
-      SWITCH(LW(2))
+      SWITCH(UW(0))
         CASE_EQUAL(0)
           SET(LW(15), PTR("mobj1"))
         CASE_EQUAL(1)
@@ -1207,30 +1729,52 @@ EVT_BEGIN(attack)
     RUN_CHILD_EVT(runEnemyDeath)
     USER_FUNC(ac_success_reset)
     USER_FUNC(enable_disable_rpg_menu, 0)
-    /*
-    DO(0)
-      CHK_EVT(LW(8), LW(0))
-      IF_EQUAL(LW(0), 0)
-        DO_BREAK()
-      END_IF()
-      WAIT_FRM(1)
-    WHILE()*/
     SET(LF(2), 0)
     RETURN()
 EVT_END()
 
 EVT_BEGIN(technique)
-SET(UW(0), LW(4))
-USER_FUNC(osReportLW, LW(4))
+USER_FUNC(enable_disable_rpg_menu, 0)
+USER_FUNC(spm::evt_msg::evt_msg_continue)
+USER_FUNC(rpg_populate_techniques, LW(10), LW(11))
+IF_EQUAL(LW(11), 0)
+  SET(LF(1), 1)
+  RETURN()
+END_IF()
+USER_FUNC(customwin::EvtCWSelectEntry, PTR("techniques"), customwin::CWSELECT_SHOP, PTR("Techniques"), PTR("Select a technique!"), LW(10), LW(11))
+USER_FUNC(customwin::EvtCWSelectSetShopIcon, PTR("techniques"), 1600, FLOAT(0.6f))
+USER_FUNC(customwin::EvtCWSelectSetBGColor, PTR("techniques"), PTR(accessSelectBgCols), 8)
+USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("techniques"), 0, LW(1))
+USER_FUNC(customwin::EvtCWSelectReset)
+USER_FUNC(customwin::EvtCWSelectDelete, PTR("techniques"))
+IF_EQUAL(LW(1), -1)
+  SET(LF(1), 1)
+  RETURN()
+END_IF()
+WAIT_FRM(2)
 USER_FUNC(spm::evt_mario::evt_mario_get_character, LW(10))
-USER_FUNC(rpg_get_technique_index, LW(1))
 SWITCH(LW(10))
     CASE_EQUAL(0) //Mario
-        USER_FUNC(osReportLW, LW(1))
         SWITCH(LW(1))
           CASE_EQUAL(0)
-            USER_FUNC(enable_disable_rpg_menu, 0)
-            USER_FUNC(spm::evt_msg::evt_msg_continue)
+            USER_FUNC(ring_init_battle_pixl, spm::icondrv::ICON_TIPPI)
+            SET(LW(2), 0)
+            SET(LW(6), 0)
+            DO(0)
+              USER_FUNC(ring_battle_pixl_main, LW(0), LW(1), LW(2), LW(3), LW(4), LW(6))
+              USER_FUNC(ring_display_battle)
+              WAIT_FRM(1)
+              IF_EQUAL(LW(6), 1)
+                DO_BREAK()
+              END_IF()
+            WHILE()
+            USER_FUNC(ring_delete_battle)
+            IF_EQUAL(LW(0), -1)
+              SET(LF(1), 1)
+              RETURN()
+            END_IF()
+            SET(LW(4), LW(2))
+            SET(UW(0), LW(4))
             USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_SEARCH_DESIDE1_TV"))
             USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
             INLINE_EVT()
@@ -1250,8 +1794,6 @@ SWITCH(LW(10))
           CASE_ETC()
             USER_FUNC(ip::get_badge_script_by_technique, LW(1), LW(1))
             IF_NOT_EQUAL(LW(1), 0)
-              USER_FUNC(enable_disable_rpg_menu, 0)
-              USER_FUNC(spm::evt_msg::evt_msg_continue)
               RUN_CHILD_EVT(LW(1))
             END_IF()
         END_SWITCH()
@@ -1266,8 +1808,6 @@ SWITCH(LW(10))
             USER_FUNC(spm::evt_eff::evt_eff, 0, PTR("nice"), UW(6), -250, 0, 0, FLOAT(1.0), 0, 0, 0, 0, 0, 0, 0)
             RUN_CHILD_EVT(increase_stylish)
             USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("AC_7"), 0)
-            USER_FUNC(enable_disable_rpg_menu, 0)
-            USER_FUNC(spm::evt_msg::evt_msg_continue)
             WAIT_MSEC(1000)
           CASE_EQUAL(1)
             IF_EQUAL(UW(6), 4)
@@ -1278,23 +1818,21 @@ SWITCH(LW(10))
                 USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("M_1B"), 0) 
               END_INLINE()
               USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_ITEM_USE1"))
-              USER_FUNC(enable_disable_rpg_menu, 0)
-              USER_FUNC(spm::evt_msg::evt_msg_continue)
               USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
               ADDF(LW(6), FLOAT(90.0))
               USER_FUNC(spm::evt_eff::evt_eff, PTR("hearts"), PTR("pure_heart"), 0, LW(5), LW(6), LW(7), 0, 0, 0, 0, 0, 0, 0, 0)
               USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_PUREHEART1"))
+              USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(0))
               WAIT_FRM(60)
               DO(30)
                 ADDF(LW(6), FLOAT(10.0))
                 USER_FUNC(spm::bos_01::evt_bos_01_pure_heart_set_pos, PTR("hearts"), LW(5), LW(6), LW(7))
                 WAIT_FRM(1)
               WHILE()
-              USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(0))
               USER_FUNC(spm::evt_snd::evt_snd_sfx_fadeout, LW(0), 500)
               USER_FUNC(spm::evt_eff::evt_eff_softdelete, PTR("hearts"))
               RUN_CHILD_EVT(PTR(spm::item_event_data::item_data_map_darken_evt))
-              USER_FUNC(spm::evt_ac::evt_ac_entry, PTR("ac"), 14)
+              USER_FUNC(spm::evt_ac::evt_ac_entry, PTR("ac"), 21)
               USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("ac"), LW(8))
               USER_FUNC(spm::evt_ac::evt_ac_delete, PTR("ac"))
               RUN_CHILD_EVT(PTR(spm::item_event_data::item_data_map_lighten_evt))
@@ -1314,7 +1852,6 @@ SWITCH(LW(10))
               USER_FUNC(flower_effect, 4)
               WAIT_MSEC(1000)
             ELSE()
-              USER_FUNC(spm::evt_msg::evt_msg_continue)
               USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
               USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(stylish_fail))
               SET(LF(1), 1)
@@ -1328,8 +1865,6 @@ SWITCH(LW(10))
                 USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("M_1B"), 0) 
               END_INLINE()
               USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_ITEM_USE1"))
-              USER_FUNC(enable_disable_rpg_menu, 0)
-              USER_FUNC(spm::evt_msg::evt_msg_continue)
               USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
               ADDF(LW(6), FLOAT(90.0))
               USER_FUNC(spm::evt_eff::evt_eff, PTR("hearts"), PTR("pure_heart"), 1, LW(5), LW(6), LW(7), 0, 0, 0, 0, 0, 0, 0, 0)
@@ -1430,23 +1965,170 @@ SWITCH(LW(10))
               RUN_CHILD_EVT(soul_stopper_kill)
               WAIT_FRM(30)
             ELSE()
-              USER_FUNC(spm::evt_msg::evt_msg_continue)
+              USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+              USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(stylish_fail))
+              SET(LF(1), 1)
+            END_IF()
+          CASE_EQUAL(3)
+            IF_EQUAL(UW(6), 4)
+              SET(UW(6), 0)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("M_1A"), 0) 
+              INLINE_EVT()
+                USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
+                USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("M_1B"), 0) 
+              END_INLINE()
+              USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_ITEM_USE1"))
+              USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+              ADDF(LW(6), FLOAT(90.0))
+              USER_FUNC(spm::evt_eff::evt_eff, PTR("hearts"), PTR("pure_heart"), 2, LW(5), LW(6), LW(7), 0, 0, 0, 0, 0, 0, 0, 0)
+              USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_PUREHEART1"))
+              WAIT_FRM(60)
+              DO(30)
+                ADDF(LW(6), FLOAT(10.0))
+                USER_FUNC(spm::bos_01::evt_bos_01_pure_heart_set_pos, PTR("hearts"), LW(5), LW(6), LW(7))
+                WAIT_FRM(1)
+              WHILE()
+              USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(0))
+              USER_FUNC(spm::evt_snd::evt_snd_sfx_fadeout, LW(0), 500)
+              USER_FUNC(spm::evt_eff::evt_eff_softdelete, PTR("hearts"))
+              USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("M_2A"), 0) 
+              USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("M_2B"), 0) 
+              USER_FUNC(spm::evt_eff::evt_eff_sundale_support, LW(5), LW(6), LW(7))
+              WAIT_MSEC(1500)
+              SET(UW(0), 0)
+              RUN_CHILD_EVT(purify_evt)
+              SET(UW(0), 1)
+              RUN_CHILD_EVT(purify_evt)
+              SET(UW(0), 2)
+              RUN_CHILD_EVT(purify_evt)
+            ELSE()
               USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
               USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(stylish_fail))
               SET(LF(1), 1)
             END_IF()
         END_SWITCH()
     CASE_EQUAL(2) //Bowser
-        USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_014"))
-        USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_KOOPA_FIRE1"))
-        USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_KOOPA_FLAME1"))
-        USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(0))
-        WAIT_MSEC(600)
-        USER_FUNC(spm::evt_snd::evt_snd_sfx_fadeout, LW(0), 1000)
-        SET(LW(10), LW(4))
-        RUN_CHILD_EVT(mod::rpg_snd_miss_evt)
-        USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_015"), LW(3))
-        USER_FUNC(spm::evt_msg::evt_msg_continue)
+        SWITCH(LW(1))
+          CASE_EQUAL(0)
+            INLINE_EVT()
+              USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+              SET(LW(5), UW(4))
+              ADD(LW(5), 130)
+              ADD(LW(7), 5)
+              USER_FUNC(spm::evt_mario::evt_mario_pos_change, LW(5), LW(7), FLOAT(34.0))
+            END_INLINE()
+            USER_FUNC(spm::evt_ac::evt_ac_entry, PTR("ac"), 3)
+            USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("ac"), LW(7))
+            USER_FUNC(spm::evt_ac::evt_ac_delete, PTR("ac"))
+            IF_EQUAL(LW(7), 3)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_a"), 0) 
+              USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_b"), 0) 
+              USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_c"), 0) 
+              USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+              ADD(LW(5), 34)
+              ADD(LW(6), 18)
+              SUB(LW(7), 3)
+              USER_FUNC(eff_spawn_bowser_fire, LW(5), LW(6), LW(7), FLOAT(1.1), 8, 0, FLOAT(180.0), PTR("b_p_fire"))
+              USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_V_KOOPA_FIRE1"))
+              USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_KOOPA_FLAME1"))
+              USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(14))
+              WAIT_MSEC(500)
+              USER_FUNC(spm::evt_eff::evt_eff_softdelete, PTR("b_p_fire"))
+              USER_FUNC(spm::evt_snd::evt_snd_sfx_fadeout, LW(14), 1000)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_d"), 0) 
+              INLINE_EVT()
+                USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
+                USER_FUNC(spm::evt_mario::evt_mario_pos_change, UW(4), FLOAT(0.0), FLOAT(180.0))
+                USER_FUNC(spm::evt_mario::evt_mario_direction_face, 90, 200)
+              END_INLINE()
+              SET(UW(0), 0)
+              SET(LW(12), 1)
+              SET(LW(13), 1)
+              SET(LW(14), 1)
+              USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 0, 0, LW(0))
+              IF_NOT_FLAG(LW(0), 0x8000)
+                SET(LW(12), 0)
+                RUN_CHILD_EVT(bowserFireDamageEvt)
+                WAIT_MSEC(500)
+              END_IF()
+              SET(UW(0), 1)
+              USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 0, 0, LW(0))
+              IF_NOT_FLAG(LW(0), 0x8000)
+                SET(LW(13), 0)
+                RUN_CHILD_EVT(bowserFireDamageEvt)
+                WAIT_MSEC(500)
+              END_IF()
+              SET(UW(0), 2)
+              USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 0, 0, LW(0))
+              IF_NOT_FLAG(LW(0), 0x8000)
+                SET(LW(14), 0)
+                RUN_CHILD_EVT(bowserFireDamageEvt)
+                WAIT_MSEC(500)
+              END_IF()
+              IF_EQUAL(LW(12), 0)
+                SET(UW(0), 0)
+                USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 0, 0, LW(0))
+                RUN_CHILD_EVT(runEnemyDeath)
+              END_IF()
+              IF_EQUAL(LW(13), 0)
+                SET(UW(0), 1)
+                USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 0, 0, LW(0))
+                RUN_CHILD_EVT(runEnemyDeath)
+              END_IF()
+              IF_EQUAL(LW(14), 0)
+                SET(UW(0), 2)
+                USER_FUNC(spm::an2_08::evt_rpg_enemy_take_damage, UW(0), 0, 0, LW(0))
+                RUN_CHILD_EVT(runEnemyDeath)
+              END_IF()
+              WAIT_MSEC(500)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pos, UW(4), FLOAT(0.0), LW(7))
+              USER_FUNC(spm::evt_mario::evt_mario_direction_face, 90, 200)
+              USER_FUNC(setFP, 0)
+            ELSE()
+
+            END_IF()
+          CASE_EQUAL(1)
+              USER_FUNC(spm::evt_ac::evt_ac_entry, PTR("vore"), 7)
+              WAIT_FRM(5)
+              USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
+              SUB(LW(5), 10)
+              SUB(LW(6), 60)
+              SUB(LW(7), 15)
+              USER_FUNC(spm::evt_npc::evt_npc_entry, PTR("vacuum_goomba"), PTR("e_kuribo"), 0)
+              USER_FUNC(spm::evt_npc::evt_npc_set_color, PTR("vacuum_goomba"), 255, 255, 255, 0)
+              USER_FUNC(spm::evt_npc::evt_npc_set_position, PTR("vacuum_goomba"), LW(5), LW(6), LW(7))
+              USER_FUNC(spm::evt_npc::evt_npc_get_axis_movement_unit, PTR("vacuum_goomba"), LW(0))
+              MUL(LW(0), -1)
+              USER_FUNC(spm::evt_npc::evt_npc_set_axis_movement_unit, PTR("vacuum_goomba"), LW(0))
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_a"), 0) 
+              USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_b"), 0) 
+              USER_FUNC(spm::evt_mario::evt_mario_wait_anim)
+              USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("A_1_c"), 0) 
+              USER_FUNC(spawn_robo_eff, PTR("vacuum_goomba"), PTR("b_p_vacuum"))
+              USER_FUNC(manage_vacuum)
+              USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_EVT_VACUUM"))
+              USER_FUNC(spm::evt_ac::evt_ac_return_results, PTR("vore"), LW(7))
+              USER_FUNC(osReportLW, LW(7))
+              WAIT_FRM(1)
+              USER_FUNC(spm::evt_ac::evt_ac_delete, PTR("vore"))
+              IF_LARGE(LW(7), 4)
+                WAIT_FRM(200)
+              ELSE()
+                WAIT_FRM(5)
+              END_IF()
+              USER_FUNC(spm::evt_eff::evt_eff_softdelete, PTR("b_p_vacuum"))
+              INLINE_EVT()
+                WAIT_FRM(60)
+                USER_FUNC(spm::evt_npc::evt_npc_delete, PTR("vacuum_goomba"))
+                USER_FUNC(npc_change_name, PTR("vacuum_goomba"), PTR("deadVacuumGoomba"))
+              END_INLINE()
+            
+        END_SWITCH()
     CASE_EQUAL(3) //Luigi
         USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_017"), LW(3))
         USER_FUNC(spm::evt_sub::evt_sub_random, 1000, LW(10))
@@ -1500,12 +2182,30 @@ EVT_BEGIN(slim_jump_evt)
 EVT_END()
 
 EVT_BEGIN(pixls)
+    USER_FUNC(enable_disable_rpg_menu, 0)
+    USER_FUNC(spm::evt_msg::evt_msg_continue)
     SET(UW(0), LW(4))
+    USER_FUNC(rpg_populate_pixls, LW(10), LW(11))
+    IF_EQUAL(LW(11), 0)
+      SET(LF(1), 1)
+      RETURN()
+    END_IF()
+    USER_FUNC(customwin::EvtCWSelectEntry, PTR("pixls"), customwin::CWSELECT_SHOP, PTR("Pixls"), PTR("Select a Pixl!"), LW(10), LW(11))
+    USER_FUNC(customwin::EvtCWSelectSetShopIcon, PTR("pixls"), 1600, FLOAT(0.6f))
+    USER_FUNC(customwin::EvtCWSelectSetBGColor, PTR("pixls"), PTR(accessSelectBgCols), 8)
+    USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("pixls"), 0, LW(0))
+    USER_FUNC(customwin::EvtCWSelectGetSelectionItemId, LW(0), LW(2))
+    USER_FUNC(customwin::EvtCWSelectReset)
+    USER_FUNC(customwin::EvtCWSelectDelete, PTR("pixls"))
+    IF_EQUAL(LW(2), -1)
+      SET(LF(1), 1)
+      RETURN()
+    END_IF()
+    USER_FUNC(osReportLW, LW(2))
     SWITCH(LW(2))
         CASE_EQUAL(220) //Tippi
             SET(LW(12), 0)
             SET(GSWF(1801), 1)
-            USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(tippi_pacify))
             USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_E_PANSY_SING1"))
             BROTHER_EVT_ID(LW(2))
               USER_FUNC(spm::an2_08::evt_rpg_enemy_death_check, 0, LW(10))
@@ -1624,11 +2324,29 @@ EVT_BEGIN(pixls)
               END_IF()
               WAIT_FRM(1)
             WHILE()
+            USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
             USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 1, PTR(tippi_pacify_success), UW(5))
             USER_FUNC(spm::evt_msg::evt_msg_continue)
         CASE_EQUAL(221) //Thoreau
-            USER_FUNC(enable_disable_rpg_menu, 0)
-            USER_FUNC(spm::evt_msg::evt_msg_continue)
+            USER_FUNC(ring_init_battle_pixl, spm::icondrv::ICON_THOREAU)
+            SET(LW(2), 0)
+            SET(LW(6), 0)
+            DO(0)
+              USER_FUNC(ring_battle_pixl_main, LW(0), LW(1), LW(2), LW(3), LW(4), LW(6))
+              USER_FUNC(osReportLW, LW(2))
+              USER_FUNC(ring_display_battle)
+              USER_FUNC(osReportLW, LW(2))
+              WAIT_FRM(1)
+              IF_EQUAL(LW(6), 1)
+                DO_BREAK()
+              END_IF()
+            WHILE()
+            USER_FUNC(ring_delete_battle)
+            IF_EQUAL(LW(0), -1)
+              SET(LF(1), 1)
+              RETURN()
+            END_IF()
+            SET(LW(4), LW(2))
             SET(UW(0), LW(4))
             SWITCH(LW(4))
               CASE_EQUAL(0)
@@ -1873,8 +2591,26 @@ EVT_BEGIN(pixls)
             END_IF()
             SET(LW(1), LW(3))
         CASE_EQUAL(222) //Boomer
-            SET(UW(0), LW(4))
-            SWITCH(LW(4))
+            USER_FUNC(enable_disable_rpg_menu, 0)
+            USER_FUNC(ring_init_battle_pixl, spm::icondrv::ICON_BOOMER)
+            SET(LW(0), 0)
+            SET(LW(2), 0)
+            SET(LW(6), 0)
+            DO(0)
+              USER_FUNC(ring_battle_pixl_main, LW(0), LW(1), LW(2), LW(3), LW(4), LW(6))
+              USER_FUNC(ring_display_battle)
+              WAIT_FRM(1)
+              IF_EQUAL(LW(6), 1)
+                DO_BREAK()
+              END_IF()
+            WHILE()
+            USER_FUNC(ring_delete_battle)
+            IF_EQUAL(LW(0), -1)
+              SET(LF(1), 1)
+              RETURN()
+            END_IF()
+            SET(UW(0), LW(2))
+            SWITCH(UW(0))
               CASE_EQUAL(0)
                 SET(LW(15), PTR("npc1"))
               CASE_EQUAL(1)
@@ -1884,22 +2620,10 @@ EVT_BEGIN(pixls)
             END_SWITCH()
             USER_FUNC(spm::evt_pouch::evt_pouch_set_pixl_selected, 222)
             USER_FUNC(spm::evt_fairy::evt_fairy_reset)
-            USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
-            USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_025"), LW(10))
-            /*
-            INLINE_EVT()
-            USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_BOMB_FUSE1"))
-            USER_FUNC(spm::evt_snd::evt_snd_get_last_sfx_id, LW(0))
-            WAIT_MSEC(600)
-            USER_FUNC(spm::evt_snd::evt_snd_sfxoff, LW(0))
-            END_INLINE()
-            */
             USER_FUNC(spm::evt_sub::evt_sub_random, 1000, LW(10))
             USER_FUNC(mod::getFP, LW(5))
-            IF_LARGE(LW(5), 0)
-                USER_FUNC(enable_disable_rpg_menu, 0)
-                USER_FUNC(spm::evt_msg::evt_msg_continue)
-                USER_FUNC(mod::subtractFP, 1)
+            IF_LARGE(LW(5), 1)
+                USER_FUNC(mod::subtractFP, 2)
                 USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(5), LW(6), LW(7))
                 USER_FUNC(spm::evt_mario::evt_mario_get_height, LW(8))
                 ADD(LW(6), LW(8))
@@ -1930,7 +2654,6 @@ EVT_BEGIN(pixls)
                 END_IF()
             ELSE()
                 USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_HELWANWAN_MISS1"))
-                USER_FUNC(spm::evt_msg::evt_msg_continue)
                 RETURN()
             END_IF()
             IF_SMALL(LW(10), 900)
@@ -2002,13 +2725,13 @@ EVT_BEGIN(pixls)
             USER_FUNC(spm::evt_fairy::evt_fairy_reset)
             USER_FUNC(mod::subtractFP, 1)
             USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
-            USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_028"), LW(10))
             USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_SLIT_RETURN1"))
             USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_F_SLIT_RETURN1"))
+            USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
             USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_029"), LW(10))
             USER_FUNC(spm::evt_msg::evt_msg_continue)
             USER_FUNC(evt_rpg_add_player_effect, 1, 0, 2)
-            //USER_FUNC(spm::an2_08::evt_rpg_menu_effects_handler, 1, 1)
+            USER_FUNC(spm::an2_08::evt_rpg_menu_effects_handler, 1, 1)
             SET(LF(1), 1)
         ELSE()
           USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_EVT_HELWANWAN_MISS1"))
@@ -2328,10 +3051,24 @@ EVT_BEGIN(pixls)
 EVT_END()
 
 EVT_BEGIN(items)
-    SET(UW(0), LW(4))
+    USER_FUNC(spm::evt_msg::evt_msg_continue)
+    USER_FUNC(enable_disable_rpg_menu, 0)
+    USER_FUNC(rpg_populate_items, LW(10), LW(11))
+    IF_EQUAL(LW(11), 0)
+      SET(LF(1), 1)
+      RETURN()
+    END_IF()
+    USER_FUNC(customwin::EvtCWSelectEntry, PTR("items"), customwin::CWSELECT_DEFAULT, PTR("Items"), PTR("Pick an item to use!"), LW(10), LW(11))
+    USER_FUNC(customwin::EvtCWSelectSetBGColor, PTR("items"), PTR(accessSelectBgCols), 8)
+    USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("items"), 0, LW(0))
+    USER_FUNC(customwin::EvtCWSelectGetSelectionItemId, LW(0), LW(2))
+    USER_FUNC(customwin::EvtCWSelectReset)
+    USER_FUNC(customwin::EvtCWSelectDelete, PTR("items"))
+    IF_EQUAL(LW(2), -1)
+      SET(LF(1), 1)
+      RETURN()
+    END_IF()
     USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
-    USER_FUNC(spm::evt_msg::evt_msg_fmt_str, 0, LW(15), PTR("stg7_2_133_2_061"), LW(1))
-    USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 1, LW(15), LW(10), LW(1))
     USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("I_2"), 0)
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_ITEM_USE1"))
     USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_ITEM_USE1"))
@@ -2699,18 +3436,12 @@ EVT_BEGIN(items)
             USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(5))
             USER_FUNC(spm::an2_08::evt_rpg_calc_item_stats, LW(2), LW(10), LW(6), LW(7)) //hp gain goes in LW 6, xp in LW 7
             IF_LARGE(LW(6), 0)
-                USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_KINKYU_KINOKO1"))
+                USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("I_2"), 0)
                 USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_RECOVER_HP_EFFECT_SMALL1"))
-                WAIT_MSEC(350)
-                USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_RECOVER_HP_SMALL1"))
-                USER_FUNC(spm::evt_sub::evt_sub_get_language, LW(8))
-                SWITCH(LW(8))
-                    CASE_EQUAL(3)
-                        USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_063"), LW(6), LW(5))
-                    CASE_ETC()
-                        USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_063"), LW(5), LW(6))
-                END_SWITCH()
+                USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(3), LW(4), LW(5))
+                USER_FUNC(spm::evt_eff::evt_eff, PTR("health"), PTR("spm_recovery"), LW(3), LW(4), LW(5), LW(6), 0, 0, 0, 0, 0, 0, 0, 0)
                 USER_FUNC(spm::evt_pouch::evt_pouch_add_hp, LW(6))
+                WAIT_MSEC(1500)
             END_IF()
             SWITCH(LW(2))
                 CASE_EQUAL(125)
@@ -2790,9 +3521,26 @@ EVT_BEGIN(items)
 EVT_END()
 
 EVT_BEGIN(switchChars)
-USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
-USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_CHANGE_LINE_DRAW1"))
-USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_P_CHANGE_LINE_DRAW1"))
+USER_FUNC(spm::evt_msg::evt_msg_continue)
+USER_FUNC(enable_disable_rpg_menu, 0)
+USER_FUNC(customwin::EvtCWSelectEntry, PTR("chars"), customwin::CWSELECT_DEFAULT, PTR("Characters"), PTR("Pick the new character to swap to!"), 0, 0)
+USER_FUNC(customwin::EvtCWSelectSetBGColor, PTR("chars"), PTR(accessSelectBgCols), 8)
+SET(LW(1), 216)
+DO(3)
+  USER_FUNC(spm::evt_pouch::evt_pouch_check_have_item, LW(1), LW(0))
+  IF_EQUAL(LW(0), 1)
+    USER_FUNC(customwin::EvtCWSelectAddItem, PTR("chars"), LW(1), 0, 0)
+  END_IF()
+  ADD(LW(1), 1)
+WHILE()
+USER_FUNC(customwin::EvtCWSelectMenuStart, PTR("chars"), 0, LW(0))
+USER_FUNC(customwin::EvtCWSelectGetSelectionItemId, LW(0), LW(2))
+USER_FUNC(customwin::EvtCWSelectReset)
+USER_FUNC(customwin::EvtCWSelectDelete, PTR("chars"))
+IF_EQUAL(LW(2), -1)
+  RETURN()
+END_IF()
+SUB(LW(2), 216)
 USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_CHANGE_LINE_DRAW1"))
 USER_FUNC(spm::evt_snd::evt_snd_sfx_wait_name, PTR("SFX_P_CHANGE_LINE_DRAW1"))
 SWITCH(LW(2))
@@ -2806,7 +3554,6 @@ SWITCH(LW(2))
         USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_P_V_DESIDE_LUIGI1"))
 END_SWITCH()
 USER_FUNC(spm::evt_mario::evt_mario_set_character, LW(2))
-USER_FUNC(spm::evt_msg::evt_msg_continue)
 RETURN()
 EVT_END()
 
@@ -2817,6 +3564,7 @@ EVT_BEGIN(escape)
     USER_FUNC(spm::evt_mario::evt_mario_direction_face, -90, 200)
     USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("R_1"), 0)
     WAIT_MSEC(200)
+    USER_FUNC(spm::evt_msg::evt_msg_continue)
     USER_FUNC(check_for_boss_fight, LW(6))
     IF_EQUAL(LW(6), 1)
       SET(LW(10), 1000)
@@ -2830,6 +3578,7 @@ EVT_BEGIN(escape)
     MUL(LW(7), 100)
     SUB(LW(10), LW(7))
     LBL(50)
+    USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
     IF_SMALL(LW(10), 100)
       USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_091"))
       SET(LF(0), 1)
@@ -2893,6 +3642,16 @@ EVT_BEGIN(playMusic)
     USER_FUNC(spm::evt_snd::evt_snd_bgmon_f_d, 0, PTR("BGM_MAP_STG2"), 1000)
     RETURN()
   END_IF()
+  USER_FUNC(compareStrings, LW(0), PTR("ta1_03"), LW(1))
+  IF_EQUAL(LW(1), 1)
+    USER_FUNC(spm::evt_snd::evt_snd_bgmon_f_d, 0, PTR("BGM_MAP_STG3_ROOM1"), 500)
+    RETURN()
+  END_IF()
+  USER_FUNC(compareStrings, LW(0), PTR("ta1_01"), LW(1))
+  IF_EQUAL(LW(1), 1)
+    USER_FUNC(spm::evt_snd::evt_snd_bgmon_f_d, 0, PTR("BGM_MAP_STG3"), 500)
+    RETURN()
+  END_IF()
 RETURN()
 EVT_END()
 
@@ -2910,29 +3669,6 @@ RETURN()
 EVT_END()
 
 EVT_BEGIN(rpg_check_win_or_continue_evt)
-    /*
-    USER_FUNC(spm::an2_08::evt_rpg_wakeup_check, 0, LW(0))
-    IF_NOT_EQUAL(LW(0), 0)
-        USER_FUNC(spm::an2_08::evt_rpg_underchomp_name_grab, 0, LW(1))
-        USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-        USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, LW(0), LW(1))
-        USER_FUNC(spm::evt_msg::evt_msg_continue)
-    END_IF()
-    USER_FUNC(spm::an2_08::evt_rpg_wakeup_check, 1, LW(0))
-    IF_NOT_EQUAL(LW(0), 0)
-        USER_FUNC(spm::an2_08::evt_rpg_underchomp_name_grab, 1, LW(1))
-        USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-        USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, LW(0), LW(1))
-        USER_FUNC(spm::evt_msg::evt_msg_continue)
-    END_IF()
-    USER_FUNC(spm::an2_08::evt_rpg_wakeup_check, 2, LW(0))
-    IF_NOT_EQUAL(LW(0), 0)
-        USER_FUNC(spm::an2_08::evt_rpg_underchomp_name_grab, 2, LW(1))
-        USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-        USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, LW(0), LW(1))
-        USER_FUNC(spm::evt_msg::evt_msg_continue)
-    END_IF()
-    */
     USER_FUNC(spm::an2_08::evt_rpg_effects_handle, 0, LW(0))
     IF_EQUAL(LW(0), 2)
         USER_FUNC(slim_off_on, 0)
@@ -2976,13 +3712,13 @@ EVT_BEGIN(rpg_check_win_or_continue_evt)
     END_IF()
     USER_FUNC(spm::an2_08::evt_rpg_effects_handle, 3, LW(0))
     IF_EQUAL(LW(0), 1)
-        RUN_CHILD_EVT(mod::marioRPGtakeDamage)
-        USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(1))
-        USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-        USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_119"), LW(1), 1)
-        USER_FUNC(spm::an2_08::evt_rpg_mario_take_damage, 1, 0, LW(1))
-        RUN_CHILD_EVT(mod::rpgDeathHandler) //80df1a00
-        USER_FUNC(spm::evt_msg::evt_msg_continue)
+        //RUN_CHILD_EVT(mod::marioRPGtakeDamage)
+        //USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(1))
+        //USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+        //USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_119"), LW(1), 1)
+        //USER_FUNC(spm::an2_08::evt_rpg_mario_take_damage, 1, 0, LW(1))
+        //RUN_CHILD_EVT(mod::rpgDeathHandler) //80df1a00
+        //USER_FUNC(spm::evt_msg::evt_msg_continue)
     ELSE()
         IF_EQUAL(LW(0), 2)
             USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(1))
@@ -3116,12 +3852,18 @@ EVT_BEGIN(rpg_check_win_or_continue_evt)
         RETURN()
     END_IF()
     INLINE_EVT()
-        USER_FUNC(spm::evt_snd::evt_snd_bgmoff, 0)
-        USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_EVT_STG7_RPG_FF1"))
-        //USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_MAP_STG4_4D1"))
-        //USER_FUNC(spm::evt_snd::evt_snd_envon_f, 0, PTR("ENV_AN2_08"), 1000)
+      USER_FUNC(getCurMap, LW(0))
+      USER_FUNC(compareStrings, LW(0), PTR("ta1_04"), LW(1))
+      IF_EQUAL(LW(1), 1)
+        WAIT_FRM(1)
+      ELSE()
+        USER_FUNC(get_post_battle_cutscene, LW(1))
+        IF_EQUAL(LW(1), 0)
+          USER_FUNC(spm::evt_snd::evt_snd_bgmoff, 0)
+          USER_FUNC(spm::evt_snd::evt_snd_bgmon, 2, PTR("BGM_EVT_STG7_RPG_FF1"))
+        END_IF()
+      END_IF()
     END_INLINE()
-    USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
     USER_FUNC(spm::an2_08::evt_rpg_point_calculation, 0, LW(11))
     USER_FUNC(spm::an2_08::evt_rpg_point_calculation, 1, LW(12))
     USER_FUNC(spm::an2_08::evt_rpg_point_calculation, 2, LW(13)) //fills the lws with points gained from the turn based combat
@@ -3129,6 +3871,15 @@ EVT_BEGIN(rpg_check_win_or_continue_evt)
     ADD(LW(11), LW(12))
     ADD(LW(11), LW(13))
     ADD(LW(11), LW(14)) //and adds them to a total here
+    USER_FUNC(get_post_battle_cutscene, LW(10))
+    IF_NOT_EQUAL(LW(10), 0)
+      RUN_CHILD_EVT(LW(10))
+      USER_FUNC(set_post_battle_cutscene, 0)
+      SET(LF(0), 1)
+      SET(LW(0), 1)
+      RETURN()
+    END_IF()
+    USER_FUNC(spm::an2_08::evt_rpg_char_get, LW(10))
     USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
     USER_FUNC(spm::evt_msg::evt_msg_print_add_insert, 0, PTR("stg7_2_133_2_008"), LW(10), LW(11))
     USER_FUNC(spm::evt_pouch::evt_pouch_add_xp, LW(11))
@@ -3161,18 +3912,20 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_mario::evt_mario_set_pos, LW(0), LW(1), LW(2))
   USER_FUNC(set_respawn_pos, LW(0), LW(1), LW(2))
   SET(UW(4), LW(0))
-  USER_FUNC(spm::evt_cam::evt_cam_get_pos, 5, 0, 0, LW(2))
-  ADD(LW(0), 100)
-  ADD(LW(1), 99)
-  SUB(LW(2), 300)
-  USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, LW(0), LW(1), LW(2), LW(0), LW(1), 300, 0, 11)
+  USER_FUNC(spm::evt_cam::evt_cam_get_pos, 5, LW(0), LW(1), LW(2))
+  USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(0), LW(1), LW(7))
+  ADD(LW(0), 125)
+  ADD(LW(1), 100)
+  SET(LW(2), LW(7))
+  ADD(LW(2), 355)
+  USER_FUNC(spm::evt_cam::evt_cam3d_evt_zoom_in, 0, LW(0), LW(1), LW(2), LW(0), LW(1), LW(7), 0, 11)
   WAIT_FRM(3)
   SET(UW(1), LW(0))
   SET(UW(2), LW(1))
   SET(UW(3), LW(2))
   USER_FUNC(spm::evt_mario::evt_mario_get_pos, LW(0), LW(1), LW(2))
   SET(LW(2), 0)
-  ADD(LW(0), 200)
+  ADD(LW(0), 190)
   USER_FUNC(get_rpg_enemy_info, 0, LW(3), LW(4), LW(5), LW(6))
   IF_EQUAL(LW(3), -1)
     GOTO(1)
@@ -3183,6 +3936,7 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_mobj::evt_mobj_set_position, PTR("mobj1"), LW(0), LW(1), LW(2))
   USER_FUNC(mobjChangeAnimPoseName, PTR("mobj1"), PTR("MOBJ_su_blank"))
   USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj1"))
+  USER_FUNC(spm::evt_mobj::evt_mobj_flag_onoff, 1, 0, PTR("mobj1"), 0x2)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc1"), 0, LW(0))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc1"), 1, LW(1))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc1"), 2, LW(2))
@@ -3197,7 +3951,7 @@ EVT_BEGIN(setup_fight)
     RUN_CHILD_EVT(LW(5))
   END_IF()
   LBL(1)
-  ADD(LW(0), 50)
+  ADD(LW(0), 60)
   USER_FUNC(get_rpg_enemy_info, 1, LW(3), LW(4), LW(5), LW(6))
   IF_EQUAL(LW(3), -1)
     GOTO(2)
@@ -3208,6 +3962,7 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_mobj::evt_mobj_set_position, PTR("mobj2"), LW(0), LW(1), LW(2))
   USER_FUNC(mobjChangeAnimPoseName, PTR("mobj2"), PTR("MOBJ_su_blank"))
   USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj2"))
+  USER_FUNC(spm::evt_mobj::evt_mobj_flag_onoff, 1, 0, PTR("mobj2"), 0x2)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc2"), 0, LW(0))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc2"), 1, LW(1))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc2"), 2, LW(2))
@@ -3222,7 +3977,7 @@ EVT_BEGIN(setup_fight)
     RUN_CHILD_EVT(LW(5))
   END_IF()
   LBL(2)
-  ADD(LW(0), 50)
+  ADD(LW(0), 60)
   USER_FUNC(get_rpg_enemy_info, 2, LW(3), LW(4), LW(5), LW(6))
   IF_EQUAL(LW(3), -1)
     GOTO(3)
@@ -3233,6 +3988,7 @@ EVT_BEGIN(setup_fight)
   USER_FUNC(spm::evt_mobj::evt_mobj_set_position, PTR("mobj3"), LW(0), LW(1), LW(2))
   USER_FUNC(mobjChangeAnimPoseName, PTR("mobj3"), PTR("MOBJ_su_blank"))
   USER_FUNC(spm::evt_mobj::evt_mobj_hit_onoff, 0, PTR("mobj3"))
+  USER_FUNC(spm::evt_mobj::evt_mobj_flag_onoff, 1, 0, PTR("mobj3"), 0x2)
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc3"), 0, LW(0))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc3"), 1, LW(1))
   USER_FUNC(spm::evt_npc::evt_npc_set_unitwork, PTR("npc3"), 2, LW(2))
@@ -3284,9 +4040,10 @@ USER_FUNC(spm::evt_img::evt_img_set_paper_anim, PTR("img"), PTR("A_2"))
 USER_FUNC(spm::evt_img::evt_img_alloc_capture, PTR("img"), 0, 0, 1, 0, 0, 608, 480)
 USER_FUNC(spm::evt_img::evt_img_free_capture, PTR("img"), 1)
 USER_FUNC(spm::evt_img::evt_img_wait_animend, PTR("img"))
+USER_FUNC(make3d, 0)
+USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
 USER_FUNC(spm::evt_fade::evt_fade_entry, 2, 0, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
-USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
 INLINE_EVT()
     USER_FUNC(spm::an2_08::evt_rpg_npctribe_handle)
 END_INLINE()
@@ -3300,9 +4057,13 @@ RUN_CHILD_EVT(mod::setup_fight)
 USER_FUNC(spm::evt_mario::evt_mario_direction_face, 90, 200)
 USER_FUNC(spm::evt_msg::evt_msg_continue)
 USER_FUNC(enable_disable_rpg_menu, 0)
-WAIT_FRM(10)
 USER_FUNC(spm::evt_fade::evt_fade_entry, 1, 300, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
+IF_EQUAL(GSWF(1800), 0)
+  USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+  USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(tutorial))
+  SET(GSWF(1800), 1)
+END_IF()
 USER_FUNC(check_for_boss_fight, LW(6))
 IF_EQUAL(LW(6), 1)
   USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
@@ -3310,11 +4071,6 @@ IF_EQUAL(LW(6), 1)
   WAIT_MSEC(2000)
   USER_FUNC(spm::evt_msg::evt_msg_continue)
   WAIT_MSEC(100)
-END_IF()
-IF_EQUAL(GSWF(1800), 0)
-  USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-  USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(tutorial))
-  SET(GSWF(1800), 1)
 END_IF()
 IF_EQUAL(GSWF(1804), 0)
   USER_FUNC(spm::evt_pouch::evt_pouch_check_have_item, 0xd9, LW(2))
@@ -3324,6 +4080,11 @@ IF_EQUAL(GSWF(1804), 0)
     USER_FUNC(spm::evt_msg::evt_msg_print_add, 1, PTR(tutorial_peach))
   END_IF()
 END_IF()
+USER_FUNC(get_pre_battle_cutscene, LW(6))
+IF_NOT_EQUAL(LW(6), 0)
+  RUN_CHILD_EVT(LW(6))
+  USER_FUNC(set_pre_battle_cutscene, 0)
+END_IF()
 USER_FUNC(ip::evt_pouch_check_badge_equipped, 3, LW(6))
 IF_EQUAL(LW(6), 1)
   RUN_EVT(create_lucky)
@@ -3331,80 +4092,90 @@ IF_EQUAL(LW(6), 1)
   USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("I_2"), 0) 
   USER_FUNC(spm::evt_sub::evt_sub_random, 1, LW(8))
   IF_EQUAL(LW(8), 1)
-    USER_FUNC(spm::evt_pouch::evt_pouch_get_max_hp, LW(8))
+    SET(LW(8), 5)
     RUN_CHILD_EVT(evt_heal_party)
     WAIT_MSEC(1750)
   ELSE()
     USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_I_HAPPYFLOWER1"))
-    USER_FUNC(getMaxFP, LW(1))
+    USER_FUNC(getFP, LW(1))
+    ADD(LW(1), 5)
     USER_FUNC(setFP, LW(1))
+    USER_FUNC(getMaxFP, LW(8))
+    IF_LARGE(LW(1), LW(8))
+      USER_FUNC(setFP, LW(8))
+    END_IF()
     USER_FUNC(flower_effect, 4)
     WAIT_MSEC(1250)
   END_IF()
 END_IF()
-USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-USER_FUNC(enable_disable_rpg_menu, 1)
-SET(UW(5), 0)
-SET(LF(1), 0)
 DO(0)
-    USER_FUNC(spm::an2_08::evt_rpg_effect_check, LW(0))
-    IF_FLAG(LW(0), 0x1000)
-        USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(0.5))
+  INLINE_EVT()
+    USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
+    USER_FUNC(spm::evt_msg::evt_msg_print_add, 0, PTR("stg7_2_133_2_002"))
+  END_INLINE()
+  SET(LW(2), 0)
+  SET(LW(6), 0)
+  USER_FUNC(enable_disable_rpg_menu, 1)
+  RUN_EVT_ID(handleLowHealthNoise, LW(5))
+  USER_FUNC(ring_init_battle)
+  DO(0)
+    USER_FUNC(ring_battle_main, LW(0), LW(1), LW(2), LW(3), LW(4), LW(6))
+    USER_FUNC(ring_display_battle)
+    WAIT_FRM(1)
+    IF_EQUAL(LW(6), 1)
+      DO_BREAK()
     END_IF()
-    USER_FUNC(spm::an2_08::evt_rpg_effect_check, LW(0))
-    IF_NOT_FLAG(LW(0), 0x600)
-        RUN_EVT_ID(handleLowHealthNoise, LW(5))
-        USER_FUNC(spm::an2_08::evt_rpg_choice_handler, LW(0), LW(1), LW(2), LW(3), LW(4))
-        DELETE_EVT(LW(5))
-        SWITCH(LW(0))
-            CASE_EQUAL(0)
-                RUN_CHILD_EVT(mod::attack) //handles the attack input
-            CASE_EQUAL(1)
-                RUN_CHILD_EVT(mod::technique) //handles the technique input, none avaliable for peach in vanilla
-            CASE_EQUAL(2)
-                RUN_CHILD_EVT(mod::pixls) //handles pixls
-            CASE_EQUAL(3)
-                RUN_CHILD_EVT(mod::items) //handles items
-            CASE_EQUAL(4)
-                RUN_CHILD_EVT(mod::switchChars) //handles switching characters
-                SET(LF(1), 1)
-            CASE_EQUAL(5)
-                SET(LF(0), 0)
-                RUN_CHILD_EVT(mod::escape) //handles run away
-                IF_EQUAL(LF(0), 1)
-                    DO_BREAK()
-                END_IF()
-        END_SWITCH()
-END_IF()
-USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
-IF_EQUAL(LF(1), 0)
-  USER_FUNC(spm::an2_08::evt_rpg_effects_handle, 0, LW(0))
-  IF_EQUAL(LW(0), 2)
-    USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_SLIT_RETURN1"))
-    USER_FUNC(mario_paper_on, PTR("p_roll"))
-    WAIT_FRM(45)
-    USER_FUNC(slim_off_on, 1)
-    RUN_EVT(slim_jump_evt)
-    USER_FUNC(mario_chg_paper, PTR("PM_R_1B"))
+  WHILE()
+  DELETE_EVT(LW(5))
+  USER_FUNC(ring_delete_battle)
+  SWITCH(LW(0))
+    CASE_EQUAL(0)
+      RUN_CHILD_EVT(mod::attack) // handles the attack input
+    CASE_EQUAL(1)
+      RUN_CHILD_EVT(mod::technique) // handles the technique input, none avaliable for peach in vanilla
+    CASE_EQUAL(2)
+      RUN_CHILD_EVT(mod::pixls) // handles pixls
+    CASE_EQUAL(3)
+      RUN_CHILD_EVT(mod::items) // handles items
+    CASE_EQUAL(4)
+      RUN_CHILD_EVT(mod::switchChars) // handles switching characters
+      SET(LF(1), 1)
+    CASE_EQUAL(5)
+      SET(LF(0), 0)
+      RUN_CHILD_EVT(mod::escape) // handles run away
+      IF_EQUAL(LF(0), 1)
+        DO_BREAK()
+      END_IF()
+  END_SWITCH()
+  USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
+  IF_EQUAL(LF(1), 0)
+    USER_FUNC(spm::an2_08::evt_rpg_effects_handle, 0, LW(0))
+    IF_EQUAL(LW(0), 2)
+      USER_FUNC(spm::evt_snd::evt_snd_sfxon, PTR("SFX_F_SLIT_RETURN1"))
+      USER_FUNC(mario_paper_on, PTR("p_roll"))
+      WAIT_FRM(45)
+      USER_FUNC(slim_off_on, 1)
+      RUN_EVT(slim_jump_evt)
+      USER_FUNC(mario_chg_paper, PTR("PM_R_1B"))
+    END_IF()
+    RUN_CHILD_EVT(mod::runEnemyTurn)
+    RUN_CHILD_EVT(mod::rpg_check_win_or_continue_evt)
+  ELSE()
+    SET(LF(1), 0)
+    SET(LF(0), 0)
   END_IF()
-  RUN_CHILD_EVT(mod::runEnemyTurn)
-ELSE()
-  SET(LF(1), 0)
-END_IF()
-SET(LF(0), 0)
-RUN_CHILD_EVT(mod::rpg_check_win_or_continue_evt)
-IF_EQUAL(LF(0), 1)
+  IF_EQUAL(LF(0), 1)
+    SET(LF(0), 0)
+    DO_BREAK()
+  END_IF()
   SET(LF(0), 0)
-  DO_BREAK()
-END_IF()
-USER_FUNC(enable_disable_rpg_menu, 1)
-USER_FUNC(spm::evt_msg::evt_msg_print, 1, PTR("<dq><once_stop>"), 0, 0)
-SET(UW(5), 0)
+  USER_FUNC(enable_disable_rpg_menu, 1)
+  SET(UW(5), 0)
 WHILE()
 USER_FUNC(spm::evt_fade::evt_fade_entry, 4, 1500, 0, 0, 0, 255)
 USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
 IF_EQUAL(LF(0), 1)
-  USER_FUNC(spm::evt_snd::evt_snd_bgmoff_f_d, 0, 1000)
+  //USER_FUNC(spm::evt_snd::evt_snd_bgmoff_f_d, 0, 1000)
   SET(LW(7), 0)
   DO(0)
     SWITCH(LW(7))
@@ -3435,16 +4206,25 @@ IF_EQUAL(LF(0), 1)
       DO_BREAK()
     END_IF()
   WHILE()
+  USER_FUNC(spm::evt_fade::evt_fade_entry, 3, 3000, 0, 0, 0, 255)
+  USER_FUNC(spm::an2_08::evt_rpg_change_menu_flag)
+  USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
+  USER_FUNC(mod::rpg_off)
+  USER_FUNC(set_pre_battle_cutscene, 0)
+  USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
+  USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
+  USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
+ELSE()
+  USER_FUNC(mod::rpg_off)
+  USER_FUNC(set_pre_battle_cutscene, 0)
+  USER_FUNC(spm::evt_fade::evt_fade_entry, 3, 2000, 0, 0, 0, 255)
+  USER_FUNC(spm::an2_08::evt_rpg_change_menu_flag)
+  USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
+  USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
+  USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
+  //USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
+  WAIT_MSEC(1600)
 END_IF()
-USER_FUNC(spm::evt_fade::evt_fade_callfade, 1)
-USER_FUNC(spm::an2_08::evt_rpg_change_menu_flag)
-USER_FUNC(spm::evt_cam::evt_cam_zoom_to_coords, 0, 11)
-USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_1"), 0)
-USER_FUNC(mod::rpg_off)
-USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
-USER_FUNC(spm::evt_fade::evt_fade_entry, 3, 1500, 0, 0, 0, 255)
-USER_FUNC(spm::evt_fade::evt_fade_end_wait, -1)
-USER_FUNC(spm::evt_snd::evt_snd_bgmoff, 0)
 RUN_CHILD_EVT(playMusic)
 IF_EQUAL(LW(0), 0)
   SET(LW(0), 0)
@@ -3485,7 +4265,13 @@ EVT_END()
 
 EVT_BEGIN(parentOfBeginRPG)
   USER_FUNC(spm::evt_mario::evt_mario_key_off, 0)
-  USER_FUNC(spm::evt_cam::evt_cam_look_at_door, 1, 0)
+  INLINE_EVT()
+    USER_FUNC(spm::evt_env::evt_env_blur_on, 0, 500)
+    USER_FUNC(evt_animPoseCharge)
+  END_INLINE()
+  USER_FUNC(make3d, 1)
+  USER_FUNC(spm::evt_sub::evt_sub_set_game_speed, FLOAT(1.0))
+  USER_FUNC(rpg_set_dialogue, PTR(stg7_2_133_2_002))
   SET(GW(5), 0)
   SET(LW(2), 0)
   IF_EQUAL(LW(0), 1)
@@ -3495,10 +4281,8 @@ EVT_BEGIN(parentOfBeginRPG)
     END_IF()
   END_IF()
   ALLOC_USER_WRK(7)
-  INLINE_EVT()
-    USER_FUNC(spm::evt_env::evt_env_blur_on, 0, 500)
-  END_INLINE()
   USER_FUNC(spm::evt_pouch::evt_pouch_add_item, 220)
+  WAIT_FRM(20)
   RUN_CHILD_EVT(mod::beginRPG)
   IF_EQUAL(LF(0), 1) //only happens if you run away successfully
     RUN_EVT(run_away_lose_coins)

@@ -258,7 +258,7 @@ namespace mod {
           IF_EQUAL(LW(11), 1)
               USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
               USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-              SUB(LW(10), 2)
+              SUB(LW(10), 1)
               IF_SMALL(LW(10), 0)
                 SET(LW(10), 0)
               END_IF()
@@ -368,7 +368,7 @@ namespace mod {
             IF_EQUAL(LW(11), 1)
               USER_FUNC(spm::evt_mario::evt_mario_set_pose, PTR("S_2"), 0)
               USER_FUNC(spm::an2_08::evt_rpg_calc_mario_damage, 1, LW(10))
-              SUB(LW(10), 2)
+              SUB(LW(10), 1)
               IF_SMALL(LW(10), 0)
                 SET(LW(10), 0)
               END_IF()
@@ -419,6 +419,8 @@ namespace mod {
   {
     npcTribes[11].maxHp = 3;
     npcTribes[14].attackStrength = 3;
+    npcTribes[12].attackStrength = 3;
+    npcTribes[12].maxHp = 6;
   }
 
 }

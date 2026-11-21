@@ -41,6 +41,17 @@ namespace mod {
   EVT_DECLARE_USER_FUNC(mario_paper_on, 1)
   EVT_DECLARE_USER_FUNC(mario_chg_paper, 1)
   EVT_DECLARE_USER_FUNC(npc_change_name, 2)
+  EVT_DECLARE_USER_FUNC(flower_effect, 1)
+  EVT_DECLARE_USER_FUNC(rpg_npc_get_xp, 2)
+  EVT_DECLARE_USER_FUNC(makeNot3d, 0)
+  EVT_DECLARE_USER_FUNC(make3d, 1)
+  EVT_DECLARE_USER_FUNC(eff_spawn_bowser_fire, 8)
+  EVT_DECLARE_USER_FUNC(set_pre_battle_cutscene, 1)
+  EVT_DECLARE_USER_FUNC(get_pre_battle_cutscene, 1)
+  EVT_DECLARE_USER_FUNC(set_post_battle_cutscene, 1)
+  EVT_DECLARE_USER_FUNC(get_post_battle_cutscene, 1)
+  EVT_DECLARE_USER_FUNC(evt_animPoseCharge, 0)
+  EVT_DECLARE_USER_FUNC(animPoseSetMaterialEvtColorWrapper, 5)
 
   EVT_DECLARE(parentOfBeginRPG)
   EVT_DECLARE(deleteAttackedEnemy)
@@ -50,5 +61,7 @@ namespace mod {
   EVT_DECLARE(insertNop)
   EVT_DECLARE(runEnemyDeath)
   EVT_DECLARE(levelUpScript)
+  EVT_DECLARE(get_rpg_npc_name)
+  EVT_DECLARE(get_rpg_mobj_name)
 
 }
